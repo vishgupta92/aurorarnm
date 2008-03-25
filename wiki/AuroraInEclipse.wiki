@@ -1,0 +1,21 @@
+#labels Phase-Implementation
+# HOWTO for joining Aurora development in Eclipse.
+
+= Prerequisites =
+
+If you wish to participate in the day-to-day Aurora development, you need an acount on [http://path.berkeley.edu PATH server] with group membership _topl_.
+You must be affiliated with UC Berkeley or with the TOPL project.
+
+
+
+= Before You Start =
+
+
+
+
+= Loading the Aurora Project into Eclipse =
+
+
+
+
+= Final Adjustments =
