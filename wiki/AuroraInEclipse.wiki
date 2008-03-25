@@ -1,5 +1,5 @@
+#summary HOWTO for joining Aurora development in Eclipse.
 #labels Phase-Implementation
-# HOWTO for joining Aurora development in Eclipse.
 
 = Prerequisites =
 
