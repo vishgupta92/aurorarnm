@@ -16,6 +16,9 @@ You must be affiliated with UC Berkeley or with the TOPL project.
 
 
 
+
+
+
 = Loading the Aurora Project into Eclipse =
 
 1. Go to *File --> New --> Project...* - this brings up a wizard window
@@ -46,6 +49,9 @@ You must be affiliated with UC Berkeley or with the TOPL project.
 Now the Aurora project is loaded into Eclipse.
 
 *Remark:* if for some reason you fail to connect to the repository in step 4, check your firewall settings - sometimes, firewall is the hindrance.
+
+
+
 
 
 
