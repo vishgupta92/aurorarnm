@@ -40,9 +40,8 @@ You must be affiliated with UC Berkeley or with the TOPL project.
   * Project name: _aurora_ (instead of _devel_)
 
 7. Make the selection in the _Select Tag_ screen following the steps below, and click *Finish*
-  1. Click *Refresh tags* button
-  
-  2. Select *Branches --> Gang20071210*
+  # Click *Refresh tags* button
+  # Select *Branches --> Gang20071210*
 
 Now the Aurora project is loaded into Eclipse.
 
