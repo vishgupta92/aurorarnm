@@ -10,31 +10,39 @@ You must be affiliated with UC Berkeley or with the TOPL project.
 
 = Before You Start =
 
- * Download and install Eclipse from http://www.eclipse.org
- * If do not have JRE 1.6 installed already, download and install JDK 6 from http://java.sun.com/javase/downloads/index.jsp
+1. Download and install Eclipse from http://www.eclipse.org
+
+2. If do not have JRE 1.6 installed already, download and install JDK 6 from http://java.sun.com/javase/downloads/index.jsp
 
 
 
 = Loading the Aurora Project into Eclipse =
 
- * Go to *File --> New --> Project...* - this brings up a wizard window
- * Select *CVS --> Projects from CVS*
- * In the _Checkout Project from CVS Repository_ screen choose *Create new repository location* radio button, and click *Next*
- * Fill in the form in the _Enter Repository Location Information_ screen as shown below, and click *Next*
+1. Go to *File --> New --> Project...* - this brings up a wizard window
+
+2. Select *CVS --> Projects from CVS*
+
+3. In the _Checkout Project from CVS Repository_ screen choose *Create new repository location* radio button, and click *Next*
+
+4. Fill in the form in the _Enter Repository Location Information_ screen as shown below, and click *Next*
   * Host name: _path.berkeley.edu_
   * Repository path: _/home/topl/cvsroot/_
   * User/Password - your login and password on [http://path.berkeley.edu PATH server]
   * Connection type: _extssh_
   * Use default port: _selected_
   * Save password: _checked_ (better to save than type it each time)
- * Select *Use existing module* radio button in the _Select Module_ screen, and from the file tree select *aurora --> devel*, then click *Next*
- * Fill in the form in the _Check Out As_ screen as shown below, and click *Next*
+
+5. Select *Use existing module* radio button in the _Select Module_ screen, and from the file tree select *aurora --> devel*, then click *Next*
+
+6. Fill in the form in the _Check Out As_ screen as shown below, and click *Next*
   * Checkout as project in the workspace: _selected_
   * Checkout with subfolders: _checked_
   * Project name: _aurora_ (instead of _devel_)
- * Make the selection in the _Select Tag_ screen following the steps below, and click *Finish*
-  * Click *Refresh tags* button
-  * Select *Branches --> Gang20071210*
+
+7. Make the selection in the _Select Tag_ screen following the steps below, and click *Finish*
+  1. Click *Refresh tags* button
+  
+  2. Select *Branches --> Gang20071210*
 
 Now the Aurora project is loaded into Eclipse.
 
