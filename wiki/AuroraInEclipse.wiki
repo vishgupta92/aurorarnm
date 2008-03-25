@@ -40,8 +40,8 @@ You must be affiliated with UC Berkeley or with the TOPL project.
   * Project name: _aurora_ (instead of _devel_)
 
 7. Make the selection in the _Select Tag_ screen following the steps below, and click *Finish*
-  # Click *Refresh tags* button
-  # Select *Branches --> Gang20071210*
+  * Click *Refresh tags* button
+  * Select *Branches --> Gang20071210*
 
 Now the Aurora project is loaded into Eclipse.
 
@@ -53,16 +53,27 @@ Now the Aurora project is loaded into Eclipse.
 
 Once the project is checked out, before running it you need to add necessary jars into your _Classpath_ and set up the appropriate compiler.
 To do that, follow the steps below.
- # Go to *Project --> Properties* in the menu bar of Eclipse - this brings up the _Properties for aurora_ window 
- # Go to *Java Build Path* in a tree, then select *Libraries* tab and click *Add External JARs...* button
- # Add all jars from `libGUI` subdirectory except `gnujaxp.jar`; from `libdbDerby` add `derby.jar` and `derbytools.jar`; and from `libGIS` add all jars except `commons-collections-3.1.jar`
- # In the same widow, select *Java Compiler* and make sure that the compiler compliance level is 6.0
- # Click *OK*
- # Go to *Window --> Preferences* in the menu bar of Eclipse - this brings up the _Preferences_ window
- # Go to *Java --> Installed JREs* and select *JRE 1.6* (If *JRE 1.6* is not in the list, add the one you have previously installed)
- # Click *OK*
- # Go to *Run --> Run*, and start the Java application with the main class `aurora.hwc.gui.MainPane` - this starts the Simulator
- # To start the Configurator select the `aurora.hwc.config.MainPane` class
- # To see the icons correctly, copy (do not move, just copy) the `icons` subdirectory into `bin` subdirectory
+
+1. Go to *Project --> Properties* in the menu bar of Eclipse - this brings up the _Properties for aurora_ window 
+
+2. Go to *Java Build Path* in a tree, then select *Libraries* tab and click *Add External JARs...* button
+
+3. Add all jars from `libGUI` subdirectory except `gnujaxp.jar`; from `libdbDerby` add `derby.jar` and `derbytools.jar`; and from `libGIS` add all jars except `commons-collections-3.1.jar`
+
+4. In the same widow, select *Java Compiler* and make sure that the compiler compliance level is 6.0
+
+5. Click *OK*
+
+6. Go to *Window --> Preferences* in the menu bar of Eclipse - this brings up the _Preferences_ window
+
+7. Go to *Java --> Installed JREs* and select *JRE 1.6* (If *JRE 1.6* is not in the list, add the one you have previously installed)
+
+8. Click *OK*
+
+9. Go to *Run --> Run*, and start the Java application with the main class `aurora.hwc.gui.MainPane` - this starts the Simulator
+
+10. To start the Configurator select the `aurora.hwc.config.MainPane` class
+
+11. To see the icons correctly, copy (do not move, just copy) the `icons` subdirectory into `bin` subdirectory
 
 At this point you are ready to start working on the code.
