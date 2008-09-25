@@ -29,7 +29,7 @@ You must be affiliated with UC Berkeley or with the TOPL project.
 
 4. Fill in the form in the _Enter Repository Location Information_ screen as shown below, and click *Next*
   * Host name: _path.berkeley.edu_
-  * Repository path: _/home/topl/cvsroot/_
+  * Repository path: _/home/topl/cvsroot_
   * User/Password: your login and password on [http://path.berkeley.edu PATH server]
   * Connection type: _extssh_
   * Use default port: _selected_
