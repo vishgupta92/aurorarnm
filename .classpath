@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="libdbDerby/derby.jar"/>
+	<classpathentry kind="lib" path="libdbDerby/derbytools.jar"/>
+	<classpathentry kind="lib" path="libGUI/colt.jar"/>
+	<classpathentry kind="lib" path="libGUI/commons-collections-3.2.jar"/>
+	<classpathentry kind="lib" path="libGUI/concurrent.jar"/>
+	<classpathentry kind="lib" path="libGUI/itext-2.0.1.jar"/>
+	<classpathentry kind="lib" path="libGUI/jcommon-1.0.9.jar"/>
+	<classpathentry kind="lib" path="libGUI/jfreechart-1.0.5-experimental.jar"/>
+	<classpathentry kind="lib" path="libGUI/jfreechart-1.0.5-swt.jar"/>
+	<classpathentry kind="lib" path="libGUI/jfreechart-1.0.5.jar"/>
+	<classpathentry kind="lib" path="libGUI/jung-1.7.6.jar"/>
+	<classpathentry kind="lib" path="libGUI/junit.jar"/>
+	<classpathentry kind="lib" path="libGUI/servlet.jar"/>
+	<classpathentry kind="lib" path="libGUI/swtgraphics2d.jar"/>
+	<classpathentry kind="lib" path="libGIS/geoapi-nogenerics-2.1.0.jar"/>
+	<classpathentry kind="lib" path="libGIS/gt2-api-2.4.3.jar"/>
+	<classpathentry kind="lib" path="libGIS/gt2-arcsde-2.4.3.jar"/>
+	<classpathentry kind="lib" path="libGIS/gt2-cql-2.4.3.jar"/>
+	<classpathentry kind="lib" path="libGIS/gt2-main-2.4.3.jar"/>
+	<classpathentry kind="lib" path="libGIS/gt2-metadata-2.4.3.jar"/>
+	<classpathentry kind="lib" path="libGIS/gt2-referencing-2.4.3.jar"/>
+	<classpathentry kind="lib" path="libGIS/gt2-shapefile-2.4.3.jar"/>
+	<classpathentry kind="lib" path="libGIS/jsr108-0.01.jar"/>
+	<classpathentry kind="lib" path="libGIS/jts-1.8.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
