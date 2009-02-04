@@ -1,0 +1,614 @@
+/**
+ * @(#)MainPane.java 
+ */
+
+package aurora.hwc.gui;
+
+import java.io.*;
+import java.net.URI;
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+import aurora.*;
+import aurora.common.*;
+import aurora.hwc.*;
+import aurora.hwc.common.*;
+import aurora.util.*;
+
+
+/**
+ * Main window of Aurora HWC.
+ * @author Alex Kurzhanskiy
+ * @version $Id: MainPane.java,v 1.2.2.18.2.2 2008/11/25 00:36:58 akurzhan Exp $
+ */
+public final class MainPane extends JFrame implements ActionListener, ItemListener, CommonMain {
+	private static final long serialVersionUID = 8711529895478014515L;
+	private File currentDir = new File(AuroraConstants.DEFAULT_HOME);
+	private String configURI;
+	private ContainerHWC mySystem = null;
+	private TreePane treePane = null;
+	private JLabel statusBar = new JLabel(" ");
+	private HashMap<String, JMenuItem> cmd2item = new HashMap<String, JMenuItem>();
+	
+	private final static String cmdFileNewSimulation = "FileNewSimulation";
+	private final static String cmdFileOpenFile = "FileOpenFile";
+	private final static String cmdFileSaveConfiguration = "FileSaveConfiguration";
+	private final static String cmdFileSaveSimulation = "FileSaveSimulation";
+	private final static String cmdFileExit = "FileExit";
+	private final static String cmdEditSettings = "EditSettings";
+	private final static String cmdSimulationRun = "SimulationRun";
+	private final static String cmdSimulationStop = "SimulationStop";
+	private final static String cmdControlMainline = "ControlMainline";
+	private final static String cmdControlQueue = "ControlQueue";
+	private final static String cmdHelpAbout = "HelpAbout";
+	private final static String cmdHelpContactTOPL = "HelpContactTOPL";
+	
+
+	public MainPane() { super(); }
+	public MainPane(String title) {
+		super(title);
+		addWindowListener(new MainPaneWindowAdapter());
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setSize(850, 700);
+        UtilGUI.center(this);
+        setJMenuBar(createMenuBar());
+        ImageIcon icon = UtilGUI.createImageIcon("/icons/simlogo2.jpg");
+        if (icon != null)
+        	setIconImage(icon.getImage());
+        setVisible(true);
+	}
+	
+	
+	/**
+	 * Disables all main menu items except 'Open', 'Exit' and 'About',
+	 * and clears the main window.
+	 */
+	private void clearMainPane() {
+		JCheckBoxMenuItem mi;
+		mi = (JCheckBoxMenuItem)cmd2item.get(cmdControlMainline);
+		mi.setSelected(false);
+		mi = (JCheckBoxMenuItem)cmd2item.get(cmdControlQueue);
+		mi.setSelected(false);
+		JMenuBar mainMenu = getJMenuBar();
+		for (int i = 0; i < mainMenu.getMenuCount(); i++) {
+			JMenu menu = mainMenu.getMenu(i);
+			for (int j = 0; j < menu.getItemCount(); j++)
+				if ((menu.getItem(j) != null) &&
+					(!menu.getItem(j).getActionCommand().equals(cmdFileOpenFile)) &&
+					(!menu.getItem(j).getActionCommand().equals(cmdFileExit)) &&
+					(!menu.getItem(j).getActionCommand().equals(cmdHelpAbout)) &&
+					(!menu.getItem(j).getActionCommand().equals(cmdHelpContactTOPL)))
+					menu.getItem(j).setEnabled(false);
+		}
+		getContentPane().removeAll();
+		if (treePane != null)
+			treePane.stop();
+		treePane = null;
+		System.gc();
+		return;
+	}
+	
+	/**
+	 * Prepares main menu for simulation.
+	 */
+	private void prepareForSimulation() {
+		JMenuBar mainMenu = getJMenuBar();
+		for (int i = 0; i < mainMenu.getMenuCount(); i++) {
+			JMenu menu = mainMenu.getMenu(i);
+			for (int j = 0; j < menu.getItemCount(); j++) {
+				if (menu.getItem(j) == null)
+					continue;
+				menu.getItem(j).setEnabled(true);
+			}
+		}
+		cmd2item.get(cmdSimulationStop).setEnabled(false);
+		JCheckBoxMenuItem miml = (JCheckBoxMenuItem)cmd2item.get(cmdControlMainline);
+		JCheckBoxMenuItem miq = (JCheckBoxMenuItem)cmd2item.get(cmdControlQueue);
+		boolean cv = mySystem.getMyNetwork().isControlled();
+		boolean qcv = ((NodeHWCNetwork)mySystem.getMyNetwork()).hasQControl();
+		miml.setSelected(cv);
+		miq.setSelected(qcv);
+		miq.setEnabled(cv);
+		return;
+	}
+	
+	/**
+	 * Resets simulation data and views.
+	 */
+	public void resetAll() {
+		try {
+			if (mySystem.dataReset()) {
+				prepareForSimulation();
+				if (treePane != null)
+					treePane.resetView();
+				statusBar.setText("Simulation ready. Press 'F5' to run...");
+			}
+			else
+				JOptionPane.showMessageDialog(this, "Cannot reset simulation data.", "Error", JOptionPane.ERROR_MESSAGE);
+		}
+		catch(Exception e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
+		}
+		return;
+	}
+	
+	/**
+	 * Opens configuration or simulation file.
+	 */
+	private void openFile() {
+		JFileFilter filter = new JFileFilter();
+		filter.addType("xml");
+		filter.addType("dat");
+		filter.setDescription("Aurora files (*.xml, *.dat)");
+		JFileChooser fc = new JFileChooser("Open File");
+		fc.setFileFilter(filter);
+		fc.setCurrentDirectory(currentDir);
+		boolean error = false;
+		if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			clearMainPane();
+			if (fc.getSelectedFile().getName().endsWith("xml")) { // load configuration
+				configURI = "file:" + fc.getSelectedFile().getAbsolutePath();
+				if (mySystem == null)
+					mySystem = new ContainerHWC();
+				try {
+					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(configURI);
+					mySystem.initFromDOM(doc.getChildNodes().item(0));
+					mySystem.validate();
+				}
+				catch(Exception e) {
+					error = true;
+					String buf = e.getMessage();
+					if ((buf == null) || (buf.equals("")))
+						buf = "Unknown error...";
+					JOptionPane.showMessageDialog(this, buf, e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
+				}
+				if (!error) {
+					/*if (mySystem.getMyNetwork().setSimNo(mySystem.getMyNetwork().getSimNo() + 1)) {
+						prepareForSimulation();
+						statusBar.setText("Simulation ready. Press 'F5' to run...");
+					}
+					else
+						JOptionPane.showMessageDialog(this, "Cannot assign new simulation number.", "Error", JOptionPane.ERROR_MESSAGE);
+					*/
+					resetAll();
+				}
+			}
+			if (fc.getSelectedFile().getName().endsWith("dat")) { // load simulation
+				try {
+					ObjectInputStream is = new ObjectInputStream(new FileInputStream(fc.getSelectedFile().getAbsolutePath()));
+					mySystem = (ContainerHWC)is.readObject();
+					is.close();
+					if (mySystem.getMyNetwork() == null)
+							error = true;
+					if (mySystem.getMyEventManager() == null)
+						mySystem.setMyEventManager(new EventManager());
+					if (mySystem.getMySettings() == null)
+						mySystem.setMySettings(new SimulationSettings());
+					if (mySystem.getMyStatus() == null)
+						mySystem.setMyStatus(new SimulationStatus());
+				}
+				catch(Exception e) {
+					error = true;
+					JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
+				}
+				if (!error) {
+					prepareForSimulation();
+					String status;
+					int ts = mySystem.getMyNetwork().getTS();
+					if (mySystem.canResume(ts)) {
+						cmd2item.get(cmdSimulationRun).setEnabled(true);
+						status = "Simulation paused at step " + Integer.toString(ts) + ", time ";
+						status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
+						status += ". Press 'F5' to resume...";
+					}
+					else {
+						cmd2item.get(cmdSimulationRun).setEnabled(false);
+						status = "Simulation stopped at step " + Integer.toString(ts) + ", time ";
+						status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
+						status += ". Press 'ALT-N' for new simulation...";
+					}
+					statusBar.setText(status);
+				}
+			}
+			if (!error) {
+				mySystem.getMySettings().setWindowSize(getSize());
+				treePane = new TreePane(mySystem);
+				//getContentPane().add(new JScrollPane(treePane), BorderLayout.CENTER);
+				getContentPane().add(treePane, BorderLayout.CENTER);
+				getContentPane().add(statusBar, BorderLayout.SOUTH);
+			}
+		}
+		setVisible(true);
+		currentDir = fc.getCurrentDirectory();
+		return;
+	}
+	
+	/**
+	 * Saves configuration.
+	 */
+	private void saveConfiguration() {
+		String ext = "xml";
+		JFileFilter filter = new JFileFilter();
+		filter.addType(ext);
+		filter.setDescription("Aurora configuration files (*." + ext + ")");
+		JFileChooser fc = new JFileChooser("Save Configuration");
+		fc.setFileFilter(filter);
+		fc.setCurrentDirectory(currentDir);
+		if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			currentDir = fc.getCurrentDirectory();
+			File fp = fc.getSelectedFile();
+			if (fp.exists()) {
+				int res = JOptionPane.showConfirmDialog(this, "File '" + fp.getName() + "' exists. Overwrite?", "Confirmation", JOptionPane.YES_NO_OPTION);
+				if (res == JOptionPane.NO_OPTION)
+					return;
+			}
+			try {
+				String fpath = fp.getAbsolutePath();
+				if (!fp.getName().endsWith(ext))
+					fpath += "." + ext;
+				PrintStream oos = new PrintStream(new FileOutputStream(fpath));
+				mySystem.xmlDump(oos);
+				oos.close();
+				mySystem.getMyStatus().setSaved(true);
+			}
+			catch(Exception e) {
+				JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		return;
+	}
+	
+	/**
+	 * Saves simulation.
+	 */
+	private void saveSimulation() {
+		String ext = "dat";
+		JFileFilter filter = new JFileFilter();
+		filter.addType(ext);
+		filter.setDescription("Aurora simulation files (*." + ext + ")");
+		JFileChooser fc = new JFileChooser("Save Simulation");
+		fc.setFileFilter(filter);
+		fc.setCurrentDirectory(currentDir);
+		if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			currentDir = fc.getCurrentDirectory();
+			File fp = fc.getSelectedFile();
+			if (fp.exists()) {
+				int res = JOptionPane.showConfirmDialog(this, "File '" + fp.getName() + "' exists. Overwrite?", "Confirmation", JOptionPane.YES_NO_OPTION);
+				if (res == JOptionPane.NO_OPTION)
+					return;
+			}
+			try {
+				String fpath = fp.getAbsolutePath();
+				if (!fp.getName().endsWith(ext))
+					fpath += "." + ext;
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fpath));
+				mySystem.getMyStatus().setSaved(true);
+				oos.writeObject(mySystem);
+				oos.close();
+			}
+			catch(Exception e) {
+				JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		return;
+	}
+	
+	/**
+	 * Checks if the simulation is saved, if not - asks the user.
+	 */
+	public boolean checkSaved() {
+		if ((mySystem == null) || (mySystem.getMyStatus().isSaved()))
+			return true;
+		int v = JOptionPane.showConfirmDialog(this, "Save simulation?", "Confirmation", JOptionPane.YES_NO_CANCEL_OPTION);
+		switch(v) {
+		case JOptionPane.YES_OPTION:
+			saveSimulation();
+			return true;
+		case JOptionPane.NO_OPTION:
+			return true;
+		case JOptionPane.CANCEL_OPTION:
+		default:
+		}
+		return false;
+	}
+	
+	/**
+	 * Runs simulation and updates displayed data accordingly.
+	 */
+	private void runSimulation() {
+		boolean res = true;
+		mySystem.getMyStatus().setStopped(false);
+		mySystem.getMyStatus().setSaved(false);
+		int ts = mySystem.getMyNetwork().getTS();
+		int tsV = ts;
+		while ((!mySystem.getMyStatus().isStopped()) && res) {
+			String status = "Simulation running: step " + Integer.toString(ts) + ", time ";
+			status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
+			status += ". Press 'F6' to stop...";
+			statusBar.setText(status);
+			try {
+				res = mySystem.dataUpdate(++ts);
+				if (((ts - tsV) * mySystem.getMyNetwork().getTP()) >= mySystem.getMySettings().getDisplayTP()) {
+					JCheckBoxMenuItem miml = (JCheckBoxMenuItem)cmd2item.get(cmdControlMainline);
+					JCheckBoxMenuItem miq = (JCheckBoxMenuItem)cmd2item.get(cmdControlQueue);
+					boolean cv = mySystem.getMyNetwork().isControlled();
+					boolean qcv = ((NodeHWCNetwork)mySystem.getMyNetwork()).hasQControl();
+					miml.setSelected(cv);
+					miq.setSelected(qcv);
+					miq.setEnabled(cv);
+					tsV = ts;
+					treePane.updateView();
+					((NodeHWCNetwork)mySystem.getMyNetwork()).resetSums();
+					Thread.sleep(mySystem.getMySettings().getTimeout());
+				}
+			}
+			catch(Exception e) {
+				mySystem.getMyStatus().setStopped(true);
+				JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		treePane.updateView();
+		cmd2item.get(cmdSimulationStop).setEnabled(false);
+		String status;
+		if ((mySystem.canResume(ts)) && res) {
+			cmd2item.get(cmdSimulationRun).setEnabled(true);
+			status = "Simulation paused at step " + Integer.toString(ts) + ", time ";
+			status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
+			status += ". Press 'F5' to resume...";
+		}
+		else {
+			cmd2item.get(cmdSimulationRun).setEnabled(false);
+			status = "Simulation stopped at step " + Integer.toString(ts) + ", time ";
+			status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
+			status += ". Press 'ALT-N' for new simulation...";
+		}
+		statusBar.setText(status);
+		return;
+	}
+	
+	/**
+	 * Processes menu item actions.
+	 * @param e action event.
+	 */
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if ((mySystem != null) && (!mySystem.getMyStatus().isStopped())) {
+			mySystem.getMyStatus().setStopped(true);
+			return;
+		}
+		if (cmdFileNewSimulation.equals(cmd)) {
+			if (!checkSaved())
+				return;
+			resetAll();
+			return;
+		}
+		if (cmdFileOpenFile.equals(cmd)) {
+			if (!checkSaved())
+				return;
+			openFile();
+			return;
+		}
+		if (cmdFileSaveConfiguration.equals(cmd)) {
+			saveConfiguration();
+			return;
+		}
+		if (cmdFileSaveSimulation.equals(cmd)) {
+			saveSimulation();
+			return;
+		}
+		if (cmdFileExit.equals(cmd)) {
+			closeAndExit();
+			return;
+		}
+		if (cmdEditSettings.equals(cmd)) {
+			WindowSettings ws = new WindowSettingsHWC(mySystem, this);
+			ws.setVisible(true);
+			return;
+		}
+		if (cmdSimulationRun.equals(cmd)) {
+			cmd2item.get(cmdSimulationRun).setEnabled(false);
+			cmd2item.get(cmdSimulationStop).setEnabled(true);
+			new Thread() {
+	        	public void run() {
+	        		runSimulation();
+	        	}
+	        }.start();
+			return;
+		}
+		if (cmdHelpAbout.equals(cmd)) {
+			new WindowAbout("Simulator", this);
+			return;
+		}
+		if (cmdHelpContactTOPL.equals(cmd)) {
+			Desktop desktop = null;
+			String email = AuroraConstants.CONTACT_EMAIL;
+			if (Desktop.isDesktopSupported()) {
+				desktop = Desktop.getDesktop();
+				if (desktop.isSupported(Desktop.Action.MAIL))
+					try {
+						desktop.mail(new URI("mailto", email, null));
+						return;
+					}
+					catch(Exception exp) { }
+			}
+			JOptionPane.showMessageDialog(this, "Cannot launch email client...\n Please, email your questions to\n" + email , "", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		return;
+	}
+
+	/**
+	 * Processes menu item checking.
+	 * param e item event.
+	 */
+	public void itemStateChanged(ItemEvent e) {
+		JCheckBoxMenuItem miml = (JCheckBoxMenuItem)cmd2item.get(cmdControlMainline);
+		JCheckBoxMenuItem miq = (JCheckBoxMenuItem)cmd2item.get(cmdControlQueue);
+		boolean cv = miml.isSelected();
+		boolean qcv = miq.isSelected();
+		miq.setEnabled(cv);
+		((NodeHWCNetwork)mySystem.getMyNetwork()).setControlled(cv, qcv);
+		if (treePane != null)
+			treePane.updateConfig();
+		return;
+	}
+	
+	/**
+	 * Creates menu bar.
+	 * @return menu bar.
+	 */
+	private JMenuBar createMenuBar() {
+		JMenuItem item;
+		JMenu menu;
+		JMenuBar mainMenu = new JMenuBar();
+		menu = new JMenu("File");
+		item = new JMenuItem("New Simulation");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.ALT_MASK));
+		item.addActionListener(this);
+		item.setEnabled(false);
+		item.setActionCommand(cmdFileNewSimulation);
+		cmd2item.put(cmdFileNewSimulation, item);
+        menu.add(item);
+        menu.addSeparator();
+        item = new JMenuItem("Open");
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+		item.addActionListener(this);
+		item.setActionCommand(cmdFileOpenFile);
+		cmd2item.put(cmdFileOpenFile, item);
+        menu.add(item);
+        menu.addSeparator();
+        item = new JMenuItem("Save Configuration");
+		item.addActionListener(this);
+		item.setEnabled(false);
+		item.setActionCommand(cmdFileSaveConfiguration);
+		cmd2item.put(cmdFileSaveConfiguration, item);
+        menu.add(item);
+        item = new JMenuItem("Save Simulation");
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		item.addActionListener(this);
+		item.setEnabled(false);
+		item.setActionCommand(cmdFileSaveSimulation);
+		cmd2item.put(cmdFileSaveSimulation, item);
+        menu.add(item);
+        menu.addSeparator();
+        item = new JMenuItem("Exit");
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK));
+		item.addActionListener(this);
+		item.setActionCommand(cmdFileExit);
+		cmd2item.put(cmdFileExit, item);
+        menu.add(item);
+		mainMenu.add(menu);
+		menu = new JMenu("Edit");
+		item = new JMenuItem("Settings");
+		item.addActionListener(this);
+		item.setEnabled(false);
+		item.setActionCommand(cmdEditSettings);
+		cmd2item.put(cmdEditSettings, item);
+        menu.add(item);
+		mainMenu.add(menu);
+		//menu = new JMenu("View");
+		//mainMenu.add(menu);
+		menu = new JMenu("Simulation");
+		item = new JMenuItem("Run");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+		item.addActionListener(this);
+		item.setEnabled(false);
+		item.setActionCommand(cmdSimulationRun);
+		cmd2item.put(cmdSimulationRun, item);
+        menu.add(item);
+        item = new JMenuItem("Stop");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+		item.addActionListener(this);
+		item.setEnabled(false);
+		item.setActionCommand(cmdSimulationStop);
+		cmd2item.put(cmdSimulationStop, item);
+        menu.add(item);
+		mainMenu.add(menu);
+		menu = new JMenu("Control");
+		item = new JCheckBoxMenuItem("Mainline");
+		item.setEnabled(false);
+		item.addItemListener(this);
+		cmd2item.put(cmdControlMainline, item);
+		menu.add(item);
+		item = new JCheckBoxMenuItem("Queue");
+		item.setEnabled(false);
+		item.addItemListener(this);
+		cmd2item.put(cmdControlQueue, item);
+		menu.add(item);
+		mainMenu.add(menu);
+		//menu = new JMenu("Tools");
+		//mainMenu.add(menu);
+		menu = new JMenu("Help");
+		item = new JMenuItem("About");
+		item.addActionListener(this);
+		item.setActionCommand(cmdHelpAbout);
+		cmd2item.put(cmdHelpAbout, item);
+        menu.add(item);
+        item = new JMenuItem("Contact TOPL");
+		item.addActionListener(this);
+		item.setActionCommand(cmdHelpContactTOPL);
+		cmd2item.put(cmdHelpContactTOPL, item);
+        menu.add(item);
+		mainMenu.add(menu);
+		return mainMenu;
+	}
+	
+	private void closeAndExit() {
+		if (mySystem != null)
+			mySystem.getMyStatus().setStopped(true);
+		if (checkSaved()) {
+			statusBar.setText("Exiting...");
+			setVisible(false);
+			dispose();
+			System.exit(0);
+		}
+	}
+
+	/**
+     * Create the GUI and show it.
+     * For thread safety, this method should be invoked from the
+     * event-dispatching thread.
+     */
+    private static void createAndShowGUI() {
+    	// Use the Java look and feel.
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        } catch (Exception e) { }
+        // Make sure we have nice window decorations.
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        JDialog.setDefaultLookAndFeelDecorated(true);
+        // Create and set up the window.
+        new MainPane("Aurora RNM: Simulator");
+    }
+    
+    public static void main(String[] args) {
+        /* Schedule a job for the event-dispatching thread:
+         * creating and showing this application's GUI. */
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                createAndShowGUI();
+            }
+        });
+    }
+    
+    
+    /**
+     * This class is needed for proper exiting.
+     */
+    private class MainPaneWindowAdapter extends WindowAdapter {
+    	
+    	/**
+    	 * Function that is called when user closes the window.
+    	 * @param e window event.
+    	 */
+    	public void windowClosing(WindowEvent e) {
+    		closeAndExit();
+    		return;
+    	}
+    	
+    }
+
+}
