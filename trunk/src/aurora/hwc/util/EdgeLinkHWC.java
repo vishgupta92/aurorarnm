@@ -12,10 +12,11 @@ import aurora.hwc.*;
 /**
  * Implementation of edge for JUNG graph. 
  * @author Alex Kurzhanskiy
- * @version $Id: EdgeLinkHWC.java,v 1.1.4.1 2008/10/16 04:27:09 akurzhan Exp $
+ * @version $Id: EdgeLinkHWC.java,v 1.1.4.1.4.1 2009/06/14 06:45:28 akurzhan Exp $
  */
 public class EdgeLinkHWC extends DirectedSparseEdge {
 	protected AbstractLinkHWC link;
+	protected boolean isthick = false;
 	
 	
 	public EdgeLinkHWC(Vertex v1, Vertex v2) {
@@ -25,6 +26,10 @@ public class EdgeLinkHWC extends DirectedSparseEdge {
 		super(v1, v2);
 		link = l;
 	}
+	public EdgeLinkHWC(Vertex v1, Vertex v2, boolean isth) {
+		super(v1, v2);
+		isthick = isth;
+	}
 	
 	
 	/**
@@ -32,6 +37,13 @@ public class EdgeLinkHWC extends DirectedSparseEdge {
 	 */
 	public AbstractLinkHWC getLinkHWC() {
 		return link;
+	}
+	
+	/**
+	 * Returns the value of isthick
+	 */
+	public boolean getIsThick() {
+		return isthick;
 	}
 
 }

@@ -20,7 +20,7 @@ import aurora.util.*;
 /**
  * Implementation of Node Editor.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNode.java,v 1.1.4.1.2.2 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: WindowNode.java,v 1.1.4.1.2.4.2.5 2009/08/26 02:25:21 akurzhan Exp $
  */
 public final class WindowNode extends JInternalFrame implements ActionListener, ChangeListener, DocumentListener {
 	private static final long serialVersionUID = -2721130730581469904L;
@@ -87,7 +87,7 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 		controllersModified = new boolean[nIn];
 		ctrlTypes = myNode.getSimpleControllerTypes();
 		ctrlClasses = myNode.getSimpleControllerClasses();
-		Vector<AbstractControllerSimple> ctrls = myNode.getControllers();
+		Vector<AbstractControllerSimple> ctrls = myNode.getSimpleControllers();
 		for (int i = 0; i < nIn; i++) {
 			controllers[i] = (AbstractControllerHWC)ctrls.get(i);
 			controllersModified[i] = false;
@@ -210,9 +210,10 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 	      	    		return;
 	      	    	try {
 	    	    		Class c = Class.forName("aurora.hwc.control.Panel" + controllers[row].getClass().getSimpleName());
-	    	    		AbstractControllerPanel cp = (AbstractControllerPanel)c.newInstance();
-	    	    		cp.initialize((AbstractControllerHWC)controllers[row], myNode);
-	    	    		controllersModified[row] = true;
+	    	    		AbstractSimpleControllerPanel cp = (AbstractSimpleControllerPanel)c.newInstance();
+	    	    		cp.initialize((AbstractControllerHWC)controllers[row], controllersModified, row, myNode);
+	    	    		if (controllersModified[row])
+	    	    			ctrlModified = true;
 	    	    	}
 	    	    	catch(Exception xpt) { }
 	      	    }
@@ -335,9 +336,9 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 				for (int j = 0; j < nIn; j++)
 					if (controllersModified[j]) {
 						if (controllers[j] != null)
-							nd.setController((AbstractControllerSimple)controllers[j].deepCopy(), j);
+							nd.setSimpleController((AbstractControllerSimple)controllers[j].deepCopy(), j);
 						else
-							nd.setController(null, j);
+							nd.setSimpleController(null, j);
 					}
 			}
 			if (srmModified) {
@@ -356,7 +357,7 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 					return;
 				}
 				newnd.copyData(nd);
-				nd.getMyNetwork().replaceNetworkElement(nd, newnd);
+				nd.getTop().replaceNetworkElement(nd, newnd);
 			}
 			if (tpModified) {
 				int h = (Integer)hh.getValue();
@@ -489,8 +490,10 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 		}
 		
 		public boolean isCellEditable(int row, int column) {
-			if (column == 1)
-				return true;
+			if ((column == 1) && (row >= 0) && (row < nIn)) {
+				if ((myNode.getSimpleControllers().get(row) == null) || (!myNode.getSimpleControllers().get(row).isDependent()))
+					return true;
+			}
 			return false;
 		}
 
@@ -588,7 +591,7 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 			}
 			if ((row < 1) || (row > srm.length) || (column < 1) || (column > srm[0].length))
 				return null;
-			return srm[row - 1][column - 1].toString();
+			return srm[row - 1][column - 1].toString2();
 		}
 		
 		public void setValueAt(Object value, int row, int column) {

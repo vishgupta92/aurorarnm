@@ -6,6 +6,10 @@ package aurora.hwc.control;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Vector;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import aurora.*;
 import aurora.hwc.*;
@@ -14,7 +18,7 @@ import aurora.hwc.*;
 /**
  * Base class for simple Node controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerHWC.java,v 1.1.4.1 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: AbstractControllerHWC.java,v 1.1.4.1.2.1 2009/06/14 01:13:21 akurzhan Exp $
  */
 public abstract class AbstractControllerHWC extends AbstractControllerSimple {
 	protected QueueController myQController;
@@ -28,15 +32,46 @@ public abstract class AbstractControllerHWC extends AbstractControllerSimple {
 	
 	
 	/**
-	 * Generates XML description of the ALINEA controller.<br>
+	 * Initializes controller from given DOM structure.
+	 * @param p DOM node.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration
+	 */
+	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
+		boolean res = super.initFromDOM(p);
+		if (!res)
+			return res;
+		try  {
+			if (p.hasChildNodes()) {
+				NodeList pp = p.getChildNodes();
+				for (int i = 0; i < pp.getLength(); i++) {
+					if (pp.item(i).getNodeName().equals("limits")) {
+						limits = new Vector<Object>();
+						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmin").getNodeValue()));
+						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmax").getNodeValue()));
+					}
+					if (pp.item(i).getNodeName().equals("qcontroller")) {
+						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
+						myQController = (QueueController)c.newInstance();
+						res &= myQController.initFromDOM(pp.item(i));
+					}
+				}
+			}
+		}
+		catch(Exception e) {
+			res = false;
+			throw new ExceptionConfiguration(e.getMessage());
+		}
+		return res;
+	}
+	/**
+	 * Generates XML description of simple controller.<br>
 	 * If the print stream is specified, then XML buffer is written to the stream.
 	 * @param out print stream.
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		if (out == null)
-			out = System.out;
-		out.print("<controller class=\"" + this.getClass().getName() + "\" tp=\"" + Double.toString(tp) + "\">");
+		super.xmlDump(out);
 		if (limits.size() == 2)
 			out.print("<limits cmin=\"" + Double.toString((Double)limits.get(0))+ "\" cmax=\"" + Double.toString((Double)limits.get(1))+ "\" />");
 		if (myQController != null)

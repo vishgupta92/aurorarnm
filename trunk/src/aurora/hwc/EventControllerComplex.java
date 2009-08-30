@@ -14,7 +14,7 @@ import aurora.util.Util;
 /**
  * Event that changes complex controller at given Monitor.
  * @author Alex Kurzhanskiy
- * @version $Id: EventControllerComplex.java,v 1.4.2.4.2.1 2008/12/29 05:28:48 akurzhan Exp $
+ * @version $Id: EventControllerComplex.java,v 1.4.2.4.2.2 2009/06/14 01:10:24 akurzhan Exp $
  */
 public final class EventControllerComplex extends AbstractEvent {
 	private static final long serialVersionUID = 4872783738180737465L;
@@ -46,21 +46,14 @@ public final class EventControllerComplex extends AbstractEvent {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if (p == null)
-			return !res;
+		boolean res = super.initFromDOM(p);
+		if (!res)
+			return res;
 		try  {
-			neid = Integer.parseInt(p.getAttributes().getNamedItem("neid").getNodeValue());
-			tstamp = Double.parseDouble(p.getAttributes().getNamedItem("tstamp").getNodeValue());
-			enabled = Boolean.parseBoolean(p.getAttributes().getNamedItem("enabled").getNodeValue());
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
-					if (pp.item(i).getNodeName().equals("description")) {
-						String desc = pp.item(i).getTextContent();
-						if (!desc.equals("null"))
-							description = desc;
-					}
+					; //TODO
 				}
 			}
 		}
@@ -78,10 +71,7 @@ public final class EventControllerComplex extends AbstractEvent {
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		if (out == null)
-			out = System.out;
-		out.print("<event class=\"" + this.getClass().getName() + "\" neid=\"" + Integer.toString(neid) + "\" tstamp=\"" + Double.toString(tstamp) + "\" enabled=\"" + Boolean.toString(enabled) + "\">");
-		out.print("<description>" + description + "</description>");
+		super.xmlDump(out);
 		if (controller != null)
 			controller.xmlDump(out);
 		out.print("</event>");

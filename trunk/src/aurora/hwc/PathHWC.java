@@ -10,7 +10,7 @@ import aurora.*;
 /**
  * HWC specific Path class.
  * @author Alex Kurzhanskiy
- * @version $Id: PathHWC.java,v 1.1.2.3.4.4 2008/12/11 20:42:37 akurzhan Exp $
+ * @version $Id: PathHWC.java,v 1.1.2.3.4.5 2009/03/21 22:20:10 akurzhan Exp $
  */
 public class PathHWC extends Path {
 	private static final long serialVersionUID = 7614255724050230035L;
@@ -59,6 +59,7 @@ public class PathHWC extends Path {
 		for (int i = 0; i < linkCount; i++) {
 			AbstractLinkHWC lk = (AbstractLinkHWC)linkSequence.get(i);
 			flows[i] = lk.getActualFlow();
+			flows[i].affineTransform(1/lk.getLanes(), 0);
 		}
 		return flows;
 	}
@@ -68,8 +69,11 @@ public class PathHWC extends Path {
 	 */
 	public AuroraIntervalVector[] getDensities() {
 		AuroraIntervalVector densities[] = new AuroraIntervalVector[linkCount];
-		for (int i = 0; i < linkCount; i++)
-			densities[i] = ((AbstractLinkHWC)linkSequence.get(i)).getDensity();
+		for (int i = 0; i < linkCount; i++) {
+			AbstractLinkHWC lk = (AbstractLinkHWC)linkSequence.get(i);
+			densities[i] = lk.getDensity();
+			densities[i].affineTransform(1/lk.getLanes(), 0);
+		}
 		return densities;
 	}
 	

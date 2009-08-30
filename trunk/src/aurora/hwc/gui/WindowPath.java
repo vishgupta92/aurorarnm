@@ -42,7 +42,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of path internal frame.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowPath.java,v 1.1.2.11.2.5 2008/12/11 20:42:37 akurzhan Exp $
+ * @version $Id: WindowPath.java,v 1.1.2.11.2.8 2009/05/31 19:22:50 akurzhan Exp $
  */
 public final class WindowPath extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = -2799899518843864326L;
@@ -259,18 +259,18 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		AuroraInterval[] speeds = myPath.getSpeeds();
 		for (int i = 0; i < linkCount; i++) {
 			flowData[2][linkCount*tStep + i] = flows[i].sum().getCenter();
-			minFlow = Math.min(minFlow, flows[i].sum().getCenter());
-			maxFlow = Math.max(maxFlow, flows[i].sum().getCenter());
+			minFlow = treePane.updateMinFlow(flows[i].sum().getCenter());
+			maxFlow = treePane.updateMaxFlow(flows[i].sum().getCenter());
 			densityData[2][linkCount*tStep + i] = densities[i].sum().getCenter();
-			minDensity = Math.min(minDensity, densities[i].sum().getCenter());
-			maxDensity = Math.max(maxDensity, densities[i].sum().getCenter());
+			minDensity = treePane.updateMinDensity(densities[i].sum().getCenter());
+			maxDensity = treePane.updateMaxDensity(densities[i].sum().getCenter());
 			speedData[2][linkCount*tStep + i] = speeds[i].getCenter();
-			minSpeed = Math.min(minSpeed, speeds[i].getCenter());
-			maxSpeed = Math.max(maxSpeed, speeds[i].getCenter());
+			minSpeed = treePane.updateMinSpeed(speeds[i].getCenter());
+			maxSpeed = treePane.updateMaxSpeed(speeds[i].getCenter());
 			if (newRun) {
-				minFlow = flows[i].sum().getCenter();
+				/*minFlow = flows[i].sum().getCenter();
 				minDensity = densities[i].sum().getCenter();
-				minSpeed = speeds[i].getCenter();
+				minSpeed = speeds[i].getCenter();*/
 				newRun = false;
 			}
 		}
@@ -335,12 +335,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		tStep = (int)Math.floor(mySystem.getMyNetwork().getSimTime()/mySystem.getMySettings().getDisplayTP());
 		initStep = tStep;
 		newRun = true;
-		minFlow = 0.0;
-		maxFlow = 1.0;
-		minDensity = 0.0;
-		maxDensity = 1.0;
-		minSpeed = 0.0;
-		maxSpeed = 1.0;
+		treePane.resetDataRanges();
 		double tp = mySystem.getMySettings().getDisplayTP();
 		Vector<AbstractLink> links = myPath.getLinkVector();
 		int xSize = linkCount;
@@ -470,7 +465,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
         plot.setAxisOffset(new RectangleInsets(5, 5, 5, 5));
         flowChart = new JFreeChart(null, plot);
         flowChart.removeLegend();
-        scaleAxis = new NumberAxis("Flow (vph)");
+        scaleAxis = new NumberAxis("Flow (vphl)");
         scaleAxis.setRange(minFlow, maxFlow);
         psl = new PaintScaleLegend(paintScale, scaleAxis);
         psl.setMargin(new RectangleInsets(3, 10, 3, 10));
@@ -500,7 +495,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
         plot.setAxisOffset(new RectangleInsets(5, 5, 5, 5));
         densityChart = new JFreeChart(null, plot);
         densityChart.removeLegend();
-        scaleAxis = new NumberAxis("Density (vpm)");
+        scaleAxis = new NumberAxis("Density (vpml)");
         scaleAxis.setRange(minDensity, maxDensity);
         psl = new PaintScaleLegend(paintScale, scaleAxis);
         psl.setMargin(new RectangleInsets(3, 10, 3, 10));
@@ -929,8 +924,8 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		String desc = nd.getDescription();
 		if (desc != null)
 			txt += "<p>" + desc;
-		txt += "<br><b>In-flow:</b> " + totalInFlow(nd).toString() + " vph";
-		txt += "<br><b>Out-flow:</b> " + totalOutFlow(nd).toString() + " vph";
+		txt += "<br><b>In-flow:</b> " + totalInFlow(nd).toString2() + " vph";
+		txt += "<br><b>Out-flow:</b> " + totalOutFlow(nd).toString2() + " vph";
 		txt += "</font></html>";
 		return txt;
 	}
@@ -950,11 +945,11 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		String txt = "<html><font color=\"" + clr + "\"><b><u>" + lk.toString() + "</u></b> (" + TypesHWC.typeString(lk.getType()) + ")";
 		txt += "<br><b>Length:</b> " + form.format((Double)lk.getLength()) + " mi";
 		txt += "<br><b>Width:</b> " + form.format(lk.getLanes()) + " lanes";
-		txt += "<br><b>Density:</b> " + form.format(((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) + " vpm";
+		txt += "<br><b>Density:</b> " + lk.getDensity().toString2() + " vpm";
 		txt += "<br><b>Speed:</b> " + form.format(((AuroraInterval)lk.getSpeed()).getCenter()) + " mph";
 		if (lk.getBeginNode() == null) {
-			txt += "<br><b>Demand:</b> " + form.format(((AuroraIntervalVector)lk.getDemand()).sum().getCenter()) + " vph";
-			txt += "<br><b>Queue:</b> " + form.format(((AuroraIntervalVector)lk.getQueue()).sum().getCenter());
+			txt += "<br><b>Demand:</b> " + lk.getDemand().toString2() + " vph";
+			txt += "<br><b>Queue:</b> " + lk.getQueue().toString2();
 		}
 		txt += "</font></html>";
 		return txt;

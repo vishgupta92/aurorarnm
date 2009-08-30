@@ -30,7 +30,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of Link detail window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowLink.java,v 1.1.2.16.2.5 2008/12/11 20:42:37 akurzhan Exp $
+ * @version $Id: WindowLink.java,v 1.1.2.16.2.7 2009/06/09 20:17:09 akurzhan Exp $
  */
 public final class WindowLink extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = -4659414889018345624L;
@@ -61,17 +61,21 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 	private JLabel labelQueue = new JLabel();
 	private MyXYSeries ffFD = new MyXYSeries("Free Flow");
 	private MyXYSeries cFD = new MyXYSeries("Congestion");
+	private MyXYSeries cdFD = new MyXYSeries("Capacity Drop");
 	private JFreeChart fdChart;
 	private JLabel labelCapacity = new JLabel();
 	private JLabel labelCriticalD = new JLabel();
 	private JLabel labelJamD = new JLabel();
+	private JLabel labelCapDrop = new JLabel();
 	private JLabel labelVff = new JLabel();
 	private JLabel labelWc = new JLabel();
-	private JComboBox listEvents;
+	private JComboBox cbSave = new JComboBox();
+	private JComboBox listEvents = new JComboBox();;
 	private JButton buttonEvents = new JButton("Generate");
 	
 	private HashMap<String, JMenuItem> cmd2item = new HashMap<String, JMenuItem>();
 	private final static String cmdFileSave = "FileSave";
+	private final static String cmdToSave = "ToSave";
 	
 	
 	public WindowLink() { }
@@ -85,7 +89,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 			sourceLink = true;
 		//Dimension dims = treePane.getActionPane().getDesktopPane().getSize();
 		//setSize((int)Math.round(0.6*dims.getWidth()), (int)Math.round(0.6*dims.getHeight()));
-		setSize(350, 450);
+		setSize(370, 500);
 		int n = treePane.getInternalFrameCount();
 		setLocation(20*n, 20*n);
 		AdapterWindowLink listener = new AdapterWindowLink();
@@ -383,6 +387,11 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 	 * Updates fundamental diagram data.
 	 */
 	private void updateFDSeries() {
+		double cap = (Double)myLink.getMaxFlow();
+		double drop = Math.max(0, Math.min(cap, cap - (Double)myLink.getCapacityDrop()));
+		double rhoc = (Double)myLink.getCriticalDensity();
+		double rhoj = (Double)myLink.getJamDensity();
+		double zr = 0;
 		if (ffFD.getItemCount() == 0) {
 			ffFD.add(0.0, 0.0);
 			ffFD.add(0.0, 0.0);
@@ -391,11 +400,18 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 			cFD.add(0.0, 0.0);
 			cFD.add(0.0, 0.0);
 		}
-		ffFD.setDataItem(1, new XYDataItem((Double)myLink.getCriticalDensity(), (Double)myLink.getMaxFlow()));
-		cFD.setDataItem(0, new XYDataItem((Double)myLink.getCriticalDensity(), (Double)myLink.getMaxFlow()));
-		cFD.setDataItem(1, new XYDataItem((Double)myLink.getJamDensity(), new Double(0.0)));
+		if (cdFD.getItemCount() == 0) {
+			cdFD.add(0.0, 0.0);
+			cdFD.add(0.0, 0.0);
+		}
+		ffFD.setDataItem(1, new XYDataItem(rhoc, cap));
+		cFD.setDataItem(0, new XYDataItem(rhoc, cap));
+		cFD.setDataItem(1, new XYDataItem(rhoj, zr));
+		cdFD.setDataItem(0, new XYDataItem(rhoc, drop));
+		cdFD.setDataItem(1, new XYDataItem(rhoj, drop));
 		ffFD.fireSeriesChanged();
 		cFD.fireSeriesChanged();
+		cdFD.fireSeriesChanged();
 		return;
 	}
 	
@@ -411,6 +427,11 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 			labelDemandK.setText("<html><font color=\"gray\"><u><b>Demand Coefficient:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getDemandKnob()) + "</font></font></html>");
 			labelQueue.setText("<html><font color=\"gray\"><u><b>Queue Limit:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getQueueMax()) + "</font></font></html>");
 		}
+		double drop = Math.max(0, Math.min((Double)myLink.getMaxFlow(),(Double)myLink.getCapacityDrop()));
+		if (drop > 0)
+			labelCapDrop.setText("<html><font color=\"gray\"><u><b>Capacity Drop:</b></u><font color=\"blue\"> " + form.format(drop) + " vph</font></font></html>");
+		else
+			labelCapDrop.setText("");
 		labelCapacity.setText("<html><font color=\"gray\"><u><b>Capacity:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getMaxFlow()) + " vph</font></font></html>");
 		labelCriticalD.setText("<html><font color=\"gray\"><u><b>Critical Density:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getCriticalDensity()) + " vpm</font></font></html>");
 		labelJamD.setText("<html><font color=\"gray\"><u><b>Jam Density:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getJamDensity()) + " vpm</font></font></html>");
@@ -427,6 +448,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(ffFD);
 		dataset.addSeries(cFD);
+		dataset.addSeries(cdFD);
 		JFreeChart chart = ChartFactory.createXYLineChart(
 							null, // chart title
 							"Density (vpm)", // x axis label
@@ -440,6 +462,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		XYPlot plot = (XYPlot)chart.getPlot();
 		plot.getRenderer().setSeriesPaint(0, Color.GREEN);
 		plot.getRenderer().setSeriesPaint(1, Color.RED);
+		plot.getRenderer().setSeriesPaint(2, Color.BLUE);
 		plot.getRenderer().setStroke(new BasicStroke(2));
 		return chart;
 	}
@@ -511,7 +534,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		fdl1.add(labelCriticalD);
 		fdl1.add(labelJamD);
 		Box fdl2 = Box.createVerticalBox();
-		fdl2.add(new JLabel());
+		fdl2.add(labelCapDrop);
 		fdl2.add(labelVff);
 		fdl2.add(labelWc);
 		fdl.add(fdl1);
@@ -525,10 +548,22 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		fd.add(fdl);
 		confPanel.add(fd);
 		
+		JPanel psave = new JPanel(new GridLayout(1, 0));
+		psave.setBorder(BorderFactory.createTitledBorder("Record State"));
+		cbSave.addItem("No");
+		cbSave.addItem("Yes");
+		if (myLink.toSave())
+			cbSave.setSelectedIndex(1);
+		else
+			cbSave.setSelectedIndex(0);
+		cbSave.setActionCommand(cmdToSave);
+		cbSave.addActionListener(new ButtonEventsListener());
+		psave.add(cbSave);
+		confPanel.add(psave);
+		
 		JPanel events = new JPanel(new GridLayout(1, 1));
 		Box events1 = Box.createHorizontalBox();
 		events.setBorder(BorderFactory.createTitledBorder("Events"));
-		listEvents = new JComboBox();
 		listEvents.addItem("Fundamental Diagram");
 		if (sourceLink) {
 			listEvents.addItem("Demand Coefficient");
@@ -579,11 +614,16 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 	
 	
 	/**
-	 * This class is needed to react to "Generate" button pressed.
+	 * This class is needed to react to "Generate" button pressed or combo box change.
 	 */
 	private class ButtonEventsListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
+			String cmd = e.getActionCommand();
+			if (cmdToSave.equals(cmd)) {
+				myLink.setSave((cbSave.getSelectedIndex() == 1));
+				return;
+			}
 			EventTableModel etm = (EventTableModel)((TableSorter)treePane.getActionPane().getEventsTable().getModel()).getTableModel();
 			AbstractEventPanel ep;
 			switch(listEvents.getSelectedIndex()) {

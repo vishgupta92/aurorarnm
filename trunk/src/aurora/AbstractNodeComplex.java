@@ -15,7 +15,7 @@ import org.w3c.dom.*;
 /**
  * Base class for Network Nodes.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeComplex.java,v 1.18.2.12.2.10 2009/01/15 04:54:50 akurzhan Exp $
+ * @version $Id: AbstractNodeComplex.java,v 1.18.2.12.2.12.2.8 2009/08/26 03:09:49 akurzhan Exp $
  */
 public abstract class AbstractNodeComplex extends AbstractNode {
 	protected double tp;  // sampling time
@@ -26,12 +26,16 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	protected boolean controlled = true;
 	protected DataStorage database = null;
 	protected boolean verbose = false;
-	
+
+	protected Vector<AbstractSensor> sensors = new Vector<AbstractSensor>();
 	protected Vector<AbstractMonitor> monitors = new Vector<AbstractMonitor>();
 	protected Vector<AbstractNode> nodes = new Vector<AbstractNode>();
 	protected Vector<AbstractLink> links = new Vector<AbstractLink>();
 	protected Vector<OD> odList = new Vector<OD>();
 	protected Vector<ErrorConfiguration> cfgErrors = new Vector<ErrorConfiguration>();
+	
+	protected int nodesToSave = 0;
+	protected int linksToSave = 0;
 	
 	protected AbstractContainer container = null; 
 	
@@ -87,6 +91,33 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp2.item(j).getAttributes().getNamedItem("uri").getNodeValue());
 					if (doc.hasChildNodes())
 						res &= initLinkListFromDOM(doc.getChildNodes().item(0));
+				}
+			}
+		}
+		return res;
+	}
+	
+	/**
+	 * Initialize Sensor list from the DOM structure.
+	 */
+	private boolean initSensorListFromDOM(Node p) throws Exception {
+		boolean res = true;
+		if (p == null)
+			return false;
+		if (p.hasChildNodes()) {
+			NodeList pp2 = p.getChildNodes();
+			for (int j = 0; j < pp2.getLength(); j++) {
+				if (pp2.item(j).getNodeName().equals("sensor")) {
+					Class c = Class.forName(pp2.item(j).getAttributes().getNamedItem("class").getNodeValue());
+					AbstractSensor sns = (AbstractSensor)c.newInstance();
+					sns.setMyNetwork(this);
+					res &= sns.initFromDOM(pp2.item(j));
+					addSensor(sns);
+				}
+				if (pp2.item(j).getNodeName().equals("include")) {
+					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp2.item(j).getAttributes().getNamedItem("uri").getNodeValue());
+					if (doc.hasChildNodes())
+						res &= initSensorListFromDOM(doc.getChildNodes().item(0));
 				}
 			}
 		}
@@ -199,6 +230,8 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			id = Integer.parseInt(p.getAttributes().getNamedItem("id").getNodeValue());
 			controlled = Boolean.parseBoolean(p.getAttributes().getNamedItem("controlled").getNodeValue());
 			tp = Double.parseDouble(p.getAttributes().getNamedItem("tp").getNodeValue());
+			if (tp >= 0.1) // sampling period is in seconds
+				tp = tp/3600;
 			name = p.getAttributes().getNamedItem("name").getNodeValue();
 			if (p.hasChildNodes()) {
 				domnodes.clear();
@@ -221,13 +254,16 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 				for (i = 0; i < pp.getLength(); i++) // 2: Links
 					if (pp.item(i).getNodeName().equals("LinkList"))
 						res &= initLinkListFromDOM(pp.item(i));
-				for (i = 0; i < pp.getLength(); i++) // 3: Monitors
-					if (pp.item(i).getNodeName().equals("MonitorList"))
-						res &= initMonitorListFromDOM(pp.item(i));
-				for (i = 0; i < nodes.size(); i++) // 4: Nodes again
+				for (i = 0; i < nodes.size(); i++) // 3: Nodes again
 					res &= nodes.get(i).initFromDOM(domnodes.get(i));
 				domnodes.clear();
-				for (i = 0; i < pp.getLength(); i++) // 5: ODs
+				for (i = 0; i < pp.getLength(); i++) // 4: Sensors
+					if (pp.item(i).getNodeName().equals("SensorList"))
+						res &= initSensorListFromDOM(pp.item(i));
+				for (i = 0; i < pp.getLength(); i++) // 5: Monitors
+					if (pp.item(i).getNodeName().equals("MonitorList"))
+						res &= initMonitorListFromDOM(pp.item(i));
+				for (i = 0; i < pp.getLength(); i++) // 6: ODs
 					if (pp.item(i).getNodeName().equals("ODList"))
 						res &= initODListFromDOM(pp.item(i));
 			}
@@ -254,7 +290,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		int i;
 		if (out == null)
 			out = System.out;
-		out.print("<network class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" name=\"" + name + "\" top=\"" + top + "\" controlled=\"" + controlled + "\" tp=\"" + tp + "\">\n");
+		out.print("<network class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" name=\"" + name + "\" top=\"" + top + "\" controlled=\"" + controlled + "\" tp=\"" + 3600*tp + "\">\n");
 		out.print("<description>" + description + "</description>\n");
 		position.xmlDump(out);
 		out.print("<MonitorList>\n");
@@ -273,6 +309,10 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		for (i = 0; i < odList.size(); i++)
 			odList.get(i).xmlDump(out);
 		out.print("</ODList>\n");
+		out.print("<SensorList>\n");
+		for (i = 0; i < sensors.size(); i++)
+			sensors.get(i).xmlDump(out);
+		out.print("</SensorList>\n");
 		out.print("</network>\n");
 		return;
 	}
@@ -292,21 +332,28 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			res &= database.saveNodeData(this);
 		if (!res)
 			return false;
-		//int oldts = ts;
 		res = super.dataUpdate(ts);
+		PrintStream os = container.getMySettings().getTmpDataOutput();
+		if (os != null) {
+			if (top)
+				os.print("\n" + (ts-1));
+			if (!res)
+				for (int i = 0; i < linksToSave; i++)
+					os.print(", *");
+		}
 		if (!res)
 			return res;
-		//timeH.add(oldts * getTop().getTP());
-		int i;
-		for (i = 0; i < monitors.size(); i++)
+		for (int i = 0; i < sensors.size(); i++)
+			res &= sensors.get(i).dataUpdate(ts);
+		for (int i = 0; i < monitors.size(); i++)
 			res &= monitors.get(i).dataUpdate(ts);
-		for (i = 0; i < nodes.size(); i++)
+		for (int i = 0; i < nodes.size(); i++)
 			res &= nodes.get(i).dataUpdate(ts);
-		for (i = 0; i < monitors.size(); i++)
+		for (int i = 0; i < monitors.size(); i++)
 			res &= monitors.get(i).dataUpdate(ts);
-		for (i = 0; i < links.size(); i++)
+		for (int i = 0; i < links.size(); i++)
 			res &= links.get(i).dataUpdate(ts);
-		for (i = 0; i < monitors.size(); i++)
+		for (int i = 0; i < monitors.size(); i++)
 			res &= monitors.get(i).dataUpdate(ts);
 		if ((res) && (database != null)) {
 			res &= database.execute();
@@ -326,6 +373,8 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		int i;
 		cfgErrors.clear();
 		boolean res = super.validate();
+		for (i = 0; i < sensors.size(); i++)
+			res &= sensors.get(i).validate();
 		for (i = 0; i < monitors.size(); i++)
 			res &= monitors.get(i).validate();
 		for (i = 0; i < nodes.size(); i++) {
@@ -352,6 +401,8 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			return;
 		cs.incrementNetworks();
 		int i;
+		for (i = 0; i < sensors.size(); i++)
+			sensors.get(i).updateConfigurationSummary(cs);
 		for (i = 0; i < monitors.size(); i++)
 			monitors.get(i).updateConfigurationSummary(cs);
 		for (i = 0; i < nodes.size(); i++)
@@ -411,6 +462,20 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	}
 	
 	/**
+	 * Returns number of nodes in this network whose state must be saved.
+	 */
+	public final int totalNodesToSave() {
+		return nodesToSave;
+	}
+
+	/**
+	 * Returns number of links in this network whose state must be saved.
+	 */
+	public final int totalLinksToSave() {
+		return linksToSave;
+	}
+	
+	/**
 	 * Returns maximum simulation step.
 	 */
 	public final int getMaxTimeStep() {
@@ -429,6 +494,13 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 */
 	public final boolean getVerbose() {
 		return verbose;
+	}
+	
+	/**
+	 * Returns vector of Sensors.
+	 */
+	public final Vector<AbstractSensor> getSensors() {
+		return sensors;
 	}
 	
 	/**
@@ -498,6 +570,26 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 */
 	public final Vector<ErrorConfiguration> getConfigurationErrors() {
 		return cfgErrors;
+	}
+	
+	/**
+	 * Finds and returns Sensor specified by its identifier.
+	 * @param id Sensor identifier.
+	 * @return Sensor, <code>null</code> if Sensor was not found.
+	 */
+	public final AbstractSensor getSensorById(int id) {
+		int i;
+		for (i = 0; i < sensors.size(); i++)
+			if (id == sensors.get(i).getId())
+				return sensors.get(i);
+		AbstractSensor sen = null;
+		for (i = 0; i < nodes.size(); i++) {
+			if (!nodes.get(i).isSimple())
+				sen = ((AbstractNodeComplex)nodes.get(i)).getSensorById(id);
+			if (sen != null)
+				return sen;
+		}
+		return sen;
 	}
 	
 	/**
@@ -636,19 +728,37 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		if (!top) {
 			maxTimeStep = (int)Math.floor((getTop().getTP()*getTop().getMaxTimeStep())/tp);
 		}
+		if (top) {
+			PrintStream os = container.getMySettings().getTmpDataOutput();
+			if (os != null) {
+				os.print("\nSampling Period, Time Units\n" + tp + ", hours\n" + tp*60 + ", minutes\n" + tp*3600 + ", seconds\n\n");
+				os.print("Description\n" + description + "\n\n\nTime Step");
+			}
+		}
 		boolean res = true;
-		int i;
-		for (i = 0; i < monitors.size(); i++)
+		for (int i = 0; i < sensors.size(); i++)
+			sensors.get(i).resetTimeStep();
+		for (int i = 0; i < monitors.size(); i++)
 			monitors.get(i).resetTimeStep();
-		for (i = 0; i < nodes.size(); i++)
+		nodesToSave = 0;
+		linksToSave = 0;
+		for (int i = 0; i < nodes.size(); i++)
 			if (!nodes.get(i).isSimple()) {
 				AbstractNodeComplex nd = (AbstractNodeComplex)nodes.get(i);
 				res &= nd.setSimNo(x);
+				nodesToSave += nd.totalNodesToSave();
+				linksToSave += nd.totalLinksToSave();
 			}
-			else
+			else {
 				nodes.get(i).resetTimeStep();
-		for (i = 0; i < links.size(); i++)
+				if (nodes.get(i).toSave())
+					nodesToSave++;
+			}
+		for (int i = 0; i < links.size(); i++) {
 			links.get(i).resetTimeStep();
+			if (links.get(i).toSave())
+				linksToSave++;
+		}
 		return res;
 	}
 	
@@ -693,6 +803,18 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 				res &= ((AbstractNodeComplex)nodes.get(i)).setControlled(x);
 		}
 		return res;
+	}
+
+	/**
+	 * Adds a Sensor to the list.
+	 * @param x Sensor.
+	 * @return idx index of the added Sensor, <code>-1</code> - if the Sensor could not be added.
+	 */
+	public synchronized int addSensor(AbstractSensor x) {
+		int idx = -1;
+		if ((x != null) && (sensors.add(x)))
+			idx = sensors.size() - 1;
+		return idx;
 	}
 	
 	/**
@@ -769,6 +891,8 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		if (x != null) {
 			if ((x.getType() & AbstractTypes.MASK_MONITOR) > 0)
 				idx = deleteMonitor((AbstractMonitor)x);
+			else if ((x.getType() & AbstractTypes.MASK_SENSOR) > 0)
+				idx = deleteSensor((AbstractSensor)x);
 			else if ((x.getType() & AbstractTypes.MASK_NETWORK) > 0)
 				idx = deleteNode((AbstractNode)x);
 			else if ((x.getType() & AbstractTypes.MASK_NODE) > 0)
@@ -786,8 +910,52 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 */
 	public synchronized int deleteMonitor(AbstractMonitor x) {
 		int idx = monitors.indexOf(x);
-		if (idx >= 0)
+		if (idx >= 0) {
 			monitors.remove(idx);
+		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					idx = ((AbstractNodeComplex)nodes.get(i)).deleteMonitor(x);
+					if (idx >= 0)
+						break;
+				}
+			}
+		}
+		if (idx >= 0) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).deletePredecessor(x);
+				monitors.get(i).deleteSuccessor(x);
+			}
+		}
+		return idx;
+	}
+	
+	/**
+	 * Deletes specified Sensor from the list. 
+	 * @param x Sensor to be deleted.
+	 * @return idx index of deleted Sensor, <code>-1</code> - if such Sensor was not found.
+	 */
+	public synchronized int deleteSensor(AbstractSensor x) {
+		int idx = sensors.indexOf(x);
+		if (idx >= 0) {
+			sensors.remove(idx);
+		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					idx = ((AbstractNodeComplex)nodes.get(i)).deleteSensor(x);
+					if (idx >= 0)
+						break;
+				}
+			}
+		}
+		if (idx >= 0) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).deletePredecessor(x);
+				monitors.get(i).deleteSuccessor(x);
+			}
+		}
 		return idx;
 	}
 	
@@ -803,13 +971,30 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 				System.out.println("* " + this + " *: deleting Node '" + x + "'");
 			nodes.remove(idx);
 			Vector<AbstractNetworkElement> links = x.getPredecessors();
-			int i = 0;
-			for (i = 0; i < links.size(); i++)
+			for (int i = 0; i < links.size(); i++)
 				links.get(i).deleteSuccessor(x);
 			links = x.getSuccessors();
-			for (i = 0; i < links.size(); i++)
+			for (int i = 0; i < links.size(); i++)
 				links.get(i).deletePredecessor(x);
 		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					idx = ((AbstractNodeComplex)nodes.get(i)).deleteNode(x);
+					if (idx >= 0)
+						break;
+				}
+			}
+		}
+		if (idx >= 0) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).deletePredecessor(x);
+				monitors.get(i).deleteSuccessor(x);
+			}
+		}
+		if ((x.getType() & AbstractTypes.MASK_NETWORK) > 0)
+			for (int i = 0; i < monitors.size(); i++)
+				monitors.get(i).deleteDeadNeighbors();
 		return idx;
 	}
 	
@@ -831,7 +1016,54 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			if (nd != null)
 				nd.deletePredecessor(x);
 		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					idx = ((AbstractNodeComplex)nodes.get(i)).deleteLink(x);
+					if (idx >= 0)
+						break;
+				}
+			}
+		}
+		if (idx >= 0) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).deletePredecessor(x);
+				monitors.get(i).deleteSuccessor(x);
+			}
+		}
 		return idx;
+	}
+	
+	/**
+	 * Replaces given Sensor with the new one.
+	 * @param oldm Sensor to be replaced.
+	 * @param newm new Sensor.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	protected synchronized boolean replaceSensor(AbstractSensor olds, AbstractSensor news) {
+		boolean res = false;
+		int idx = sensors.indexOf(olds);
+		if (idx >= 0) {
+			sensors.remove(idx);
+			sensors.add(idx, news);
+			res = true;
+		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					res = ((AbstractNodeComplex)nodes.get(i)).replaceSensor(olds, news);
+					if (res)
+						break;
+				}
+			}
+		}
+		if (res) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).replacePredecessor(olds, news);
+				monitors.get(i).replaceSuccessor(olds, news);
+			}
+		}
+		return res;
 	}
 	
 	/**
@@ -841,12 +1073,29 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	protected synchronized boolean replaceMonitor(AbstractMonitor oldm, AbstractMonitor newm) {
+		boolean res = false;
 		int idx = monitors.indexOf(oldm);
-		if (idx < 0)
-			return false;
-		monitors.remove(idx);
-		monitors.add(idx, newm);
-		return true;
+		if (idx >= 0) {
+			monitors.remove(idx);
+			monitors.add(idx, newm);
+			res = true;
+		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					res = ((AbstractNodeComplex)nodes.get(i)).replaceMonitor(oldm, newm);
+					if (res)
+						break;
+				}
+			}
+		}
+		if (res) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).replacePredecessor(oldm, newm);
+				monitors.get(i).replaceSuccessor(oldm, newm);
+			}
+		}
+		return res;
 	}
 	
 	/**
@@ -856,12 +1105,29 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	protected synchronized boolean replaceNode(AbstractNode oldn, AbstractNode newn) {
+		boolean res = false;
 		int idx = nodes.indexOf(oldn);
-		if (idx < 0)
-			return false;
-		nodes.remove(idx);
-		nodes.add(idx, newn);
-		return true;
+		if (idx >= 0) {
+			nodes.remove(idx);
+			nodes.add(idx, newn);
+			res = true;
+		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					res = ((AbstractNodeComplex)nodes.get(i)).replaceNode(oldn, newn);
+					if (res)
+						break;
+				}
+			}
+		}
+		if (res) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).replacePredecessor(oldn, newn);
+				monitors.get(i).replaceSuccessor(oldn, newn);
+			}
+		}
+		return res;
 	}
 	
 	/**
@@ -871,12 +1137,29 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	protected synchronized boolean replaceLink(AbstractLink oldl, AbstractLink newl) {
+		boolean res = false;
 		int idx = links.indexOf(oldl);
-		if (idx < 0)
-			return false;
-		links.remove(idx);
-		links.add(idx, newl);
-		return true;
+		if (idx >= 0) {
+			links.remove(idx);
+			links.add(idx, newl);
+			res = true;
+		}
+		else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if ((nodes.get(i).getType() & AbstractTypes.MASK_NETWORK) > 0) {
+					res = ((AbstractNodeComplex)nodes.get(i)).replaceLink(oldl, newl);
+					if (res)
+						break;
+				}
+			}
+		}
+		if (res) {
+			for (int i = 0; i < monitors.size(); i++) {
+				monitors.get(i).replacePredecessor(oldl, newl);
+				monitors.get(i).replaceSuccessor(oldl, newl);
+			}
+		}
+		return res;
 	}
 	
 	/**
@@ -891,6 +1174,8 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		boolean res = false;
 		if (((oldne.getType() & AbstractTypes.MASK_MONITOR) > 0) && ((newne.getType() & AbstractTypes.MASK_MONITOR) > 0))
 			res = replaceMonitor((AbstractMonitor)oldne, (AbstractMonitor)newne);
+		if (((oldne.getType() & AbstractTypes.MASK_SENSOR) > 0) && ((newne.getType() & AbstractTypes.MASK_SENSOR) > 0))
+			res = replaceSensor((AbstractSensor)oldne, (AbstractSensor)newne);
 		if (((oldne.getType() & AbstractTypes.MASK_NETWORK) > 0) && ((newne.getType() & AbstractTypes.MASK_NETWORK) > 0))
 			res = replaceNode((AbstractNode)oldne, (AbstractNode)newne);
 		if (((oldne.getType() & AbstractTypes.MASK_NODE) > 0) && ((newne.getType() & AbstractTypes.MASK_NODE) > 0))
@@ -934,6 +1219,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		simNo = ntwk.getSimNo();
 		tp = ntwk.getTP();
 		maxTimeStep = ntwk.getMaxTimeStep();
+		sensors = ntwk.getSensors();
 		monitors = ntwk.getMonitors();
 		nodes = ntwk.getNodes();
 		links = ntwk.getLinks();

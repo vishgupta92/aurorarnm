@@ -17,7 +17,7 @@ import aurora.util.*;
 /**
  * Form for simple controller change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventControllerSimple.java,v 1.1.2.6.2.1 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: PanelEventControllerSimple.java,v 1.1.2.6.2.2.2.2 2009/08/19 20:42:45 akurzhan Exp $
  */
 public final class PanelEventControllerSimple extends AbstractEventPanel implements ActionListener {
 	private static final long serialVersionUID = 2103920304528351836L;
@@ -40,7 +40,7 @@ public final class PanelEventControllerSimple extends AbstractEventPanel impleme
 		eventTable = etm;
 		myEvent = new EventControllerSimple();
 		initialize(ne, em);
-		controller = (AbstractControllerHWC)((AbstractNodeSimple)ne).getControllers().firstElement();
+		controller = (AbstractControllerHWC)((AbstractNodeSimple)ne).getSimpleControllers().firstElement();
 		return;
 	}
 	
@@ -153,8 +153,8 @@ public final class PanelEventControllerSimple extends AbstractEventPanel impleme
 		public void actionPerformed(ActionEvent ae) {
 			try {
 	    		Class c = Class.forName("aurora.hwc.control.Panel" + controller.getClass().getSimpleName());
-	    		AbstractControllerPanel cp = (AbstractControllerPanel)c.newInstance();
-	    		cp.initialize((AbstractControllerHWC)controller, (AbstractNodeHWC)myNE);
+	    		AbstractSimpleControllerPanel cp = (AbstractSimpleControllerPanel)c.newInstance();
+	    		cp.initialize((AbstractControllerHWC)controller, null, -1, (AbstractNodeHWC)myNE);
 	    	}
 	    	catch(Exception e) { }
 	    	return;

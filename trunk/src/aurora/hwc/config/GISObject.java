@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -58,6 +59,7 @@ public class GISObject {
 	private GeometryFactory fact = new GeometryFactory();
 	private WKTReader wktRdr = new WKTReader(fact);
 
+	private int converted = 0;
 	private static GISImporter jFrame;
 
 	//	whether to use internal feature list or FeatureStore;
@@ -171,7 +173,27 @@ public class GISObject {
 		myLog("Exported XML in "+newFile.toString() + ".");
 	}
 
+	HashMap<String, GISNode> nodes = null;
+	HashMap<String,GISEdge> links = null;
+	HashSet<String> nodeWhitelist = null;
 
+	private final int convert(){
+		GISImporterGetGraph ggg = new GISImporterGetGraph();
+		int res= ggg.processGraph(targetGIS, useInternal, featureCollection, features);
+		if (res != 0){
+			myLog("Graph conversion failed!");
+			if (res == 1) {
+				myLog(" Incorrect GIS type: either SANDAG or TANA can be processed in this version");
+			}
+			return res;
+		}
+		nodes = ggg.getNodes();
+		links = ggg.getEdges();
+		nodeWhitelist = ggg.getWhiteList();
+		converted = 1;
+		return 0;
+	}
+	
 	/**
 	 * Generates XML description of the Aurora system configuration.<br>
 	 * If the print stream is specified, then XML buffer is written to the stream.
@@ -185,24 +207,12 @@ public class GISObject {
 	 * @throws IOException
 	 */
 	private String xmlDump(PrintStream out) throws IOException {
+		if (converted == 0){ convert();}
+		
+		nodeWhitelist = GISImporterGetGraph.publicValidate(nodes);
+		
 		String buf = "";
-		HashMap<String, GISNode> nodes = null;
-		Vector<GISEdge> links = null;
-		HashSet<String> nodeWhitelist = null;
-
-		GISImporterGetGraph ggg = new GISImporterGetGraph();
-		int res= ggg.processGraph(targetGIS, useInternal, featureCollection, features);
-		if (res != 0){
-			myLog("Graph conversion failed!");
-			if (res == 1) {
-				myLog(" Incorrect GIS type: either SANDAG or TANA can be processed in this version");
-			}
-			return "";
-		}
-		nodes = ggg.getNodes();
-		links = ggg.getEdges();
-		nodeWhitelist = ggg.getWhiteList();
-
+		
 		myLog("Number of nodes: " + nodes.size());
 		myLog("Number of links: " + links.size());
 		myLog("Number of nodes used (whitelisted): " + nodeWhitelist.size());
@@ -239,10 +249,10 @@ public class GISObject {
 
 //		XMLDump Link List
 		out.print("<LinkList>");
-		for (int i = 0; i < links.size(); i++){
+		for (Iterator i = links.keySet().iterator(); i.hasNext();){
 			//	 We dump all links, without considering nodeWhitelist. 
 			// So, some links may be "orphans" without corresponding input and output nodes  
-			links.get(i).xmlDump(out);
+			links.get(i.next()).xmlDump(out);
 			out.print("\n");
 		}
 		out.print("</LinkList>");
@@ -258,18 +268,12 @@ public class GISObject {
 	 * - features contain simplified geometry (many links are removed) 
 	 * - geometry in features are all turned into straight line (from curves); we may not want this.
 	 * 
-	 * TODO: Currently doesn't handle non-SANDAG data
 	 * TODO: This currently handle redundant ONE-WAY roads (TWO-way streets are not considered)
 	 *     
 	 */
 	public void simplifyEdges() {
 		if (featureCollection == null) {
 			myLog("featureCollection is empty!");
-			return;
-		}
-
-		if (!targetGIS.equals("SANDAG") ) {
-			myLog("Only SANDAG GIS file can be processed");
 			return;
 		}
 
@@ -281,6 +285,179 @@ public class GISObject {
 			}
 		}
 
+		if (converted == 0){ convert(); }
+		
+		myLog("# Number of Edges before simplification: " + links.size());
+		myLog("# Number of Nodes before simplification: " + nodes.size());
+
+		Object[] nodeIds = nodes.keySet().toArray();
+		for(int i=0; i< nodeIds.length; i++){
+			String nodeId = (String) nodeIds[i];
+			GISNode gisNode = nodes.get(nodeId); 
+			
+			Integer f = gisNode.predecessors.size();
+			Integer t = gisNode.successors.size();
+
+			System.out.println("node: " + nodeId + ":" + f + ":" + t);
+			
+			if (f == 1 && t == 1){
+				String inEdgeId = gisNode.predecessors.get(0);
+				String outEdgeId = gisNode.successors.get(0);
+				GISEdge inEdge = links.get(inEdgeId);
+				GISEdge outEdge = links.get(outEdgeId);
+				if (inEdge.equivalent(outEdge)){
+					String upNodeId = inEdge.predecessors.get(0);
+					String downNodeId = outEdge.successors.get(0);
+					
+					// prevent deleting cycles
+					if (upNodeId.equals(downNodeId)) {continue;}
+
+					System.out.println(">> removing: " + inEdgeId + " > "
+							+ nodeId + " > " + outEdgeId);
+					mergeEdges(inEdgeId, outEdgeId, nodeId);
+					
+					nodes.remove(nodeId);
+				}
+			}
+			
+			if (f == 2 && t == 2){
+				String ac_1 = gisNode.predecessors.get(0);
+				String ac_2 = gisNode.predecessors.get(1);
+				String _ac1 = gisNode.successors.get(0);
+				String _ac2 = gisNode.successors.get(1);
+
+				if (links.get(ac_1).equivalent(links.get(ac_2)) &&
+						links.get(ac_1).equivalent(links.get(_ac2)) &&
+						links.get(_ac1).equivalent(links.get(ac_2)) &&
+						links.get(_ac1).equivalent(links.get(_ac2))
+						){
+
+					System.out.println(">> removing: " 
+							+ ac_1 + " > "
+							+ ac_2 + " > "
+							+ _ac1 + " > "
+							+ _ac2 + " > "
+							+ nodeId );
+
+					String upNodeId1 = links.get(ac_1).predecessors.get(0);
+					String upNodeId2 = links.get(ac_2).predecessors.get(0);
+					String downNodeId1 = links.get(_ac1).successors.get(0);
+					String downNodeId2 = links.get(_ac2).successors.get(0);
+
+				if ( 
+				     upNodeId1.equals(downNodeId1) && //# ac_1 _ac1
+				     upNodeId2.equals(downNodeId2) //# ac_2 _ac2
+				     ){
+				    
+//				    #  _ac2       ac_1
+//				    # <---- node <-----
+//				    # ---->      ----->
+//				    #  ac_2       _ac1
+
+					mergeEdges(ac_1, _ac2, nodeId);
+					mergeEdges(ac_2, _ac1, nodeId);
+
+					nodes.remove(nodeId);
+				} else if (
+					 upNodeId1.equals(downNodeId2) && //# ac_1 _ac2
+					 upNodeId2.equals(downNodeId1)//# ac_2  _ac1
+				     ){
+					
+//				    #  _ac1       ac_1
+//				    # <---- node <-----
+//				    # ---->      ----->
+//				    #  ac_2       _ac2
+
+					mergeEdges(ac_1, _ac1, nodeId);
+					mergeEdges(ac_2, _ac2, nodeId);
+
+					nodes.remove(nodeId);
+				}
+				else {
+				}
+					   
+			    }
+			}
+		}
+		myLog("# Number of Edges AFTER simplification: " + links.size());
+		myLog("# Number of Nodes AFTER simplification: " + nodes.size());
+		return;
+		
+	}
+
+//	# 
+//	# make the edge 1 (upstream edge) absorb edge 2 (downstream edge)
+//	# 
+	private void mergeEdges(String inEdgeId, String outEdgeId, String nodeId) {
+		GISEdge inEdge = links.get(inEdgeId);
+		GISEdge outEdge = links.get(outEdgeId);
+
+	    String upNodeId = inEdge.predecessors.get(0);
+	    String downNodeId = outEdge.successors.get(0);
+	    
+	    //# Modify incoming edge to point to down node
+	    inEdge.successors.set(0, downNodeId);
+	    inEdge.length += outEdge.length;
+
+	    //# Modify the downstream incoming edge ID
+	    GISNode downNode = nodes.get(downNodeId);
+	    downNode.predecessors.remove(
+	    		downNode.predecessors.indexOf(outEdgeId)
+	    		);
+	    downNode.predecessors.add(inEdgeId);
+
+		Vector<Coordinate> c1 = inEdge.coordinates; 
+		Vector<Coordinate> c2 = outEdge.coordinates;
+
+		c1.setSize(2);
+		c1.get(1).x = c2.get(c2.size()-1).x;
+		c1.get(1).y = c2.get(c2.size()-1).y;
+		inEdge.coordinates = c1;
+
+	    //# Delete the current node and the out edge
+	    links.remove(outEdgeId);
+	}
+
+	/**
+	 * 
+	 * - featureCollection is internalized into features
+	 * - features contain simplified geometry (many links are removed) 
+	 * - geometry in features are all turned into straight line (from curves); we may not want this.
+	 * 
+	 * TODO: Currently doesn't handle non-SANDAG data
+	 * TODO: This currently handle redundant ONE-WAY roads (TWO-way streets are not considered)
+	 *     
+	 */
+	public void simplifyEdges_old() {
+		if (featureCollection == null) {
+			myLog("featureCollection is empty!");
+			return;
+		}
+
+//		if (!targetGIS.equals("SANDAG") ) {
+//			myLog("Only SANDAG GIS file can be processed");
+//			return;
+//		}
+
+		if (features == null || features.size()==0) {
+			internalize();
+			if (features == null || features.size()==0) {
+				myLog("Feature array is empty. Stopping...");
+				return;
+			}
+		}
+
+		for (int i = 0; i < features.size(); i++) {
+			Feature feature = (Feature) features.get(i);
+			try {
+				feature.setAttribute("FNODE_",1);
+			} catch (IllegalAttributeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		
 		HashMap<String, Integer> fromCounter = new HashMap<String, Integer>(); 
 		HashMap<String, Integer> toCounter = new HashMap<String, Integer>(); 
 //		fromCounter<i,j>: node i appears j times as from node
@@ -313,6 +490,7 @@ public class GISObject {
 		/**
 		 * actual removal of redundant edges
 		 */
+
 
 		ArrayList<String> fromNodes = new ArrayList<String>();
 		ArrayList<String> toNodes = new ArrayList<String>();
@@ -390,7 +568,8 @@ public class GISObject {
 			}
 		}
 		/*		TODO: here's what I want to do. there are many
-		 * GIS-dependent junk like FNODE, NLANES, etc. can we just push them to some auxiliary data structure
+		 * GIS-dependent junk like FNODE, NLANES, etc. 
+		 * can we just push them to some auxiliary data structure
 		 * so that we don't need to say FNODE, etc. ever again?
 		 * HashMap gisAppendix<String, > = new HashMap <String, >();
 		 * 		Collection gisAppenappendix feature.getID(); 

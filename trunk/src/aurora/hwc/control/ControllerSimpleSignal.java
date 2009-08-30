@@ -16,7 +16,7 @@ import aurora.hwc.*;
  * Implementation of simple timed signal controller.
  * @author Andy Chow
  * @author Alex Kurzhanskiy
- * @version $Id: ControllerSimpleSignal.java,v 1.1.4.1.2.2 2009/01/14 01:46:25 akurzhan Exp $
+ * @version $Id: ControllerSimpleSignal.java,v 1.1.4.1.2.3 2009/06/14 01:13:21 akurzhan Exp $
  */
 public final class ControllerSimpleSignal extends AbstractControllerHWC {
 	private static final long serialVersionUID = 4744505125393458926L;
@@ -68,27 +68,16 @@ public final class ControllerSimpleSignal extends AbstractControllerHWC {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if (p == null)
-			return !res;
+		boolean res = super.initFromDOM(p);
+		if (!res)
+			return res;
 		try  {
-			tp = Double.parseDouble(p.getAttributes().getNamedItem("tp").getNodeValue());
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
 					if (pp.item(i).getNodeName().equals("parameter")) {
 						if (pp.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("offset"))
 							offset = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
-					}
-					if (pp.item(i).getNodeName().equals("limits")) {
-						limits = new Vector<Object>();
-						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmin").getNodeValue()));
-						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmax").getNodeValue()));
-					}
-					if (pp.item(i).getNodeName().equals("qcontroller")) {
-						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
-						myQController = (QueueController)c.newInstance();
-						res &= myQController.initFromDOM(pp.item(i));
 					}
 					if (pp.item(i).getNodeName().equals("cycle")) {
 						double time = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("time").getNodeValue());

@@ -15,12 +15,13 @@ import org.w3c.dom.*;
  * @see AbstractNode, AbstractLink, AbstractMonitor.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNetworkElement.java,v 1.24.2.5.2.1 2008/12/29 05:29:32 akurzhan Exp $
+ * @version $Id: AbstractNetworkElement.java,v 1.24.2.5.2.2.2.1 2009/08/26 02:08:26 akurzhan Exp $
  */
 public abstract class AbstractNetworkElement implements AuroraConfigurable, Serializable {
 	protected boolean initialized = false;
 	protected int id;
 	protected int ts = 0; // time step of the simulation
+	protected int saveState = 0; // indicates if state should be saved (3 - to be saved, 0 - not to be saved, 2 - transition from 0 to 3, 1 - transition from 3 to 0)
 
 	protected Vector<AbstractNetworkElement> predecessors = new Vector<AbstractNetworkElement>();
 	protected Vector<AbstractNetworkElement> successors = new Vector<AbstractNetworkElement>();
@@ -89,6 +90,14 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 	 */
 	public abstract void updateConfigurationSummary(AbstractConfigurationSummary cs);
 	
+	/**
+	 * Returns true if the state is to be saved, false - otherwise.
+	 */
+	public final boolean toSave() {
+		if (saveState > 1)
+			return true;
+		return false;
+	}
 	/**
 	 * Returns identifier of a NE.
 	 */
@@ -224,11 +233,38 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 	
 	/**
 	 * Assigns ID.
-	 * @param x ID.
+	 * @param id ID.
 	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
 	 */
 	public synchronized boolean setId(int id) {
 		this.id = id;
+		return true;
+	}
+	
+	/**
+	 * Sets save state mode.
+	 * @param x save state mode.
+	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
+	 */
+	public final synchronized boolean setSave(boolean x) {
+		if (!getMyNetwork().getContainer().isSimulation())
+			if (x)
+				saveState = 3;
+			else
+				saveState = 0;
+		else
+			if (x)
+				switch (saveState) {
+				case 1: 
+				case 3: saveState = 3; break;
+				default: saveState = 2; break;
+				}
+			else
+				switch (saveState) {
+				case 1: 
+				case 3: saveState = 1; break;
+				default: saveState = 0; break;
+				}
 		return true;
 	}
 	
@@ -272,6 +308,29 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 		successors.remove(idx);
 		successors.add(idx, newne);
 		return true;
+	}
+	
+	public synchronized void deleteDeadNeighbors() {
+		int i = 0;
+		while (i < predecessors.size()) {
+			if ((myNetwork.getNodeById(predecessors.get(i).getId()) == null) &&
+				(myNetwork.getLinkById(predecessors.get(i).getId()) == null) &&
+				(myNetwork.getMonitorById(predecessors.get(i).getId()) == null) &&
+				(myNetwork.getSensorById(predecessors.get(i).getId()) == null))
+				predecessors.remove(i);
+			else
+				i++;
+		}
+		i = 0;
+		while (i < successors.size()) {
+			if ((myNetwork.getNodeById(successors.get(i).getId()) == null) &&
+				(myNetwork.getLinkById(successors.get(i).getId()) == null) &&
+				(myNetwork.getMonitorById(successors.get(i).getId()) == null) &&
+				(myNetwork.getSensorById(successors.get(i).getId()) == null))
+				successors.remove(i);
+			else
+				i++;
+		}
 	}
 	
 	/**

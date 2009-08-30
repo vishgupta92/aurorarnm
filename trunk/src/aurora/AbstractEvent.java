@@ -6,12 +6,14 @@ package aurora;
 
 import java.io.*;
 
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractEvent.java,v 1.3.2.5.2.1 2008/12/02 03:38:35 akurzhan Exp $
+ * @version $Id: AbstractEvent.java,v 1.3.2.5.2.2 2009/06/14 01:10:24 akurzhan Exp $
  */
 public abstract class AbstractEvent implements AuroraConfigurable, Serializable {
 	protected String description = null;
@@ -28,7 +30,31 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionConfiguration
 	 */
-	public abstract boolean initFromDOM(Node p) throws ExceptionConfiguration;
+	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
+		boolean res = true;
+		if (p == null)
+			return !res;
+		try  {
+			neid = Integer.parseInt(p.getAttributes().getNamedItem("neid").getNodeValue());
+			tstamp = Double.parseDouble(p.getAttributes().getNamedItem("tstamp").getNodeValue());
+			enabled = Boolean.parseBoolean(p.getAttributes().getNamedItem("enabled").getNodeValue());
+			if (p.hasChildNodes()) {
+				NodeList pp = p.getChildNodes();
+				for (int i = 0; i < pp.getLength(); i++) {
+					if (pp.item(i).getNodeName().equals("description")) {
+						String desc = pp.item(i).getTextContent();
+						if (!desc.equals("null"))
+							description = desc;
+					}
+				}
+			}
+		}
+		catch(Exception e) {
+			res = false;
+			throw new ExceptionConfiguration(e.getMessage());
+		}
+		return res;
+	}
 	
 	/**
 	 * Generates XML description of an Event.<br>
@@ -36,7 +62,13 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 	 * @param out print stream.
 	 * @throws IOException
 	 */
-	public abstract void xmlDump(PrintStream out) throws IOException;
+	public void xmlDump(PrintStream out) throws IOException {
+		if (out == null)
+			out = System.out;
+		out.print("<event class=\"" + this.getClass().getName() + "\" neid=\"" + Integer.toString(neid) + "\" tstamp=\"" + Double.toString(tstamp) + "\" enabled=\"" + Boolean.toString(enabled) + "\">");
+		out.print("<description>" + description + "</description>");
+		return;
+	}
 	
 	/**
 	 * Bogus function that always returns <code>true</code>.

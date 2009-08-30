@@ -14,7 +14,7 @@ import aurora.hwc.*;
 /**
  * Implementation of proportional queue controller.
  * @author Alex Kurzhanskiy
- * @version $Id: QProportional.java,v 1.1.4.1.2.3 2008/11/16 23:16:05 akurzhan Exp $
+ * @version $Id: QProportional.java,v 1.1.4.1.2.4.2.1 2009/07/29 20:47:45 akurzhan Exp $
  */
 public final class QProportional implements QueueController, Serializable, Cloneable {
 	private static final long serialVersionUID = 1907427195234602994L;
@@ -92,7 +92,7 @@ public final class QProportional implements QueueController, Serializable, Clone
 				flw = 0.0;
 			else {
 				double dq = ((((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) - lk.getCriticalDensity()) * lk.getLength();
-				double dm = (Double)lk.getBeginNode().getOutputs().get(lk.getBeginNode().getSuccessors().indexOf(lk));
+				double dm = ((AuroraIntervalVector)lk.getBeginNode().getOutputs().get(lk.getBeginNode().getSuccessors().indexOf(lk))).sum().getCenter();
 				flw = dm + ((kp / nd.getMyNetwork().getTP()) * dq);
 			}
 		return (Double)Math.max(flw, 0.0);
@@ -105,7 +105,7 @@ public final class QProportional implements QueueController, Serializable, Clone
 		NumberFormat form = NumberFormat.getInstance();
 		form.setMinimumFractionDigits(2);
 		form.setMaximumFractionDigits(2);
-		return "Proportional (kp = " + form.format(kp) + ")";
+		return "Proportional (Kp = " + form.format(kp) + ")";
 	}
 	
 	/**

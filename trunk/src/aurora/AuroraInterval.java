@@ -5,6 +5,7 @@
 package aurora;
 
 import java.io.*;
+import java.text.NumberFormat;
 import java.util.*;
 
 
@@ -12,7 +13,7 @@ import java.util.*;
  * Implementation of an interval with basic arithmetic.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AuroraInterval.java,v 1.1.2.7 2008/12/11 02:23:16 akurzhan Exp $
+ * @version $Id: AuroraInterval.java,v 1.1.2.11.2.3 2009/08/29 21:08:50 akurzhan Exp $
  */
 public class AuroraInterval implements Serializable {
 	private static final long serialVersionUID = -7691830786246016694L;
@@ -192,6 +193,7 @@ public class AuroraInterval implements Serializable {
 		boolean res = intersection(v);
 		if (res)
 			return res;
+		res = true;
 		if (getUpperBound() < v.getLowerBound())
 			res &= setLowerBound(v.getLowerBound());
 		else
@@ -403,15 +405,33 @@ public class AuroraInterval implements Serializable {
 		return setBounds(Math.max(lb1, lb2), Math.min(ub1, ub2));
 	}
 	
+	/**
+	 * Chooses random value from the interval
+	 * and centers this interval at this value with size 0.
+	 */
+	public synchronized void randomize() {
+		center = getLowerBound() + Math.random() * size;
+		size = 0;
+		return;
+	}
+	
 	
 	/**
 	 * Returns text description of the weighted interval.
 	 * @return string that describes the weighted interval.
 	 */
-	public String toStringWithWeight(double w) {
+	public String toStringWithWeight(double w, boolean frmt) {
+		NumberFormat form = NumberFormat.getInstance();
+		form.setMinimumFractionDigits(0);
+		form.setMaximumFractionDigits(4);
 		String buf = Double.toString(w*center);
+		if (frmt)
+			buf = form.format(w*center);
 		if (size > 0)
-			buf += "(" + Double.toString(w*size) + ")";
+			if (frmt)
+				buf += "(" + form.format(w*size) + ")";
+			else
+				buf += "(" + w*size + ")";
 		return buf;
 	}
 	
@@ -422,10 +442,38 @@ public class AuroraInterval implements Serializable {
 	public String toString() {
 		String buf = Double.toString(center);
 		if (size > 0)
-			buf += "(" + Double.toString(size) + ")";
+			buf += "(" + size + ")";
 		return buf;
 	}
 
+	/**
+	 * The same as toString, but with formatting.
+	 * @return string that describes the interval.
+	 */
+	public String toString2() {
+		NumberFormat form = NumberFormat.getInstance();
+		form.setMinimumFractionDigits(0);
+		form.setMaximumFractionDigits(2);
+		String buf = form.format(center);
+		if (size > 0)
+			buf += "(" + form.format(size) + ")";
+		return buf;
+	}
+	
+	/**
+	 * The same as toString, but with formatting.
+	 * @return string that describes the interval.
+	 */
+	public String toString3() {
+		NumberFormat form = NumberFormat.getInstance();
+		form.setMinimumFractionDigits(0);
+		form.setMaximumFractionDigits(2);
+		form.setGroupingUsed(false);
+		String buf = form.format(center);
+		if (size > 0)
+			buf += "(" + form.format(size) + ")";
+		return buf;
+	}
 }
 
 

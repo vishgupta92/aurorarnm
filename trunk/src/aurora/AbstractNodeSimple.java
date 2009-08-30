@@ -11,10 +11,11 @@ import java.util.*;
  * Base class for all simple Nodes.<br>
  * These nodes must have input and output links.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeSimple.java,v 1.13.2.4.2.2 2009/01/14 01:45:04 akurzhan Exp $
+ * @version $Id: AbstractNodeSimple.java,v 1.13.2.4.2.3.2.1 2009/08/22 01:10:15 akurzhan Exp $
  */
 public abstract class AbstractNodeSimple extends AbstractNode {
 	protected Vector<AbstractControllerSimple> controllers = new Vector<AbstractControllerSimple>();
+	protected AbstractControllerNode controller = null;
 	
 	
 	/**
@@ -80,9 +81,16 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 	}
 	
 	/**
+	 * Returns node controller.
+	 */
+	public AbstractControllerNode getNodeController() {
+		return controller;
+	}
+	
+	/**
 	 * Returns vector of controllers.
 	 */
-	public final Vector<AbstractControllerSimple> getControllers() {
+	public final Vector<AbstractControllerSimple> getSimpleControllers() {
 		return controllers;
 	}
 	
@@ -90,7 +98,7 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 	 * Returns controller assigned to given input.
 	 * @param lk input Link.
 	 */
-	public synchronized AbstractControllerSimple getController(AbstractLink lk) {
+	public AbstractControllerSimple getSimpleController(AbstractLink lk) {
 		if (lk == null)
 			return null;
 		int idx = predecessors.indexOf(lk);
@@ -119,19 +127,39 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 	}
 	
 	/**
+	 * Sets node controller.
+	 * @param x node controller.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setNodeController(AbstractControllerNode x) {
+		if ((controller != null) && (controller.isDependent()))
+			if ((x == null) || (controller.getClass().getName().equals(x.getClass().getName())))
+				return false;
+		controller = x;
+		if (controller != null) {
+			controller.setMyNode(this);
+			controller.initialize();
+		}
+		return true;
+	}
+	
+	/**
 	 * Sets controller for given input Link.
 	 * @param x simple controller.
 	 * @param lk given input Link.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setController(AbstractControllerSimple x, AbstractLink lk) {
+	public synchronized boolean setSimpleController(AbstractControllerSimple x, AbstractLink lk) {
 		if (lk == null)
 			return false;
 		int idx = predecessors.indexOf(lk);
-		if ((idx < 0) ||
-			((controllers.get(idx) != null) && (controllers.get(idx).isDependent())) ||
-			((x != null) && ((x.getCompatibleNodeTypes() & getType()) == 0)))
+		if ((idx < 0) || (idx >= controllers.size()) || ((x != null) && ((x.getCompatibleNodeTypes() & getType()) == 0)))
 			return false;
+		if ((controllers.get(idx) != null) && (controllers.get(idx).isDependent()))
+			if ((x == null) || (!controllers.get(idx).getClass().getName().equals(x.getClass().getName())))
+				return false;
+		if (x != null)
+			x.setMyLink(lk);
 		controllers.set(idx, x);
 		return true;
 	}
@@ -142,12 +170,14 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 	 * @param idx index of the input Link.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setController(AbstractControllerSimple x, int idx) {
-		if ((idx < 0) ||
-			(idx >= controllers.size()) ||
-			((controllers.get(idx) != null) && (controllers.get(idx).isDependent())) ||
-			((x != null) && ((x.getCompatibleNodeTypes() & getType()) == 0)))
+	public synchronized boolean setSimpleController(AbstractControllerSimple x, int idx) {
+		if ((idx < 0) || (idx >= controllers.size()) || ((x != null) && ((x.getCompatibleNodeTypes() & getType()) == 0)))
 			return false;
+		if ((controllers.get(idx) != null) && (controllers.get(idx).isDependent()))
+			if ((x == null) || (!controllers.get(idx).getClass().getName().equals(x.getClass().getName())))
+				return false;
+		if (x != null)
+			x.setMyLink((AbstractLink)predecessors.get(idx));
 		controllers.set(idx, x);
 		return true;
 	}
@@ -193,8 +223,11 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 		if (idx >= 0)
 			if ((c != null) && ((c.getCompatibleNodeTypes() & getType()) == 0))
 				controllers.add(null);
-			else
+			else {
+				if (c != null)
+					c.setMyLink(x);
 				controllers.add(c);
+			}
 		return idx;
 	}
 
@@ -229,7 +262,7 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 		if ((!res) || ((x.getType() & AbstractTypes.MASK_NODE) == 0))
 			return false;
 		AbstractNodeSimple nd = (AbstractNodeSimple)x;
-		controllers = nd.getControllers();
+		controllers = nd.getSimpleControllers();
 		return res;
 	}
 

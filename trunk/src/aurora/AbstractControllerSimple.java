@@ -10,15 +10,13 @@ import java.util.*;
 /**
  * Base class for simple controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerSimple.java,v 1.3.2.3.2.2 2009/01/14 01:43:32 akurzhan Exp $
+ * @version $Id: AbstractControllerSimple.java,v 1.3.2.3.2.3.2.4 2009/08/25 20:49:13 akurzhan Exp $
  */
 public abstract class AbstractControllerSimple extends AbstractController {
-	protected Vector<Object> limits = new Vector<Object>(); // input limits
+	protected AbstractLink myLink = null;
 	protected Object input; // current input value
 	protected boolean allowInputSet = false;
-	protected boolean dependent = false; 
 
-	
 	/**
 	 * Returns <code>true</code> indicating that it is a simple controller.
 	 */
@@ -27,17 +25,17 @@ public abstract class AbstractControllerSimple extends AbstractController {
 	}
 	
 	/**
-	 * Checks if this simple controller depends on a complex one
+	 * Returns <code>false</code> indicating that it is not a node controller.
 	 */
-	public final boolean isDependent() {
-		return dependent;
+	public final boolean isNode() {
+		return false;
 	}
 	
 	/**
-	 * Returns input limits.
+	 * Returns <code>false</code> indicating that it is not a complex controller.
 	 */
-	public final Vector<Object> getLimits() {
-		return limits;
+	public final boolean isComplex() {
+		return false;
 	}
 	
 	/**
@@ -48,24 +46,21 @@ public abstract class AbstractControllerSimple extends AbstractController {
 	}
 	
 	/**
-	 * Sets input limits.
-	 * @param x limits.
-	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * Returns link to which this controller is assigned.
 	 */
-	public synchronized boolean setLimits(Vector<Object> x) {
-		if (x == null)
-			return false;
-		limits = x;
-		return true;
+	public final AbstractLink getMyLink() {
+		return myLink;
 	}
 	
 	/**
-	 * Sets dependent status.
-	 * @param x dependent flag.
+	 * Assigns link for this controller.
+	 * @param x link.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setDependent(boolean x) {
-		dependent = x;
+	public synchronized boolean setMyLink(AbstractLink x) {
+		if (x == null)
+			return false;
+		myLink = x;
 		return true;
 	}
 	

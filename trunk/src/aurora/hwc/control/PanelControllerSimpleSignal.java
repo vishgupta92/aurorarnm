@@ -16,9 +16,9 @@ import aurora.hwc.control.ControllerSimpleSignal.CycleDataRow;
 /**
  * Panel for editing simple signal controller properties.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelControllerSimpleSignal.java,v 1.1.4.1.2.4 2009/01/08 18:59:30 akurzhan Exp $
+ * @version $Id: PanelControllerSimpleSignal.java,v 1.1.4.1.2.4.2.1 2009/08/19 20:11:34 akurzhan Exp $
  */
-public class PanelControllerSimpleSignal extends AbstractControllerPanel {
+public class PanelControllerSimpleSignal extends AbstractSimpleControllerPanel {
 	private static final long serialVersionUID = 2397624987665897798L;
 	
 	private JButton buttonAdd = new JButton("Add");

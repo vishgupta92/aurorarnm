@@ -16,9 +16,9 @@ import aurora.hwc.control.ControllerTOD.TODdataRow;
 /**
  * Panel for editing TOD controller properties.
  * @author Gabriel Gomes
- * @version $Id: PanelControllerTOD.java,v 1.1.4.1.2.4 2009/01/08 18:59:30 akurzhan Exp $
+ * @version $Id: PanelControllerTOD.java,v 1.1.4.1.2.4.2.3 2009/08/20 20:11:13 akurzhan Exp $
  */
-public class PanelControllerTOD extends AbstractControllerPanel {
+public class PanelControllerTOD extends AbstractSimpleControllerPanel {
 	private static final long serialVersionUID = -648570173796184722L;
 
 	private JButton buttonAdd = new JButton("Add");
@@ -95,8 +95,9 @@ public class PanelControllerTOD extends AbstractControllerPanel {
 		return;
 	}
 	
+	
 	/**
-	 * Class needed for displaying tod table.
+	 * Class needed for displaying TOD table.
 	 */
 	private class TODTableModel extends AbstractTableModel {
 		private static final long serialVersionUID = -3979101791317093447L;
@@ -116,7 +117,7 @@ public class PanelControllerTOD extends AbstractControllerPanel {
 			return toddata.size();
 		}
 
-		public void addrow(TODdataRow x){
+		public void addrow(TODdataRow x) {
 			boolean done = false;
 			for (int i = 0; i < toddata.size(); i++){
 				if(toddata.get(i).getTime() > x.getTime()){
@@ -195,7 +196,6 @@ public class PanelControllerTOD extends AbstractControllerPanel {
 				int[] selected = todtable.getSelectedRows();
 				if ((selected != null) && (selected.length > 0))
 					for (int i = 0; i < selected.length; i++) {
-						System.err.println(selected[i]);
 						int idx = selected[i] - i;
 						if ((idx >= 0) && (idx < toddata.size()))
 							todtablemodel.deleterow(idx);

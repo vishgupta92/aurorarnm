@@ -6,6 +6,9 @@ package aurora;
 
 import java.awt.*;
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -15,7 +18,7 @@ import org.w3c.dom.*;
 /**
  * Class for program settings description.
  * @author Alex Kurzhanskiy
- * @version $Id: SimulationSettings.java,v 1.1.2.6.2.2 2008/11/23 23:34:34 akurzhan Exp $
+ * @version $Id: SimulationSettings.java,v 1.1.2.6.2.3.2.2 2009/06/21 05:13:26 akurzhan Exp $
  */
 public class SimulationSettings implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = -5690805735719405L;
@@ -23,6 +26,8 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	protected static PrintStream outputStream = System.out;
 	protected static PrintStream errorStream = System.err;
 	protected static Dimension windowSize = new Dimension();
+	protected File tmpDataFile = null;
+	protected PrintStream tmpDataOutput = null;
 	protected double displayTP = 1.0/12.0;
 	protected double timeMax = 24;
 	protected int tsMax = 100000;
@@ -132,6 +137,126 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	 */
 	public int getTimeout() {
 		return timeout;
+	}
+	
+	/**
+	 * Returns temporary data file pointer.
+	 */
+	public File getTmpDataFile() {
+		return tmpDataFile;
+	}
+	
+	/**
+	 * Returns temporary data output stream.
+	 */
+	public PrintStream getTmpDataOutput() {
+		return tmpDataOutput;
+	}
+	
+	/**
+	 * Creates new data header.
+	 * @param fpath directory for temporary file.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean createDataHeader() {
+		if (tmpDataOutput == null)
+			return false;
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		tmpDataOutput.print(dateFormat.format(new Date()) + "\n\n");
+		return true;
+	}
+	
+	/**
+	 * Creates new temporary data file.
+	 * @param fpath directory for temporary file.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean createNewTmpDataFile(File fpath) throws IOException {
+		if (tmpDataOutput != null)
+			tmpDataOutput.close();
+		tmpDataOutput = null;
+		if (tmpDataFile != null) {
+			tmpDataFile.delete();
+		}
+		tmpDataFile = File.createTempFile(".AuroraRNM", "Simulation.tmp", fpath);
+		tmpDataFile.deleteOnExit();
+		tmpDataOutput = new PrintStream(new FileOutputStream(tmpDataFile.getAbsolutePath()));
+		return true;
+	}
+	
+	/**
+	 * Sets temporary data file.
+	 * @param tmpFile temporary data file.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setTmpDataFile(File tmpFile) throws IOException {
+		if (tmpFile == null)
+			return false;
+		if (tmpFile.exists())
+			tmpFile.delete();
+		if (tmpDataOutput != null)
+			tmpDataOutput.close();
+		tmpDataOutput = null;
+		if (tmpDataFile != null) {
+			tmpDataFile.delete();
+		}
+		tmpDataFile = tmpFile;
+		tmpDataOutput = new PrintStream(new FileOutputStream(tmpDataFile.getAbsolutePath()));
+		return true;
+	}
+	
+	/**
+	 * Copies temporary data file to a destination.
+	 * @param fpath new name.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean copyTmpDataFile(String fpath) throws IOException {
+		if (tmpDataOutput != null)
+			tmpDataOutput.close();
+		tmpDataOutput = null;
+		if (tmpDataFile == null)
+			return false;
+		File nfp = new File(fpath);
+		if (nfp.exists())
+			nfp.delete();
+		FileInputStream  src = new FileInputStream(tmpDataFile);
+		FileOutputStream  dst = new FileOutputStream(nfp);
+	    byte[] buffer = new byte[4096];
+	    int bytesRead;
+	    while ((bytesRead = src.read(buffer)) != -1)
+	        dst.write(buffer, 0, bytesRead); 
+	    //int c;
+	    //while ((c = src.read()) != -1)
+	    	//dst.write(c);
+	    src.close();
+	    dst.close();
+		return true;
+	}
+	
+	/**
+	 * Deletes temporary data file.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean deleteTmpDataFile() throws IOException {
+		if (tmpDataOutput != null)
+			tmpDataOutput.close();
+		tmpDataOutput = null;
+		if (tmpDataFile == null)
+			return false;
+		tmpDataFile.delete();
+		tmpDataFile = null;
+		return true;
+	}
+	
+	/**
+	 * Establish data output stream.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean establishDataOutput() throws IOException {
+		if (tmpDataFile == null)
+			return false;
+		tmpDataOutput = new PrintStream(new FileOutputStream(tmpDataFile.getAbsolutePath(), true));
+		return true;
 	}
 	
 	/**

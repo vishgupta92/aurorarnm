@@ -17,7 +17,7 @@ import aurora.*;
  * Top object that contains pointers
  * to all the Aurora system configuration.
  * @author Alex Kurzhanskiy
- * @version $Id: ContainerHWC.java,v 1.3.2.14.2.6 2008/11/23 23:35:11 akurzhan Exp $
+ * @version $Id: ContainerHWC.java,v 1.3.2.14.2.6.2.1 2009/06/14 22:41:42 akurzhan Exp $
  */
 public final class ContainerHWC extends AbstractContainer {
 	private static final long serialVersionUID = 2277054116304494673L;
@@ -44,6 +44,8 @@ public final class ContainerHWC extends AbstractContainer {
 				if (pp.item(j).getNodeName().equals("demand")) {
 					int lkid = Integer.parseInt(pp.item(j).getAttributes().getNamedItem("id").getNodeValue());
 					double demandTP = Double.parseDouble(pp.item(j).getAttributes().getNamedItem("tp").getNodeValue());
+					if (demandTP > 24) // sampling period in seconds
+						demandTP = demandTP/3600;
 					double demandKnob = Double.parseDouble(pp.item(j).getAttributes().getNamedItem("knob").getNodeValue());
 					AbstractLinkHWC lk = (AbstractLinkHWC)myNetwork.getLinkById(lkid);
 					if (lk != null) {
@@ -101,6 +103,8 @@ public final class ContainerHWC extends AbstractContainer {
 				if (pp.item(j).getNodeName().equals("capacity")) {
 					int lkid = Integer.parseInt(pp.item(j).getAttributes().getNamedItem("id").getNodeValue());
 					double capacityTP = Double.parseDouble(pp.item(j).getAttributes().getNamedItem("tp").getNodeValue());
+					if (capacityTP > 24) // sampling period in seconds
+						capacityTP = capacityTP/3600;
 					AbstractLinkHWC lk = (AbstractLinkHWC)myNetwork.getLinkById(lkid);
 					if (lk != null) {
 						lk.setCapacityTP(capacityTP);

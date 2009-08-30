@@ -14,7 +14,7 @@ import aurora.util.Util;
 /**
  * Event that changes split ratio matrix at given simple Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventSRM.java,v 1.4.2.4.2.1 2008/12/03 02:15:42 akurzhan Exp $
+ * @version $Id: EventSRM.java,v 1.4.2.4.2.3 2009/06/14 01:10:24 akurzhan Exp $
  */
 public final class EventSRM extends AbstractEvent {
 	private static final long serialVersionUID = -8952099927246173708L;
@@ -54,21 +54,13 @@ public final class EventSRM extends AbstractEvent {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if (p == null)
-			return !res;
+		boolean res = super.initFromDOM(p);
+		if (!res)
+			return res;
 		try  {
-			neid = Integer.parseInt(p.getAttributes().getNamedItem("neid").getNodeValue());
-			tstamp = Double.parseDouble(p.getAttributes().getNamedItem("tstamp").getNodeValue());
-			enabled = Boolean.parseBoolean(p.getAttributes().getNamedItem("enabled").getNodeValue());
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
-					if (pp.item(i).getNodeName().equals("description")) {
-						String desc = pp.item(i).getTextContent();
-						if (!desc.equals("null"))
-							description = desc;
-					}
 					if (pp.item(i).getNodeName().equals("srm")) {
 						if (pp.item(i).hasChildNodes()) {
 							NodeList pp2 = pp.item(i).getChildNodes();
@@ -122,10 +114,7 @@ public final class EventSRM extends AbstractEvent {
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		if (out == null)
-			out = System.out;
-		out.print("<event class=\"" + this.getClass().getName() + "\" neid=\"" + Integer.toString(neid) + "\" tstamp=\"" + Double.toString(tstamp) + "\" enabled=\"" + Boolean.toString(enabled) + "\">");
-		out.print("<description>" + description + "</description>");
+		super.xmlDump(out);
 		out.print("<srm>");
 		for (int i = 0; i < splitRatioMatrix.length; i++) {
 			String buf = "";
@@ -157,8 +146,21 @@ public final class EventSRM extends AbstractEvent {
 		if (!nd.isSimple())
 			throw new ExceptionEvent(nd, "Wrong type.");
 		System.out.println("Event! Time " + Util.time2string(tstamp) + ": " + description);
-		AuroraIntervalVector[][] srm = ((AbstractNodeHWC)nd).getSplitRatioMatrix();
-		boolean res = ((AbstractNodeHWC)nd).setSplitRatioMatrix(splitRatioMatrix);
+		AuroraIntervalVector[][] srm = ((AbstractNodeHWC)nd).getSplitRatioMatrix0();
+		boolean isNull = true;
+		if (splitRatioMatrix != null) {
+			int nIn = splitRatioMatrix.length;
+			int nOut = splitRatioMatrix[0].length;
+			for (int i = 0; i < nIn; i++)
+				for (int j = 0; j < nOut; j++)
+					if ((splitRatioMatrix[i][j].maxCenter() != 0) || (splitRatioMatrix[i][j].minCenter() != 0))
+						isNull = false;
+		}
+		boolean res;
+		if (isNull)
+			res = ((AbstractNodeHWC)nd).setSplitRatioMatrix0(null);
+		else
+			res = ((AbstractNodeHWC)nd).setSplitRatioMatrix0(splitRatioMatrix);
 		splitRatioMatrix = srm;
 		return res;
 	}
@@ -179,8 +181,8 @@ public final class EventSRM extends AbstractEvent {
 		if (!nd.isSimple())
 			throw new ExceptionEvent(nd, "Wrong type.");
 		System.out.println("Event rollback! Time " + Util.time2string(tstamp) + ": " + description);
-		AuroraIntervalVector[][] srm = ((AbstractNodeHWC)nd).getSplitRatioMatrix();
-		boolean res = ((AbstractNodeHWC)nd).setSplitRatioMatrix(splitRatioMatrix);
+		AuroraIntervalVector[][] srm = ((AbstractNodeHWC)nd).getSplitRatioMatrix0();
+		boolean res = ((AbstractNodeHWC)nd).setSplitRatioMatrix0(splitRatioMatrix);
 		splitRatioMatrix = srm;
 		return res;
 	}

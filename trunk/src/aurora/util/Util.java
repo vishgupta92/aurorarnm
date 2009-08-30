@@ -5,6 +5,7 @@
 package aurora.util;
 
 import java.text.NumberFormat;
+import java.util.Vector;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.Minute;
@@ -14,7 +15,7 @@ import org.jfree.data.time.Second;
 /**
  * Some useful utilities.
  * @author Alex Kurzhanskiy
- * @version $Id: Util.java,v 1.1.2.6.2.4 2008/12/19 05:30:50 akurzhan Exp $
+ * @version $Id: Util.java,v 1.1.2.6.2.5.2.1 2009/06/14 06:30:12 akurzhan Exp $
  */
 public class Util {
 	public final static double EPSILON = Math.pow(10, -7);
@@ -237,8 +238,9 @@ public class Util {
 				else
 					sum += M[i][j];
 			if ((!hasNegative) && (sum == 0.0)) {
-				for (int j = 0; j < n; j++)
-					M[i][j] = -1;
+				M[i][0] = 1;
+				//for (int j = 0; j < n; j++)
+					//M[i][j] = -1;
 				continue;
 			}
 			if ((!hasNegative) && (sum < 1.0)) {
@@ -256,4 +258,69 @@ public class Util {
 		return;
 	}
 	
+	/**
+	 * Generates a string of space for a given XML indentation level.
+	 * @param int n indentation level.
+	 * @return <code>String</code> whitespace string. 
+	 */
+	public static String xmlindent(int n) {
+		String a = "   ";
+		String q = "";
+		for(int i=0;i<n;i++)
+			q = q.concat(a);
+		return q;
+	}
+
+	/**
+	 * Generates a comma separated representation of a vector.
+	 * @param int n indentation level.
+	 * @return <code>String</code> whitespace string. 
+	 */
+	public static String csvstringint(Vector<Integer> x) {
+		String z = "";
+		for (int i = 0; i < x.size(); i++)
+			if (i == 0)
+				z = z.concat(x.get(i).toString());
+			else
+				z = z.concat("," + x.get(i).toString());
+		return z;
+	}
+
+
+	/**
+	 * Generates a comma separated representation of a vector.
+	 * @param int n indentation level.
+	 * @return <code>String</code> whitespace string. 
+	 */
+	public static String csvstringbool(Vector<Boolean> x) {
+		String z = "";
+		String q = "";
+		for (int i = 0; i < x.size(); i++){
+			if(x.get(i))
+				q = "1";
+			else
+				q = "0";
+			if (i == 0)
+				z = z.concat(q);
+			else
+				z = z.concat("," + q);
+		}
+		return z;
+	}
+	
+	/**
+	 * Generates a comma separated representation of a vector.
+	 * @param int n indentation level.
+	 * @return <code>String</code> whitespace string. 
+	 */
+	public static String csvstringflt(Vector<Float> x) {
+		String z = "";
+		for (int i = 0; i < x.size(); i++)
+			if (i == 0)
+				z = z.concat(x.get(i).toString());
+			else
+				z = z.concat("," + x.get(i).toString());
+		return z;
+	}
+
 }

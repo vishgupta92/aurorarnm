@@ -13,7 +13,7 @@ import org.w3c.dom.*;
  * Partial implementation of Zipper Monitor.<br>
  * This Monitor is needed to glue two subnetworks together.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractMonitorZipper.java,v 1.1.2.5 2009/01/03 01:00:40 akurzhan Exp $
+ * @version $Id: AbstractMonitorZipper.java,v 1.1.2.5.2.1 2009/08/26 01:17:13 akurzhan Exp $
  */
 public abstract class AbstractMonitorZipper extends AbstractMonitor {
 
@@ -131,6 +131,30 @@ public abstract class AbstractMonitorZipper extends AbstractMonitor {
 		predecessors.remove(idx);
 		successors.remove(idx);
 		return res;
+	}
+	
+	/**
+	 * Deletes specified NE from the list of predecessors. 
+	 * @param x predecessor NE to be deleted.
+	 * @return idx index of deleted predecessor, <code>-1</code> - if such NE was not found.
+	 */
+	public synchronized int deletePredecessor(AbstractNetworkElement x) {
+		int idx = super.deletePredecessor(x);
+		if (idx >= 0)
+			successors.remove(idx);
+		return idx;
+	}
+	
+	/**
+	 * Deletes specified NE from the list of successors. 
+	 * @param x successor NE to be deleted.
+	 * @return idx index of deleted successor, <code>-1</code> - if such NE was not found.
+	 */
+	public synchronized int deleteSuccessor(AbstractNetworkElement x) {
+		int idx = super.deleteSuccessor(x);
+		if (idx >= 0)
+			predecessors.remove(idx);
+		return idx;
 	}
 	
 	/**

@@ -20,7 +20,7 @@ import aurora.*;
 /**
  * Implementation of HWC Layout.
  * @author Alex Kurzhansky
- * @version $Id: LayoutHWC.java,v 1.1.4.1 2008/10/16 04:27:09 akurzhan Exp $
+ * @version $Id: LayoutHWC.java,v 1.1.4.1.4.1 2009/06/14 06:45:28 akurzhan Exp $
  */
 public class LayoutHWC extends AbstractLayout {
 	private static final Object HWC_KEY  = "HWC_Visualization_Key";
@@ -30,6 +30,8 @@ public class LayoutHWC extends AbstractLayout {
 	private AffineTransform mTr;
 	private Point[] gBounds;
 	private JInternalFrame winParent;
+	private boolean equalratio = false;
+	
 	
 	public LayoutHWC(aurora.hwc.gui.WindowNetwork w) {
 		super(w.getGraph());
@@ -49,6 +51,13 @@ public class LayoutHWC extends AbstractLayout {
 		winParent = w;
 		currentIteration = 0;
 	}
+	public LayoutHWC(aurora.hwc.gui.WindowNodeSignal w,boolean e) {
+		super(w.getGraph());
+		gBounds = w.getGeoBounds();
+		winParent = w;
+		currentIteration = 0;
+		equalratio = e;
+	}
 	
     
     public Object getKey() {
@@ -60,7 +69,6 @@ public class LayoutHWC extends AbstractLayout {
     	return (HWCVertexData) (v.getUserDatum(getKey()));
     }
 	
-    
     protected void initialize_local_vertex(Vertex v) {
     	if (v.getUserDatum(getKey()) == null) {
     		v.addUserDatum(getKey(), new HWCVertexData(), UserData.REMOVE);
@@ -71,7 +79,6 @@ public class LayoutHWC extends AbstractLayout {
     	geoInitialize();
     }
     
-   
     private void geoInitialize() {
     	Point[] pp = gBounds; 	
     	double xMin = pp[0].x; 
@@ -88,6 +95,10 @@ public class LayoutHWC extends AbstractLayout {
     	double yRatio = Math.min(0.9, 125.0/height);
     	double sX = width*(1-xRatio)/deltaX; 
     	double sY = height*(1-yRatio)/deltaY;
+    	if(equalratio){
+    		sX = Math.max(sX,sY);
+    		sY = Math.max(sX,sY);
+    	}
     	mTr = new AffineTransform(); 
     	mTr.setToIdentity();
     	mTr.translate(5, 5);
@@ -96,7 +107,6 @@ public class LayoutHWC extends AbstractLayout {
     	return;
     }
     
-   
     protected void geoInitializeLocation(Vertex v, Coordinates coord) 
     {
     	Point p = ((VertexNodeHWC)v).getPosition();
