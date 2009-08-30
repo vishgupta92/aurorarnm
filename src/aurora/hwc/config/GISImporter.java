@@ -10,11 +10,19 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -57,7 +65,7 @@ public class GISImporter extends JFrame implements ActionListener {
 	private static final String separator = 
 		"=======================================\n";
 
-	private File file = null;
+	private File oldFile = null;
 	private Container content ;
 	private JLabel statusBar = new JLabel(" ");
 	private JTextArea logText =null;
@@ -96,8 +104,10 @@ public class GISImporter extends JFrame implements ActionListener {
 		timestamp();
 		
 		if (false){
-			file = new File("C:\\WORK\\aurora\\config\\caalamst_tiny.shp");
-			openFile(file.toURI().toURL());
+			//file = new File("C:\\WORK\\devel\\support\\SanPablo_Aurora\\caalamst_north.shp");
+			oldFile = new File("C:\\WORK\\devel\\support\\SanPablo_Aurora\\cacontst_west.shp");
+			openFile(oldFile.toURI().toURL());
+			//simplifyEdges();
 		}
 	}
 
@@ -114,24 +124,27 @@ public class GISImporter extends JFrame implements ActionListener {
 		myLog(separator + "Opening file...");
 		try {
 			if( shape == null) {
-				shape = openURL();
+				oldFile = fileDialog(new FileNameExtensionFilter("Shape file", "shp", "SHP"));
+				shape = oldFile.toURI().toURL();
 			}
 			if (shape == null) return;
 			gisObject.openShapefile(shape);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
+			return;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return;
 		}
 
 		gisObject.debug();
 		buttonOpen.setEnabled(true);
 		buttonFilterType.setEnabled(true);
+		buttonFilterName.setEnabled(true);
 		buttonFilterSimplify.setEnabled(true);
 		buttonSaveConfig.setEnabled(true);
-		timestamp();
+		timestamp();		
 	}
-
 
 
 	/**
@@ -156,13 +169,59 @@ public class GISImporter extends JFrame implements ActionListener {
 		String attributeName = vw.getAttributeName(); 
 
 		Object[] avs = vw.getAttributeValues(); 
-
 		if (vw.getValueText() != null && vw.getValueText().length()>0){
 			avs = vw.getValueText().split(",");
 		}
 
 		if (avs.length<1) return;
 		gisObject.typeFilter(attributeName, avs);
+		timestamp();
+	}
+
+
+	/**
+	 * Name filter
+		// TO-DO: make the following info available to users: 
+		// The file should contain capitalized street name (without suffixes St. Ave. Rd. etc)
+		// cf. san_pablo_ints.dat
+	 */
+
+	private  void nameFilter(){
+		myLog(separator + "Filtering by road names...");
+		if (gisObject.getFeatureCollection()  == null) {
+			myLog("featureCollection is empty!");
+			return;
+		}
+
+		File file = null;
+		try {
+			file = fileDialog(null);
+		} catch (MalformedURLException e1) {
+			e1.printStackTrace();
+		}
+
+		if (file == null) {
+			myLog("Operation cancelled.");
+			return;
+		}
+
+		String filename = file.getAbsolutePath();
+		myLog("Filtering by NAME values in: " + filename);
+		ArrayList<String> avs = new ArrayList<String>();
+	    String thisLine;
+		try {
+		       BufferedReader br = new BufferedReader(new FileReader(filename));
+		       while ((thisLine = br.readLine()) != null) {
+		    	  avs.add(thisLine);
+		    	  myLog("> " + thisLine);
+		       } 
+		     }
+		     catch (IOException e) {
+		       System.err.println("Error: " + e);
+		       return;
+		     }
+	    
+		gisObject.typeFilter("NAME",avs.toArray());
 		timestamp();
 	}
 
@@ -173,6 +232,7 @@ public class GISImporter extends JFrame implements ActionListener {
 		myLog(separator + "Simplifying edges...");
 		gisObject.simplifyEdges();
 		buttonFilterSimplify.setEnabled(false);
+		buttonFilterName.setEnabled(false);
 		buttonFilterType.setEnabled(false);
 		myLog("For another edge-simplification, re-open the GIS file");
 		timestamp();
@@ -188,7 +248,7 @@ public class GISImporter extends JFrame implements ActionListener {
 			myLog("featureCollection is empty!");
 			return;
 		}
-		File newFile = getNewXMLFile( file );
+		File newFile = getNewXMLFile( oldFile );
 		if (newFile == null) {
 			myLog("Exporting operation cancelled!");
 			return;
@@ -211,7 +271,7 @@ public class GISImporter extends JFrame implements ActionListener {
 			return;
 		}
 
-		File newFile = getNewShapeFile(file, 2);
+		File newFile = getNewShapeFile(oldFile, 2);
 		if (newFile ==null ) {
 			myLog("GIS Export Canceled");
 			return;
@@ -262,20 +322,22 @@ public class GISImporter extends JFrame implements ActionListener {
 	 * @return url to selected shapefile.
 	 * @throws MalformedURLException
 	 */
-	private  URL openURL() throws MalformedURLException {
-		URL shapeURL = null;
+	
+	private  File fileDialog(FileNameExtensionFilter filter) throws MalformedURLException {
+		File file = null;
 		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setFileFilter(new FileNameExtensionFilter("Shape file", "shp", "SHP"));
+		if (filter != null ){
+			fileChooser.setFileFilter(filter);
+		}
 		fileChooser.setSelectedFile(new 
-				File("C:\\WORK\\aurora\\demo\\demo.shp"));
-				//File("."));
+				//File("C:\\WORK\\aurora\\demo\\demo.shp"));
+				File("."));
 		int result = fileChooser.showOpenDialog(null);
 		if (result == JFileChooser.APPROVE_OPTION) {
 			file = fileChooser.getSelectedFile();
-			shapeURL = file.toURI().toURL();
 		} else {
 		}
-		return shapeURL;
+		return file;
 	}
 
 
@@ -349,12 +411,14 @@ public class GISImporter extends JFrame implements ActionListener {
 	private final static String cmdViewZoomOut = "ViewZoomOut";
 	private final static String cmdFilterGeo= "FilterGeo";
 	private final static String cmdFilterType= "FilterType";
+	private final static String cmdFilterName= "FilterName";
 	private final static String cmdFilterSimplify= "FilterSimplify";
 	private final static String cmdHelpAbout= "HelpAbout";
 	private final static String cmdHelpContactTOPL = "HelpContactTOPL";
 
 	private JButton buttonOpen;
 	private JButton buttonFilterType;
+	private JButton buttonFilterName;
 	private JButton buttonFilterSimplify;
 	private JButton buttonSaveConfig;
 
@@ -378,6 +442,12 @@ public class GISImporter extends JFrame implements ActionListener {
 		controls.add(buttonFilterType);
 		buttonFilterType.setFont(font);
 
+		buttonFilterName = new JButton("Name Filter...");
+		buttonFilterName.setActionCommand(cmdFilterName);
+		buttonFilterName.addActionListener(this);
+		controls.add(buttonFilterName);
+		buttonFilterName.setFont(font);
+
 		buttonFilterSimplify = new JButton("Simplify Edges...");
 		buttonFilterSimplify.setActionCommand(cmdFilterSimplify);
 		buttonFilterSimplify.addActionListener(this);
@@ -400,6 +470,7 @@ public class GISImporter extends JFrame implements ActionListener {
 		controls.setPreferredSize(new Dimension(800, 40));
 
 		buttonFilterType.setEnabled(false);
+		buttonFilterName.setEnabled(false);
 		buttonFilterSimplify.setEnabled(false);
 		buttonSaveConfig.setEnabled(false);
 
@@ -475,8 +546,14 @@ public class GISImporter extends JFrame implements ActionListener {
 		item.setActionCommand(cmdFilterType);
 		cmd2item.put(cmdFilterType, item);
 		menu.add(item);
-		item = new JMenuItem("Simplify Edges...");
+		item = new JMenuItem("Name Filter...");
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_3, ActionEvent.ALT_MASK));
+		item.addActionListener(this);
+		item.setActionCommand(cmdFilterName);
+		cmd2item.put(cmdFilterName, item);
+		menu.add(item);
+		item = new JMenuItem("Simplify Edges...");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
 		item.addActionListener(this);
 		item.setActionCommand(cmdFilterSimplify);
 		cmd2item.put(cmdFilterSimplify, item);
@@ -508,6 +585,10 @@ public class GISImporter extends JFrame implements ActionListener {
 		}
 		if (cmdFilterType.equals(cmd)) {
 			typeFilter();
+			return;
+		}
+		if (cmdFilterName.equals(cmd)) {
+			nameFilter();
 			return;
 		}
 		if (cmdFilterSimplify.equals(cmd)) {

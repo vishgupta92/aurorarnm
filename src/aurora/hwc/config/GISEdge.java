@@ -132,4 +132,14 @@ public class GISEdge {
 		return buf;
 	}
 
+
+	public boolean equivalent(GISEdge edge) {
+//		fcc_equal($edges_hash{$a}{FCC}, $edges_hash{$b}{FCC})
+//		&& ($edges_hash{$a}{ACC}     eq $edges_hash{$b}{ACC})
+//		&& ($edges_hash{$a}{NAME}    eq $edges_hash{$b}{NAME})
+//		&& ($edges_hash{$a}{SPEED}   eq $edges_hash{$b}{SPEED})
+
+		return true;
+	}
+
 }

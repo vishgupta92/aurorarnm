@@ -23,11 +23,9 @@ public class GISImporterGetGraph {
 	private HashSet<String> nodeWhitelist = new HashSet<String>();
 	private HashSet<String> nodeBlacklist= new HashSet<String>();
 	private HashMap<String, GISNode> nodes = new HashMap<String, GISNode>();
-	private Vector<GISEdge> links = new Vector<GISEdge>();
+	private HashMap<String, GISEdge> links = new HashMap<String, GISEdge>();
 
 	/**
-	 * - set up nodes
-	 * - set up links
 	 * - use only the first and last coordinate points. May want to keep all the curves?
 	 *  
 	 * @param featureCollection
@@ -154,7 +152,7 @@ public class GISImporterGetGraph {
 				nodes.get(toNodeId).setAuroraClass("aurora.hwc.NodeFreeway");
 			} else {
 			}
-			links.add(link);
+			links.put(edgeId, link);
 
 			// for two-way street, add one more link for the opposite direction
 			if (!((String) feature.getAttribute("ONE_WAY")).equals("FT") &&
@@ -170,7 +168,7 @@ public class GISImporterGetGraph {
 				oppositeLink.successors.add(fromNodeId);
 				nodes.get(toNodeId).successors.add(edgeId);
 				oppositeLink.predecessors.add(toNodeId);
-				links.add(oppositeLink);
+				links.put(edgeId, oppositeLink);
 			}
 		}
 
@@ -248,7 +246,7 @@ public class GISImporterGetGraph {
 			} else {
 			}
 
-			links.add(link);
+			links.put(edgeId, link);
 
 			// for two-way street, add one more link for the opposite direction
 			if (((Long) feature.getAttribute("IWAY")) == 2){
@@ -263,7 +261,7 @@ public class GISImporterGetGraph {
 				oppositeLink.successors.add(fromNodeId);
 				nodes.get(toNodeId).successors.add(edgeId);
 				oppositeLink.predecessors.add(toNodeId);
-				links.add(oppositeLink);
+				links.put(edgeId, oppositeLink);
 			}
 		}
 		assignLinkTypes();
@@ -307,8 +305,8 @@ public class GISImporterGetGraph {
 		NodeHighway.java
 		NodeHWCNetwork.java
 		 */
-		for(Iterator linkIterator = links.iterator(); linkIterator.hasNext(); ){
-			GISEdge link = (GISEdge) linkIterator.next();
+		for(Iterator linkIterator = links.keySet().iterator(); linkIterator.hasNext(); ){
+			GISEdge link = (GISEdge) links.get(linkIterator.next());
 			boolean fromFreeway = false;
 			boolean toFreeway = false;
 
@@ -344,15 +342,27 @@ public class GISImporterGetGraph {
 				nodeBlacklist.add(key);
 			}
 		}
+	}
 
-
+	public static final HashSet<String> publicValidate(HashMap<String, GISNode> nodes) {
+		HashSet<String> nodeWhitelist = new HashSet<String>();
+		for(Iterator iterator = nodes.keySet().iterator(); iterator.hasNext();){
+			String key = (String) iterator.next();
+			GISNode gisNode = nodes.get(key); 
+			if (gisNode.predecessors.size() > 0 && gisNode.successors.size() > 0){
+				nodeWhitelist.add(key);
+			} else {
+				//nodeBlacklist.add(key);
+			}
+		}
+		return(nodeWhitelist);
 	}
 
 	public HashMap<String, GISNode> getNodes() {
 		return nodes;
 	}
 
-	public Vector<GISEdge> getEdges() {
+	public HashMap<String, GISEdge> getEdges() {
 		return links;
 	}
 

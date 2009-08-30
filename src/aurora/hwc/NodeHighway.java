@@ -15,7 +15,7 @@ import aurora.*;
  * @see LinkHw, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy
- * @version $Id: NodeHighway.java,v 1.9.2.3.2.1 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: NodeHighway.java,v 1.9.2.3.2.1.2.1 2009/07/30 04:11:03 akurzhan Exp $
  */
 public final class NodeHighway extends AbstractNodeHWC {
 	private static final long serialVersionUID = -8167340117759326547L;
@@ -37,6 +37,7 @@ public final class NodeHighway extends AbstractNodeHWC {
 	 */
 	public String[] getSimpleControllerTypes() {
 		String[] ctrlTypes = {"ALINEA",
+							  "Traffic Responsive",
 							  "TOD",
 							  "Simple Signal"};
 		return ctrlTypes;
@@ -47,6 +48,7 @@ public final class NodeHighway extends AbstractNodeHWC {
 	 */
 	public String[] getSimpleControllerClasses() {
 		String[] ctrlClasses = {"aurora.hwc.control.ControllerALINEA",
+								"aurora.hwc.control.ControllerTR",
 								"aurora.hwc.control.ControllerTOD",
 								"aurora.hwc.control.ControllerSimpleSignal"};
 		return ctrlClasses;

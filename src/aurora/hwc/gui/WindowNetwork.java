@@ -43,7 +43,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of network internal frame.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNetwork.java,v 1.1.2.29.2.7 2009/01/11 00:30:21 akurzhan Exp $
+ * @version $Id: WindowNetwork.java,v 1.1.2.29.2.10 2009/05/31 19:23:48 akurzhan Exp $
  */
 public final class WindowNetwork extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = 6582260090722618374L;
@@ -204,7 +204,7 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 	private void updatePerfSeries() {
 		Second cts = Util.time2second(myNetwork.getSimTime());
 		try {
-			perfDataSets[0].getSeries(0).add(cts, ((NodeHWCNetwork)mySystem.getMyNetwork()).getSumDelay());
+			perfDataSets[0].getSeries(0).add(cts, ((NodeHWCNetwork)myNetwork).getSumDelay());
 		}
 		catch(SeriesException e) {}
 		return;
@@ -561,9 +561,9 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 		String desc = nd.getDescription();
 		if (desc != null)
 			txt += "<p>" + desc;
-		if ((nd.getType() | AbstractTypes.MASK_NETWORK) == 0) {
-			txt += "<br><b>In-flow:</b> " + totalInFlow(nd).toString() + " vph";
-			txt += "<br><b>Out-flow:</b> " + totalOutFlow(nd).toString() + " vph";
+		if ((nd.getType() & AbstractTypes.MASK_NETWORK) == 0) {
+			txt += "<br><b>In-flow:</b> " + totalInFlow(nd).toString2() + " vph";
+			txt += "<br><b>Out-flow:</b> " + totalOutFlow(nd).toString2() + " vph";
 		}
 		txt += "</font></html>";
 		return txt;
@@ -584,11 +584,11 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 		String txt = "<html><font color=\"" + clr + "\"><b><u>" + lk.toString() + "</u></b> (" + TypesHWC.typeString(lk.getType()) + ")";
 		txt += "<br><b>Length:</b> " + form.format((Double)lk.getLength()) + " mi";
 		txt += "<br><b>Width:</b> " + form.format(lk.getLanes()) + " lanes";
-		txt += "<br><b>Density:</b> " + form.format(((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) + " vpm";
+		txt += "<br><b>Density:</b> " + lk.getDensity().toString2() + " vpm";
 		txt += "<br><b>Speed:</b> " + form.format(((AuroraInterval)lk.getSpeed()).getCenter()) + " mph";
 		if (lk.getBeginNode() == null) {
-			txt += "<br><b>Demand:</b> " + form.format(((AuroraIntervalVector)lk.getDemand()).sum().getCenter()) + " vph";
-			txt += "<br><b>Queue:</b> " + form.format(((AuroraIntervalVector)lk.getQueue()).sum().getCenter());
+			txt += "<br><b>Demand:</b> " + lk.getDemand().toString2() + " vph";
+			txt += "<br><b>Queue:</b> " + lk.getQueue().toString2();
 		}
 		//txt += "<br><b>Capacity:</b> " + form.format((Double)lk.getMaxFlow()) + " vph";
 		//txt += "<br><b>Vff:</b> " + form.format((Double)lk.getV()) + " mph";

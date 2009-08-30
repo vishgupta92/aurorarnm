@@ -10,7 +10,7 @@ import aurora.AbstractTypes;
 /**
  * Type constants used by Aurora HWC.
  * @author Alex Kurzhanskiy
- * @version $Id: TypesHWC.java,v 1.1.2.2.2.2 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: TypesHWC.java,v 1.1.2.2.2.2.2.2 2009/08/10 19:53:30 akurzhan Exp $
  */
 public final class TypesHWC extends AbstractTypes {
 	// Complex Nodes
@@ -33,6 +33,11 @@ public final class TypesHWC extends AbstractTypes {
 	public final static int LINK_INTERCONNECT = MASK_LINK | 64;
 	public final static int LINK_STREET = MASK_LINK | 128;
 	
+	// Monitors
+	public final static int MONITOR_HWC = MASK_MONITOR_CONTROLLER | 1;
+
+	// Sensors
+	public final static int SENSOR_LOOPDETECTOR = MASK_SENSOR | 1;
 	
 	public final static int[] nodeSimpleTypeArray() {
 		int[] types = {NODE_FREEWAY, NODE_HIGHWAY, NODE_SIGNAL, NODE_STOP};
@@ -91,6 +96,8 @@ public final class TypesHWC extends AbstractTypes {
 		case LINK_OFFRAMP: return "aurora.hwc.LinkFR";
 		case LINK_INTERCONNECT: return "aurora.hwc.LinkIC";
 		case LINK_STREET: return "aurora.hwc.LinkStreet";
+		case MASK_MONITOR_CONTROLLER: return "aurora.hwc.MonitorControllerHWC";
+		case MASK_MONITOR_EVENT: return "aurora.hwc.MonitorEventHWC";
 		case MASK_MONITOR_ZIPPER: return "aurora.hwc.MonitorZipperHWC";
 		}
 		return "aurora.hwc.Unknown";

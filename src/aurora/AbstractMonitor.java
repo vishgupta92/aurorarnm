@@ -16,7 +16,7 @@ import org.w3c.dom.*;
  *  monitors cannot see other monitors.
  * Monitors can be only seen by the network nodes, to which they belong.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractMonitor.java,v 1.1.2.2.2.6 2009/01/05 23:07:34 akurzhan Exp $
+ * @version $Id: AbstractMonitor.java,v 1.1.2.2.2.6.2.3 2009/06/17 00:03:50 akurzhan Exp $
  */
 public abstract class AbstractMonitor extends AbstractNetworkElement {
 	protected String description = "Monitor";
@@ -36,7 +36,9 @@ public abstract class AbstractMonitor extends AbstractNetworkElement {
 			return !res;
 		try {
 			id = Integer.parseInt(p.getAttributes().getNamedItem("id").getNodeValue());
-			enabled = Boolean.parseBoolean(p.getAttributes().getNamedItem("enabled").getNodeValue());
+			Node ep = p.getAttributes().getNamedItem("enabled");
+			if (ep != null)
+				enabled = Boolean.parseBoolean(ep.getNodeValue());
 			for (int i = 0; i < p.getChildNodes().getLength(); i++)
 				if (p.getChildNodes().item(i).getNodeName().equals("description"))
 					description = p.getChildNodes().item(i).getTextContent();
@@ -55,12 +57,13 @@ public abstract class AbstractMonitor extends AbstractNetworkElement {
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
-		boolean res = super.dataUpdate(ts);
-		if (!res)
-			return res;
-		counter++;
-		if (counter == 4)
+		boolean res = true;
+		if ((counter == 0) || (counter == 3)) {
 			counter = 1;
+			res = super.dataUpdate(ts);
+		}
+		else
+			counter++;
 		return res;
 	}
 	

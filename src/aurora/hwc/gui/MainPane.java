@@ -22,7 +22,7 @@ import aurora.util.*;
 /**
  * Main window of Aurora HWC.
  * @author Alex Kurzhanskiy
- * @version $Id: MainPane.java,v 1.2.2.18.2.2 2008/11/25 00:36:58 akurzhan Exp $
+ * @version $Id: MainPane.java,v 1.2.2.18.2.3.2.2 2009/06/21 05:13:26 akurzhan Exp $
  */
 public final class MainPane extends JFrame implements ActionListener, ItemListener, CommonMain {
 	private static final long serialVersionUID = 8711529895478014515L;
@@ -120,6 +120,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	 */
 	public void resetAll() {
 		try {
+			mySystem.getMySettings().createNewTmpDataFile(currentDir);
 			if (mySystem.dataReset()) {
 				prepareForSimulation();
 				if (treePane != null)
@@ -166,13 +167,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 					JOptionPane.showMessageDialog(this, buf, e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
 				}
 				if (!error) {
-					/*if (mySystem.getMyNetwork().setSimNo(mySystem.getMyNetwork().getSimNo() + 1)) {
-						prepareForSimulation();
-						statusBar.setText("Simulation ready. Press 'F5' to run...");
-					}
-					else
-						JOptionPane.showMessageDialog(this, "Cannot assign new simulation number.", "Error", JOptionPane.ERROR_MESSAGE);
-					*/
+					currentDir = fc.getCurrentDirectory();
 					resetAll();
 				}
 			}
@@ -266,6 +261,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	 */
 	private void saveSimulation() {
 		String ext = "dat";
+		String dext = "csv";
 		JFileFilter filter = new JFileFilter();
 		filter.addType(ext);
 		filter.setDescription("Aurora simulation files (*." + ext + ")");
@@ -282,12 +278,23 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 			}
 			try {
 				String fpath = fp.getAbsolutePath();
-				if (!fp.getName().endsWith(ext))
+				String dfpath = fp.getAbsolutePath();
+				if (!fp.getName().endsWith(ext)) {
 					fpath += "." + ext;
+					dfpath += ".";
+				}
+				else {
+					dfpath = dfpath.substring(0, dfpath.length() - 3);
+				}
+				dfpath += dext;
+				if ((mySystem != null) && (mySystem.getMySettings() != null))
+					mySystem.getMySettings().copyTmpDataFile(dfpath);
 				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fpath));
 				mySystem.getMyStatus().setSaved(true);
 				oos.writeObject(mySystem);
 				oos.close();
+				if ((mySystem != null) && (mySystem.getMySettings() != null))
+					mySystem.getMySettings().establishDataOutput();
 			}
 			catch(Exception e) {
 				JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
@@ -300,14 +307,27 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	 * Checks if the simulation is saved, if not - asks the user.
 	 */
 	public boolean checkSaved() {
-		if ((mySystem == null) || (mySystem.getMyStatus().isSaved()))
+		if (mySystem == null)
 			return true;
+		if (mySystem.getMyStatus().isSaved()) {
+			if (mySystem.getMySettings() != null) 
+				try {
+					mySystem.getMySettings().deleteTmpDataFile();
+				}
+				catch(IOException e) { }
+			return true;
+		}
 		int v = JOptionPane.showConfirmDialog(this, "Save simulation?", "Confirmation", JOptionPane.YES_NO_CANCEL_OPTION);
 		switch(v) {
 		case JOptionPane.YES_OPTION:
 			saveSimulation();
 			return true;
 		case JOptionPane.NO_OPTION:
+			if (mySystem.getMySettings() != null) 
+				try {
+					mySystem.getMySettings().deleteTmpDataFile();
+				}
+				catch(IOException e) { }
 			return true;
 		case JOptionPane.CANCEL_OPTION:
 		default:
@@ -442,7 +462,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 
 	/**
 	 * Processes menu item checking.
-	 * param e item event.
+	 * @param e item event.
 	 */
 	public void itemStateChanged(ItemEvent e) {
 		JCheckBoxMenuItem miml = (JCheckBoxMenuItem)cmd2item.get(cmdControlMainline);
@@ -566,6 +586,92 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 			System.exit(0);
 		}
 	}
+	
+	public void LogErrors(Vector<ErrorConfiguration> e){
+		/*
+		String fpath = fp.getAbsolutePath();
+		if (!fp.getName().endsWith(ext))
+			fpath += "." + ext;
+		PrintStream oos = new PrintStream(new FileOutputStream(fpath));
+		mySystem.xmlDump(oos,0);
+		oos.close();
+		mySystem.getM
+		*/
+		String str;
+		for(int i=0;i<e.size();i++){
+			str = e.get(i).getMessage();
+		}
+		
+	}
+	
+	/**
+	 * Run Simulator in batch mode.
+	 * @param infile configuration file path.
+	 * @param outfile output file path.
+	 */
+	private static void runBatch(String infile, String outfile) {
+		File config = new File(infile);
+		ContainerHWC mySystem = new ContainerHWC();
+		try {
+			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse("file:" + config.getAbsolutePath());
+			mySystem.initFromDOM(doc.getChildNodes().item(0));
+			mySystem.validate();
+		}
+		catch(Exception e) {
+			String buf = e.getMessage();
+			if ((buf == null) || (buf.equals("")))
+				buf = "Failed to read configuration file!";
+			System.err.println(buf + "\nExiting...");
+			return;
+		}
+		File data = new File(outfile);
+		try {
+			if ((!mySystem.getMySettings().setTmpDataFile(data)) || (!mySystem.getMySettings().createDataHeader())) {
+				System.err.println("Failed to open data output file!\nExiting...");
+				return;
+			}
+		}
+		catch(Exception e) {
+			String buf = e.getMessage();
+			if ((buf == null) || (buf.equals("")))
+				buf = "Failed to open data output file!";
+			System.err.println(buf + "\nExiting...");
+			return;
+		}
+		try {
+			mySystem.dataReset();
+		}
+		catch(Exception e) {
+			String buf = e.getMessage();
+			if ((buf == null) || (buf.equals("")))
+				buf = "Initialization failed!";
+			System.err.println(buf + "\nExiting...");
+			mySystem.getMySettings().getTmpDataOutput().close();
+			return;
+		}
+		boolean res = true;
+		mySystem.getMyStatus().setStopped(false);
+		mySystem.getMyStatus().setSaved(false);
+		int ts = mySystem.getMyNetwork().getTS();
+		while ((!mySystem.getMyStatus().isStopped()) && res) {
+			try {
+				res = mySystem.dataUpdate(++ts);
+			}
+			catch(Exception e) {
+				String buf = e.getMessage();
+				if ((buf == null) || (buf.equals("")))
+					buf = "Simulation failed on time step " + ts + "!";
+				System.err.println(buf + "\nExiting...");
+				mySystem.getMySettings().getTmpDataOutput().close();
+				return;
+			}
+		}
+		if (!res)
+			System.err.println("Simulation failed on time step " + ts + "!\nExiting...");
+		mySystem.getMySettings().getTmpDataOutput().close();
+		System.out.println("Done!");
+		return;
+	}
 
 	/**
      * Create the GUI and show it.
@@ -585,13 +691,16 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
     }
     
     public static void main(String[] args) {
-        /* Schedule a job for the event-dispatching thread:
-         * creating and showing this application's GUI. */
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
+        if (args.length == 2) {
+        	runBatch(args[0], args[1]);
+        }
+        else {
+        	javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            	public void run() {
+                	createAndShowGUI();
+            	}
+        	});
+        }
     }
     
     

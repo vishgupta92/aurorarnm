@@ -12,7 +12,7 @@ import java.util.*;
  * Implementation of the interval vector type.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AuroraIntervalVector.java,v 1.1.2.9 2008/12/11 02:21:29 akurzhan Exp $
+ * @version $Id: AuroraIntervalVector.java,v 1.1.2.11.2.3 2009/08/29 21:08:51 akurzhan Exp $
  */
 public class AuroraIntervalVector implements Serializable {
 	private static final long serialVersionUID = 8459142305862530744L;
@@ -915,12 +915,38 @@ public class AuroraIntervalVector implements Serializable {
 		return res;
 	}
 	
+	/**
+	 * Redistributes the vector according to the vector of fractions that sum up to one.
+	 * @param r array of desired fractions of the total.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean redistribute(double[] r) {
+		if ((r == null) || (r.length != data.length))
+			return false;
+		for (int i = 0; i < r.length; i++)
+			if (r[i] < 0)
+				return false;
+		boolean res = true;
+		double total = sum().getCenter();
+		for (int i = 0; i < data.length; i++)
+			res &= data[i].setCenter(total*r[i]);
+		return res;
+	}
+	
+	/**
+	 * Randomizes each interval in the vector.
+	 */
+	public synchronized void randomize() {
+		for (int i = 0; i < data.length; i++)
+			data[i].randomize();
+		return;
+	}
 	
 	/**
 	 * Returns text description of the weighted interval vector.
 	 * @return string that describes the weighted interval vector.
 	 */
-	public String toStringWithWeights(double[] w) {
+	public String toStringWithWeights(double[] w, boolean frmt) {
 		String buf = "";
 		int sz = data.length - 1;
 		double ww = 1.0;
@@ -929,13 +955,13 @@ public class AuroraIntervalVector implements Serializable {
 			if ((w != null) && (i < w.length))
 				ww = w[i];
 			if (data[i] != null)
-				buf += data[i].toStringWithWeight(ww) + ":";
+				buf += data[i].toStringWithWeight(ww, frmt) + ":";
 		}
 		if ((w != null) && (sz < w.length))
 			ww = w[sz];
 		else
 			ww = 1.0;
-		buf += data[sz].toStringWithWeight(ww);
+		buf += data[sz].toStringWithWeight(ww, frmt);
 		return buf;
 	}
 	
@@ -943,7 +969,7 @@ public class AuroraIntervalVector implements Serializable {
 	 * Returns text description of the inversely weighted interval vector.
 	 * @return string that describes the inversely weighted interval vector.
 	 */
-	public String toStringWithInverseWeights(double[] w) {
+	public String toStringWithInverseWeights(double[] w, boolean frmt) {
 		String buf = "";
 		int sz = data.length - 1;
 		double ww = 1.0;
@@ -952,13 +978,13 @@ public class AuroraIntervalVector implements Serializable {
 			if ((w != null) && (i < w.length) && (w[i] != 0.0))
 				ww = 1/w[i];
 			if (data[i] != null)
-				buf += data[i].toStringWithWeight(ww) + ":";
+				buf += data[i].toStringWithWeight(ww, frmt) + ":";
 		}
 		if ((w != null) && (sz < w.length) && (w[sz] != 0.0))
 			ww = 1/w[sz];
 		else
 			ww = 1.0;
-		buf += data[sz].toStringWithWeight(ww);
+		buf += data[sz].toStringWithWeight(ww, frmt);
 		return buf;
 	}
 	
@@ -973,6 +999,34 @@ public class AuroraIntervalVector implements Serializable {
 			if (data[i] != null)
 				buf += data[i].toString() + ":";
 		buf += data[sz].toString();
+		return buf;
+	}
+	
+	/**
+	 * The same as toString, but with formatting.
+	 * @return string that describes the interval vector.
+	 */
+	public String toString2() {
+		String buf = "";
+		int sz = data.length - 1;
+		for (int i = 0; i < sz; i++)
+			if (data[i] != null)
+				buf += data[i].toString2() + ":";
+		buf += data[sz].toString2();
+		return buf;
+	}
+	
+	/**
+	 * The same as toString, but with formatting.
+	 * @return string that describes the interval vector.
+	 */
+	public String toString3() {
+		String buf = "";
+		int sz = data.length - 1;
+		for (int i = 0; i < sz; i++)
+			if (data[i] != null)
+				buf += data[i].toString3() + ":";
+		buf += data[sz].toString2();
 		return buf;
 	}
 	

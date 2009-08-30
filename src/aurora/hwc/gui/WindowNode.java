@@ -26,15 +26,15 @@ import aurora.util.*;
 /**
  * Implementation of Node detail window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNode.java,v 1.1.2.8.2.5 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: WindowNode.java,v 1.1.2.8.2.7.2.5 2009/08/19 20:42:45 akurzhan Exp $
  */
-public final class WindowNode extends JInternalFrame {
+public class WindowNode extends JInternalFrame {
 	private static final long serialVersionUID = -2651266581287806400L;
 	
 	private AbstractContainer mySystem;
 	private AbstractNodeHWC myNode;
 	private TreePane treePane;
-	private JTabbedPane tabbedPane = new JTabbedPane();
+	protected JTabbedPane tabbedPane = new JTabbedPane();
 	private int nIn;
 	private int nOut;
 	private String[] ctrlTypes;
@@ -46,7 +46,7 @@ public final class WindowNode extends JInternalFrame {
 	private JFreeChart simChart;
 	
 	// configuration tab
-	private Box confPanel = Box.createVerticalBox();
+	protected Box confPanel = Box.createVerticalBox();
 	private JComboBox listEvents;
 	private JButton buttonEvents = new JButton("Generate");
 	private ctrlROTableModel ctrlTM = new ctrlROTableModel();
@@ -160,7 +160,7 @@ public final class WindowNode extends JInternalFrame {
 	 * Generates Configuration tab.
 	 */
 	private void fillConfPanel() {
-		final Vector<AbstractControllerSimple> controllers = myNode.getControllers();
+		final Vector<AbstractControllerSimple> controllers = myNode.getSimpleControllers();
 		JPanel desc = new JPanel(new GridLayout(1, 0));
 		desc.setBorder(BorderFactory.createTitledBorder("Description"));
 		desc.add(new JLabel("<html><font color=\"blue\">" + myNode.getDescription() + "</font></html>"));
@@ -182,8 +182,8 @@ public final class WindowNode extends JInternalFrame {
 	      	    		return;
 	      	    	try {
 	    	    		Class c = Class.forName("aurora.hwc.control.Panel" + controllers.get(row).getClass().getSimpleName());
-	    	    		AbstractControllerPanel cp = (AbstractControllerPanel)c.newInstance();
-	    	    		cp.initialize((AbstractControllerHWC)controllers.get(row), myNode);
+	    	    		AbstractSimpleControllerPanel cp = (AbstractSimpleControllerPanel)c.newInstance();
+	    	    		cp.initialize((AbstractControllerHWC)controllers.get(row), null, -1, myNode);
 	    	    	}
 	    	    	catch(Exception xpt) { }
 	      	    }
@@ -303,7 +303,7 @@ public final class WindowNode extends JInternalFrame {
 				return null;
 			if (column == 0)
 				return (TypesHWC.typeString(myNode.getPredecessors().get(row).getType()) + " " + myNode.getPredecessors().get(row).toString());
-			AbstractControllerHWC ctrl = (AbstractControllerHWC)myNode.getControllers().get(row);
+			AbstractControllerHWC ctrl = (AbstractControllerHWC)myNode.getSimpleControllers().get(row);
 			if (ctrl == null)
 				return "None";
 			if (column == 1)
@@ -315,8 +315,10 @@ public final class WindowNode extends JInternalFrame {
 		}
 		
 		public boolean isCellEditable(int row, int column) {
-			if ((mySystem.getMyStatus().isStopped()) && (column == 1))
+			if ((mySystem.getMyStatus().isStopped()) && (column == 1) && (row >= 0) && (row < nIn)) {
+				if ((myNode.getSimpleControllers().get(row) == null) || (!myNode.getSimpleControllers().get(row).isDependent()))
 				return true;
+			}
 			return false;
 		}
 		
@@ -328,11 +330,11 @@ public final class WindowNode extends JInternalFrame {
 				if (ctrlTypes[i].compareTo((String)value) == 0)
 					idx = i;
 			if (idx < 0)
-				myNode.setController(null, row);
+				myNode.setSimpleController(null, row);
 			else
 				try {
 					Class c = Class.forName(ctrlClasses[idx]);
-					myNode.setController((AbstractControllerHWC)c.newInstance(), row);
+					myNode.setSimpleController((AbstractControllerHWC)c.newInstance(), row);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "Cannot create Controller of type '" + ctrlClasses[idx] + "'.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -379,7 +381,7 @@ public final class WindowNode extends JInternalFrame {
 			}
 			if ((row < 1) || (row > srm.length) || (column < 1) || (column > srm[0].length))
 				return null;
-			return srm[row - 1][column - 1].toString();
+			return srm[row - 1][column - 1].toString2();
 		}
 		
 		public boolean isCellEditable(int row, int column) {

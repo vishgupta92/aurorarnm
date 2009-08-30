@@ -11,7 +11,7 @@ import aurora.*;
 /**
  * Implementation of Cell Transmission Model (CTM).
  * @author Alex Kurzhanskiy
- * @version $Id: DynamicsCTM.java,v 1.4.2.5.2.7 2008/12/11 20:42:37 akurzhan Exp $
+ * @version $Id: DynamicsCTM.java,v 1.4.2.5.2.11.2.2 2009/07/29 19:26:53 akurzhan Exp $
  */
 public class DynamicsCTM implements DynamicsHWC, Serializable {
 	private static final long serialVersionUID = 1295134323359426734L;
@@ -25,10 +25,21 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 */
 	public Object computeCapacity(AbstractLinkHWC x) {
 		AuroraInterval cap = x.getDensity().sum();
+		double fmax = Math.max(0, x.getMaxFlow());
+		if (cap.getUpperBound() <= x.getCriticalDensity())
+			return new AuroraInterval(fmax);
 		cap.negative();
 		cap.affineTransform(1, x.getJamDensity());
 		cap.affineTransform(x.getW(), 0);
-		cap.constraint(new AuroraInterval(x.getMaxFlow()/2, x.getMaxFlow()));
+		cap.constraintLB(0);
+		cap.constraintUB(fmax);
+		/*double cdrp = Math.max(0, Math.min(fmax, fmax - x.getCapacityDrop()));
+		if (cap.getUpperBound() < fmax)
+			cap.constraintUB(cdrp);
+		else {
+			cap.constraintUB(fmax);
+			cap.setLowerBound(Math.min(cdrp, cap.getLowerBound()));
+		}*/
 		return cap;
 	}
 
@@ -53,8 +64,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 			ifl.copy((AuroraIntervalVector)bnd.getOutputs().get(bnd.getSuccessors().indexOf(x)));
 			AbstractNode end = x.getEndNode();
 			if (end == null) {
-				ofl = x.getDensity();
-				ofl.affineTransform(x.getV(), 0);
+				ofl = x.getFlow();
 				AuroraInterval cap = new AuroraInterval();
 				cap.copy(x.getCapacityValue());
 				ofl.affineTransform(Math.min(cap.getUpperBound()/ofl.sum().getUpperBound(), 1), 0);
@@ -98,6 +108,22 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 					double fv = x.getMaxFlow() / flow.sum().getUpperBound();
 					for (int i = 0; i < flow.size(); i++)
 						flow.get(i).affineTransformUB(fv, 0);
+				}
+			}
+		}
+		double fmax = x.getMaxFlow();
+		double cap = Math.max(0, Math.min(fmax, fmax - x.getCapacityDrop()));
+		double lb = flow.sum().getLowerBound();
+		double ub = flow.sum().getUpperBound();
+		if (fmax < ub) {
+			if (fmax < lb) {
+				for (int i = 0; i < flow.size(); i++) {
+					flow.get(i).constraintUB((cap/ub)*flow.get(i).getUpperBound());
+				}
+			}
+			else {
+				for (int i = 0; i < flow.size(); i++) {
+					flow.get(i).setBounds(flow.get(i).getLowerBound(), (cap/ub)*flow.get(i).getUpperBound());
 				}
 			}
 		}

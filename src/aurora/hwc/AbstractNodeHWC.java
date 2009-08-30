@@ -18,10 +18,11 @@ import aurora.util.*;
  * @see NodeFreeway, NodeHighway, NodeUJSignal, NodeUJStop
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeHWC.java,v 1.12.2.9.2.10 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: AbstractNodeHWC.java,v 1.12.2.9.2.28.2.3 2009/07/30 04:11:03 akurzhan Exp $
  */
 public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	protected AuroraIntervalVector[][] splitRatioMatrix = null;
+	protected AuroraIntervalVector[][] splitRatioMatrix0 = null;
 	protected Vector<AuroraIntervalVector[][]> srmProfile = new Vector<AuroraIntervalVector[][]>();
 	protected double srTP = 1.0/12.0; // split ratio matrix change period (default: 1/12 hour)
 	
@@ -83,6 +84,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					}
 					if ((srbuf.size() > 0) && (n > 0)) {
 						splitRatioMatrix = new AuroraIntervalVector[srbuf.size()][n];
+						splitRatioMatrix0 = new AuroraIntervalVector[srbuf.size()][n];
 						int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
 						for (i = 0; i < srbuf.size(); i++) {
 							StringTokenizer st = new StringTokenizer(srbuf.get(i), ", \t");
@@ -100,13 +102,19 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 										srv.get(idx).copy(srv.get(rsz-1));
 								}
 								splitRatioMatrix[i][j] = srv;
+								splitRatioMatrix0[i][j] = new AuroraIntervalVector();
+								splitRatioMatrix0[i][j].copy(srv);
 								j++;
 							}
 							while (j < n) {
-								if (myNetwork.getContainer().isSimulation())
+								if (myNetwork.getContainer().isSimulation()) {
 									splitRatioMatrix[i][j] = new AuroraIntervalVector(sz);
-								else
+									splitRatioMatrix0[i][j] = new AuroraIntervalVector(sz);
+								}
+								else {
 									splitRatioMatrix[i][j] = new AuroraIntervalVector();
+									splitRatioMatrix0[i][j] = new AuroraIntervalVector();
+								}
 								j++;
 							}
 						}
@@ -164,6 +172,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			return !res;
 		try {
 			srTP = Double.parseDouble(p.getAttributes().getNamedItem("tp").getNodeValue());
+			if (srTP > 24) // sampling period in seconds
+				srTP = srTP/3600;
 			NodeList pp = p.getChildNodes();
 			for (int ii = 0; ii < pp.getLength(); ii++)
 				if (pp.item(ii).getNodeName().equals("srm")) {
@@ -263,15 +273,27 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		return dataUpdate3(ts);
+	}
+	
+	/**
+	 * Implementation of raw greedy policy.
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	private synchronized boolean dataUpdate0(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		boolean res = super.dataUpdate(ts);
 		if (!res)
 			return res;
 		//
 		// Set current split ratio matrix
 		//
-		int idx = (int)Math.floor(myNetwork.getSimTime()/srTP);
-		if ((idx >= 0) && (idx < srmProfile.size()))
-			setSplitRatioMatrix(srmProfile.get(idx));
+		int idx = Math.max(0, (int)Math.floor(myNetwork.getSimTime()/srTP));
+		if (splitRatioMatrix0 != null)
+			setSplitRatioMatrix(splitRatioMatrix0);
+		else if (!srmProfile.isEmpty())
+			setSplitRatioMatrix(srmProfile.get(Math.min(idx, srmProfile.size()-1)));
 		int nIn = predecessors.size(); // number of inputs
 		int nOut = successors.size(); // number of outputs
 		int nTypes = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();  // number of vehicle types
@@ -344,9 +366,9 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					val.copy(inDemand[i].get(ii));
 					val.affineTransform(srm[i + ii*nIn][j], 0);
 					sumIns.add(val);
-					if (val.getUpperBound() > 0)
+					if (val.getUpperBound() > 0.1)
 						isContributor = true;
-					inputsSRInfo[i][0] -= srm[i + ii*nIn][j];
+					inputsSRInfo[i + ii*nIn][0] -= srm[i + ii*nIn][j];
 				} // vehicle types 'for' loop
 				if (isContributor)
 					contributors.add((Integer)i);
@@ -376,7 +398,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		//
 		// 1. Adjust inputs according to available capacities for known split ratios
 		double[] remainingCap = new double[badColumns.size()];
-		for (int j = 1; j < badColumns.size(); j++) {
+		for (int j = 0; j < badColumns.size(); j++) {
 			AuroraInterval sumIns = new AuroraInterval();
 			Vector<Integer> contributors = new Vector<Integer>();
 			for (int i = 0; i < nIn; i++) {
@@ -388,7 +410,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					if (sr >= 0) {
 						val.affineTransform(sr, 0);
 						sumIns.add(val);
-						if (val.getUpperBound() > 0)
+						if (val.getUpperBound() > 0.1)
 							isContributor = true;
 					}
 				} // vehicle types 'for' loop
@@ -407,8 +429,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			else
 				remainingCap[j] = outCapacity[badColumns.get(j)].getCenter() - sumIns.getCenter();
 		}
-		// 2. Fill in available capacities
-		for (int j = 1; j < badColumns.size(); j++) {
+		// 2a. Fill in available capacities respecting the specified split ratio bounds
+		for (int j = 0; j < badColumns.size(); j++) {
 			for (int i = 0; i < nIn; i++)
 				for (int ii = 0; ii < nTypes; ii++)
 					if (srm[i + ii*nIn][badColumns.get(j)] < 0) {
@@ -418,20 +440,44 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 							inputsSRInfo[i + ii*nIn][0] = 0;
 							continue;
 						}	
-						double sr = Math.min(remainingCap[j] / demand, inputsSRInfo[i + ii*nIn][0]);
+						double sr = Math.max(0, Math.min(Math.min(remainingCap[j] / demand, inputsSRInfo[i + ii*nIn][0]), Math.abs(srm[i + ii*nIn][badColumns.get(j)])));
+						//sr = Math.max(0, Math.min(remainingCap[j] / demand, inputsSRInfo[i + ii*nIn][0]));
 						inputsSRInfo[i + ii*nIn][0] -= sr;
+						inputsSRInfo[i + ii*nIn][0] = Math.max(inputsSRInfo[i + ii*nIn][0], 0);
 						remainingCap[j] -= sr * demand;
+						remainingCap[j] = Math.max(remainingCap[j], 0);
 						srm[i + ii*nIn][badColumns.get(j)] = sr;
 					}
 		}
+		// 2b. Fill in the rest of available capacities
+		for (int j = 0; j < badColumns.size(); j++) {
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++)
+					if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0)) {
+						double demand = inDemand[i].get(ii).getCenter();
+						if (demand <= 0) {
+							srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0];
+							inputsSRInfo[i + ii*nIn][0] = 0;
+							continue;
+						}
+						double sr = Math.max(0, Math.min(remainingCap[j] / demand, inputsSRInfo[i + ii*nIn][0]));
+						inputsSRInfo[i + ii*nIn][0] -= sr;
+						inputsSRInfo[i + ii*nIn][0] = Math.max(inputsSRInfo[i + ii*nIn][0], 0);
+						remainingCap[j] -= sr * demand;
+						remainingCap[j] = Math.max(remainingCap[j], 0);
+						srm[i + ii*nIn][badColumns.get(j)] += sr;
+					}
+		}
 		// 3. Assign the remaining split ratio shares
-		for (int j = 1; j < badColumns.size(); j++) {
+		for (int j = 0; j < badColumns.size(); j++) {
 			AuroraInterval sumIns = new AuroraInterval();
 			Vector<Integer> contributors = new Vector<Integer>();
 			for (int i = 0; i < nIn; i++) {
 				boolean isContributor = false;
 				for (int ii = 0; ii < nTypes; ii++) {
-					if (splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0)
+					if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+						(inputsSRInfo[i + ii*nIn][1] > 0))
 						srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0]/inputsSRInfo[i + ii*nIn][1];
 					AuroraInterval val = new AuroraInterval();
 					val.copy(inDemand[i].get(ii));
@@ -439,7 +485,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					if (sr >= 0) {
 						val.affineTransform(sr, 0);
 						sumIns.add(val);
-						if (val.getUpperBound() > 0)
+						if (val.getUpperBound() > 0.1)
 							isContributor = true;
 					}
 				} // vehicle types 'for' loop
@@ -454,6 +500,579 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					for (int ii = 0; ii < nTypes; ii++)
 						inDemand[contributors.get(i)].get(ii).affineTransform(cc, 0);
 		}
+		//
+		// Assign split ratios
+		//
+		for (int j = 0; j < nOut; j++)
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++) {
+					splitRatioMatrix[i][j].get(ii).setCenter(srm[i + ii*nIn][j], 0);
+				}
+		//
+		// Assign input flows
+		//
+		for (int i = 0; i < nIn; i++) {
+			inputs.set(i, inDemand[i]);
+			AbstractControllerSimple ctrl = controllers.get(i);
+			if (ctrl != null)
+				ctrl.setInput(new Double(inDemand[i].sum().getUpperBound()));
+		}
+		//
+		// Assign output flows
+		//
+		for (int j = 0; j < nOut; j++) {
+			AuroraIntervalVector outFlow = new AuroraIntervalVector(nTypes);
+			for (int i = 0; i < nIn; i++) {
+				double[] splitRatios = new double[nTypes];
+				for (int ii = 0; ii < nTypes; ii++)
+					splitRatios[ii] = srm[i + ii*nIn][j];
+				AuroraIntervalVector flw = new AuroraIntervalVector(nTypes);
+				flw.copy(inDemand[i]);
+				flw.affineTransform(splitRatios, 0);
+				outFlow.add(flw);
+			}
+			outputs.set(j, outFlow);
+		}
+		return res;
+	}
+	
+	/**
+	 * Implementation greedy policy with proportional distribution of excess demand.
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	private synchronized boolean dataUpdate1(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		boolean res = super.dataUpdate(ts);
+		if (!res)
+			return res;
+		//
+		// Set current split ratio matrix
+		//
+		int idx = Math.max(0, (int)Math.floor(myNetwork.getSimTime()/srTP));
+		if (splitRatioMatrix0 != null)
+			setSplitRatioMatrix(splitRatioMatrix0);
+		else if (!srmProfile.isEmpty())
+			setSplitRatioMatrix(srmProfile.get(Math.min(idx, srmProfile.size()-1)));
+		int nIn = predecessors.size(); // number of inputs
+		int nOut = successors.size(); // number of outputs
+		int nTypes = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();  // number of vehicle types
+		//
+		// Initialize input demands
+		//
+		AuroraIntervalVector[] inDemand = new AuroraIntervalVector[nIn];
+		for (int i = 0; i < nIn; i++) {
+			inDemand[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlow();
+			if ((myNetwork.isControlled()) && (controllers.get(i) != null)) {
+				AuroraInterval sumDemand = inDemand[i].sum();
+				double controllerRate = (Double)controllers.get(i).computeInput(this);
+				if (controllerRate < sumDemand.getUpperBound()) { // adjust inputs according to controller rates
+					double c = controllerRate / sumDemand.getUpperBound();
+					for (int ii = 0; ii < nTypes; ii++)
+						inDemand[i].get(ii).setUpperBound(c * inDemand[i].get(ii).getUpperBound());
+				}
+			}
+		}
+		//
+		// Initialize output capacities
+		//
+		AuroraInterval[] outCapacity = new AuroraInterval[nOut];
+		for (int j = 0; j < nOut; j++)
+			outCapacity[j] = ((AbstractLinkHWC)successors.get(j)).getCapacity();
+		//
+		// Initialize split ratio matrix taking into account multiple vehicle types
+		//
+		// 1. Fill in the values
+		double[][] srm = new double[nIn * nTypes][nOut];
+		for (int j = 0; j < nOut; j++)
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++)
+					srm[i + ii*nIn][j] = splitRatioMatrix[i][j].get(ii).getCenter();
+		// 2. Make sure split ratio matrix is valid
+		Util.normalizeMatrix(srm);
+		// 3. Record outputs with undefined split ratios
+		Vector<Integer> badColumns = new Vector<Integer>();
+		for (int j = 0; j < nOut; j++) {
+			boolean badColumn = false;
+			for (int i = 0; i < nIn*nTypes; i++)
+				if (srm[i][j] < 0)
+					if (Util.countNegativeElements(srm, i) > 1)
+						badColumn = true;
+					else
+						srm[i][j] = Math.max(0, 1 - Util.rowSumPositive(srm, i));
+			if (badColumn) // save indices of the outputs that have undefined split ratios
+				badColumns.add(j);	
+		}
+		// 4. Collect info about available share for undefined split ratios
+		//    and the number of undefined split ratios for each input
+		double[][] inputsSRInfo = new double[nIn*nTypes][2];
+		for (int i = 0; i < nIn*nTypes; i++) {
+			inputsSRInfo[i][0] = 1;  // remaining share for a split ratio
+			inputsSRInfo[i][1] = Util.countNegativeElements(srm, i);  // number of undefined split ratios
+		}
+		//
+		// Reduce input demand according to capacities on the outputs for which all split ratios are known
+		//
+		for (int j = 0; j < nOut; j++) {
+			if (badColumns.indexOf((Integer)j) > -1)
+				continue;
+			AuroraInterval sumIns = new AuroraInterval();
+			Vector<Integer> contributors = new Vector<Integer>();
+			// compute total input demand assigned to output 'j'
+			for (int i = 0; i < nIn; i++) {
+				boolean isContributor = false;
+				for (int ii = 0; ii < nTypes; ii++) {
+					AuroraInterval val = new AuroraInterval();
+					val.copy(inDemand[i].get(ii));
+					val.affineTransform(srm[i + ii*nIn][j], 0);
+					sumIns.add(val);
+					if (val.getUpperBound() > 0.1)
+						isContributor = true;
+					inputsSRInfo[i + ii*nIn][0] -= srm[i + ii*nIn][j];
+				} // vehicle types 'for' loop
+				if (isContributor)
+					contributors.add((Integer)i);
+			} // row 'for' loop
+			// adjust inputs to capacity
+			double lbc = 1;
+			double ubc = 1;
+			if (outCapacity[j].getLowerBound() < sumIns.getLowerBound())
+				lbc = outCapacity[j].getLowerBound() / sumIns.getLowerBound();
+			if (outCapacity[j].getUpperBound() < sumIns.getUpperBound())
+				ubc = outCapacity[j].getUpperBound() / sumIns.getUpperBound();
+			if ((lbc < 1) || (ubc < 1)) {
+				for (int i = 0; i < contributors.size(); i++) {
+					for (int ii = 0; ii < nTypes; ii++) {
+						if ((inDemand[contributors.get(i)].get(ii).getSize() == 0) && (lbc == ubc))
+							inDemand[contributors.get(i)].get(ii).affineTransform(lbc, 0);
+						else {
+							inDemand[contributors.get(i)].get(ii).affineTransformLB(lbc, 0);
+							inDemand[contributors.get(i)].get(ii).affineTransformUB(ubc, 0);
+						}
+					} // vehicle types 'for' loop
+				} // contributors 'for' loop
+			} // 'if'
+		} // column 'for' loop
+		//
+		// Process outputs with undefined split ratios
+		//
+		// 1. Adjust inputs according to available capacities for known split ratios
+		double[] remainingCap = new double[badColumns.size()];
+		for (int j = 0; j < badColumns.size(); j++) {
+			AuroraInterval sumIns = new AuroraInterval();
+			Vector<Integer> contributors = new Vector<Integer>();
+			for (int i = 0; i < nIn; i++) {
+				boolean isContributor = false;
+				for (int ii = 0; ii < nTypes; ii++) {
+					AuroraInterval val = new AuroraInterval();
+					val.copy(inDemand[i].get(ii));
+					double sr = srm[i + ii*nIn][badColumns.get(j)];
+					if (sr >= 0) {
+						val.affineTransform(sr, 0);
+						sumIns.add(val);
+						if (val.getUpperBound() > 0.1)
+							isContributor = true;
+					}
+				} // vehicle types 'for' loop
+				if (isContributor)
+					contributors.add((Integer)i);
+			} // row 'for' loop
+			double cc = 1;
+			if (outCapacity[badColumns.get(j)].getCenter() < sumIns.getCenter())
+				cc = outCapacity[badColumns.get(j)].getCenter() / sumIns.getCenter();
+			if (cc < 1) {
+				for (int i = 0; i < contributors.size(); i++)
+					for (int ii = 0; ii < nTypes; ii++)
+						inDemand[contributors.get(i)].get(ii).affineTransform(cc, 0);
+				remainingCap[j] = 0.0;
+			}
+			else
+				remainingCap[j] = outCapacity[badColumns.get(j)].getCenter() - sumIns.getCenter();
+		}
+		// 2a. Fill in available capacities respecting the specified split ratio bounds
+		for (int j = 0; j < badColumns.size(); j++) {
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++)
+					if (srm[i + ii*nIn][badColumns.get(j)] < 0) {
+						double demand = inDemand[i].get(ii).getCenter();
+						if (demand <= 0) {
+							srm[i + ii*nIn][badColumns.get(j)] = inputsSRInfo[i + ii*nIn][0];
+							inputsSRInfo[i + ii*nIn][0] = 0;
+							continue;
+						}	
+						double sr = Math.max(0, Math.min(Math.min(remainingCap[j] / demand, inputsSRInfo[i + ii*nIn][0]), Math.abs(srm[i + ii*nIn][badColumns.get(j)])));
+						inputsSRInfo[i + ii*nIn][0] -= sr;
+						inputsSRInfo[i + ii*nIn][0] = Math.max(inputsSRInfo[i + ii*nIn][0], 0);
+						remainingCap[j] -= sr * demand;
+						remainingCap[j] = Math.max(remainingCap[j], 0);
+						srm[i + ii*nIn][badColumns.get(j)] = sr;
+					}
+		}
+		// 2b. Fill in the rest of available capacities
+		for (int j = 0; j < badColumns.size(); j++) {
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++)
+					if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0)) {
+						double demand = inDemand[i].get(ii).getCenter();
+						if (demand <= 0) {
+							srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0];
+							inputsSRInfo[i + ii*nIn][0] = 0;
+							continue;
+						}
+						double sr = Math.max(0, Math.min(remainingCap[j] / demand, inputsSRInfo[i + ii*nIn][0]));
+						inputsSRInfo[i + ii*nIn][0] -= sr;
+						inputsSRInfo[i + ii*nIn][0] = Math.max(inputsSRInfo[i + ii*nIn][0], 0);
+						remainingCap[j] -= sr * demand;
+						remainingCap[j] = Math.max(remainingCap[j], 0);
+						srm[i + ii*nIn][badColumns.get(j)] += sr;
+					}
+		}
+		// 3. Assign the remaining split ratio shares proportionally to capacities
+		for (int i = 0; i < nIn; i++) {
+			for (int ii = 0; ii < nTypes; ii++) {
+				AuroraInterval totalCapacity = new AuroraInterval(); 
+				for (int j = 0; j < badColumns.size(); j++) {
+					if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0))
+						totalCapacity.add(outCapacity[badColumns.get(j)]);
+				}
+				for (int j = 0; j < badColumns.size(); j++) {
+					if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0)) {
+						if (totalCapacity.getCenter() > 0)
+							srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0] * (outCapacity[badColumns.get(j)].getCenter()/totalCapacity.getCenter());
+						else
+							srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0]/inputsSRInfo[i + ii*nIn][1];
+					}
+				}
+			} // vehicle types 'for' loop
+		} // row 'for' loop
+		// 4. Scale down inputs according to capacities if necessary 
+		for (int j = 0; j < badColumns.size(); j++) {
+			AuroraInterval sumIns = new AuroraInterval();
+			Vector<Integer> contributors = new Vector<Integer>();
+			for (int i = 0; i < nIn; i++) {
+				boolean isContributor = false;
+				for (int ii = 0; ii < nTypes; ii++) {
+					AuroraInterval val = new AuroraInterval();
+					val.copy(inDemand[i].get(ii));
+					if (srm[i + ii*nIn][badColumns.get(j)] >= 0) {
+						val.affineTransform(srm[i + ii*nIn][badColumns.get(j)], 0);
+						sumIns.add(val);
+						if (val.getUpperBound() > 0.1)
+							isContributor = true;
+					}
+				} // vehicle types 'for' loop
+				if (isContributor)
+					contributors.add((Integer)i);
+			} // row 'for' loop
+			double cc = 1;
+			if (outCapacity[badColumns.get(j)].getCenter() < sumIns.getCenter())
+				cc = outCapacity[badColumns.get(j)].getCenter() / sumIns.getCenter();
+			if (cc < 1)
+				for (int i = 0; i < contributors.size(); i++)
+					for (int ii = 0; ii < nTypes; ii++)
+						inDemand[contributors.get(i)].get(ii).affineTransform(cc, 0);
+		}
+		//
+		// Assign split ratios
+		//
+		for (int j = 0; j < nOut; j++)
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++) {
+					splitRatioMatrix[i][j].get(ii).setCenter(srm[i + ii*nIn][j], 0);
+				}
+		//
+		// Assign input flows
+		//
+		for (int i = 0; i < nIn; i++) {
+			inputs.set(i, inDemand[i]);
+			AbstractControllerSimple ctrl = controllers.get(i);
+			if (ctrl != null)
+				ctrl.setInput(new Double(inDemand[i].sum().getUpperBound()));
+		}
+		//
+		// Assign output flows
+		//
+		for (int j = 0; j < nOut; j++) {
+			AuroraIntervalVector outFlow = new AuroraIntervalVector(nTypes);
+			for (int i = 0; i < nIn; i++) {
+				double[] splitRatios = new double[nTypes];
+				for (int ii = 0; ii < nTypes; ii++)
+					splitRatios[ii] = srm[i + ii*nIn][j];
+				AuroraIntervalVector flw = new AuroraIntervalVector(nTypes);
+				flw.copy(inDemand[i]);
+				flw.affineTransform(splitRatios, 0);
+				outFlow.add(flw);
+			}
+			outputs.set(j, outFlow);
+		}
+		return res;
+	}
+	
+	/**
+	 * Implementation greedy policy with fair distribution of demand.
+	 * (Algorithm of Ajith Muralidharan).
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	private synchronized boolean dataUpdate2(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		boolean res = super.dataUpdate(ts);
+		if (!res)
+			return res;
+		//
+		// Set current split ratio matrix
+		//
+		int idx = Math.max(0, (int)Math.floor(myNetwork.getSimTime()/srTP));
+		if (splitRatioMatrix0 != null)
+			setSplitRatioMatrix(splitRatioMatrix0);
+		else if (!srmProfile.isEmpty())
+			setSplitRatioMatrix(srmProfile.get(Math.min(idx, srmProfile.size()-1)));
+		int nIn = predecessors.size(); // number of inputs
+		int nOut = successors.size(); // number of outputs
+		int nTypes = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();  // number of vehicle types
+		//
+		// Initialize input demands
+		//
+		AuroraIntervalVector[] inDemand = new AuroraIntervalVector[nIn];
+		for (int i = 0; i < nIn; i++) {
+			inDemand[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlow();
+			if ((myNetwork.isControlled()) && (controllers.get(i) != null)) {
+				AuroraInterval sumDemand = inDemand[i].sum();
+				double controllerRate = (Double)controllers.get(i).computeInput(this);
+				if (controllerRate < sumDemand.getUpperBound()) { // adjust inputs according to controller rates
+					double c = controllerRate / sumDemand.getUpperBound();
+					for (int ii = 0; ii < nTypes; ii++)
+						inDemand[i].get(ii).setUpperBound(c * inDemand[i].get(ii).getUpperBound());
+				}
+			}
+		}
+		//
+		// Initialize output capacities
+		//
+		AuroraInterval[] outCapacity = new AuroraInterval[nOut];
+		for (int j = 0; j < nOut; j++)
+			outCapacity[j] = ((AbstractLinkHWC)successors.get(j)).getCapacity();
+		//
+		// Initialize split ratio matrix taking into account multiple vehicle types
+		//
+		// 1. Fill in the values
+		double[][] srm = new double[nIn * nTypes][nOut];
+		for (int j = 0; j < nOut; j++)
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++)
+					srm[i + ii*nIn][j] = splitRatioMatrix[i][j].get(ii).getCenter();
+		// 2. Make sure split ratio matrix is valid
+		Util.normalizeMatrix(srm);
+		// 3. Record outputs with undefined split ratios
+		Vector<Integer> badColumns = new Vector<Integer>();
+		for (int j = 0; j < nOut; j++) {
+			boolean badColumn = false;
+			for (int i = 0; i < nIn*nTypes; i++)
+				if (srm[i][j] < 0)
+					if (Util.countNegativeElements(srm, i) > 1)
+						badColumn = true;
+					else
+						srm[i][j] = Math.max(0, 1 - Util.rowSumPositive(srm, i));
+			if (badColumn) // save indices of the outputs that have undefined split ratios
+				badColumns.add(j);	
+		}
+		// 4. Collect info about available share for undefined split ratios
+		//    and the number of undefined split ratios for each input
+		double[][] inputsSRInfo = new double[nIn*nTypes][2];
+		for (int i = 0; i < nIn*nTypes; i++) {
+			inputsSRInfo[i][1] = Util.countNegativeElements(srm, i);  // number of undefined split ratios
+			if (inputsSRInfo[i][1] < 1)
+				inputsSRInfo[i][0] = 0;
+			else
+				inputsSRInfo[i][0] = 1; // remaining share for a split ratio
+		}
+		//
+		// Reduce input demand according to capacities on the outputs for which all split ratios are known
+		//
+		for (int j = 0; j < nOut; j++) {
+			if (badColumns.indexOf((Integer)j) > -1)
+				continue;
+			AuroraInterval sumIns = new AuroraInterval();
+			Vector<Integer> contributors = new Vector<Integer>();
+			// compute total input demand assigned to output 'j'
+			for (int i = 0; i < nIn; i++) {
+				boolean isContributor = false;
+				for (int ii = 0; ii < nTypes; ii++) {
+					AuroraInterval val = new AuroraInterval();
+					val.copy(inDemand[i].get(ii));
+					val.affineTransform(srm[i + ii*nIn][j], 0);
+					sumIns.add(val);
+					if (val.getUpperBound() > 0.0001)
+						isContributor = true;
+					inputsSRInfo[i + ii*nIn][0] -= srm[i + ii*nIn][j];
+				} // vehicle types 'for' loop
+				if (isContributor)
+					contributors.add((Integer)i);
+			} // row 'for' loop
+			// adjust inputs to capacity
+			double lbc = 1;
+			double ubc = 1;
+			if (outCapacity[j].getLowerBound() < sumIns.getLowerBound())
+				lbc = outCapacity[j].getLowerBound() / sumIns.getLowerBound();
+			if (outCapacity[j].getUpperBound() < sumIns.getUpperBound())
+				ubc = outCapacity[j].getUpperBound() / sumIns.getUpperBound();
+			if ((lbc < 1) || (ubc < 1)) {
+				for (int i = 0; i < contributors.size(); i++) {
+					for (int ii = 0; ii < nTypes; ii++) {
+						if ((inDemand[contributors.get(i)].get(ii).getSize() == 0) && (lbc == ubc))
+							inDemand[contributors.get(i)].get(ii).affineTransform(lbc, 0);
+						else {
+							inDemand[contributors.get(i)].get(ii).affineTransformLB(lbc, 0);
+							inDemand[contributors.get(i)].get(ii).affineTransformUB(ubc, 0);
+						}
+					} // vehicle types 'for' loop
+				} // contributors 'for' loop
+			} // 'if'
+		} // column 'for' loop
+		//
+		// Process outputs with undefined split ratios if there are any
+		//
+		if (!badColumns.isEmpty()) {
+			// 1. Reduce inputs according to available capacities for known split ratios
+			double[] remainingCap = new double[badColumns.size()];
+			for (int j = 0; j < badColumns.size(); j++) {
+				AuroraInterval sumIns = new AuroraInterval();
+				Vector<Integer> contributors = new Vector<Integer>();
+				for (int i = 0; i < nIn; i++) {
+					boolean isContributor = false;
+					for (int ii = 0; ii < nTypes; ii++) {
+						AuroraInterval val = new AuroraInterval();
+						val.copy(inDemand[i].get(ii));
+						double sr = srm[i + ii*nIn][badColumns.get(j)];
+						if (sr >= 0) {
+							val.affineTransform(sr, 0);
+							sumIns.add(val);
+							if (val.getUpperBound() > 0.0001)
+								isContributor = true;
+						}
+						else
+							srm[i + ii*nIn][badColumns.get(j)] = 0.0;
+					} // vehicle types 'for' loop
+					if (isContributor)
+						contributors.add((Integer)i);
+				} // row 'for' loop
+				double cc = 1;
+				if (outCapacity[badColumns.get(j)].getCenter() < sumIns.getCenter())
+					cc = outCapacity[badColumns.get(j)].getCenter() / sumIns.getCenter();
+				if (cc < 1) {
+					for (int i = 0; i < contributors.size(); i++)
+						for (int ii = 0; ii < nTypes; ii++)
+							inDemand[contributors.get(i)].get(ii).affineTransform(cc, 0);
+					remainingCap[j] = 0.0;
+				}
+				else
+					remainingCap[j] = outCapacity[badColumns.get(j)].getCenter() - sumIns.getCenter();
+			}
+			// 2. Fill in the remaining capacity uniformly
+			for (int i = 0; i < nIn; i++) {
+				for (int ii = 0; ii < nTypes; ii++) {
+					double demand = inDemand[i].get(ii).getCenter();
+					double totalRemainingCap = 10.0;
+					while ((totalRemainingCap > 1) && (inputsSRInfo[i + ii*nIn][0] > 0)) {
+						totalRemainingCap = 0.0;
+						double minRatio = 1.0;
+						double maxRatio = 0.0;
+						int minIndex = 0;
+						for (int j = 0; j < badColumns.size(); j++) {
+							if (splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() >= 0)
+								continue;
+							totalRemainingCap += remainingCap[j];
+							double a2cRatio;
+							if (outCapacity[badColumns.get(j)].getCenter() > 0)
+								a2cRatio = (outCapacity[badColumns.get(j)].getCenter() - remainingCap[j]) / outCapacity[badColumns.get(j)].getCenter();
+							else
+								a2cRatio = 1.0;
+							if (a2cRatio < minRatio) {
+								minRatio = a2cRatio;
+								minIndex = j;
+							}
+							if (a2cRatio > maxRatio)
+								maxRatio = a2cRatio;
+						} // column 'for' loop
+						double flow;
+						flow = maxRatio * outCapacity[badColumns.get(minIndex)].getCenter() - outCapacity[badColumns.get(minIndex)].getCenter() + remainingCap[minIndex];
+						if (flow < 0.001)
+							break; //flow = remainingCap[minIndex];
+						flow = Math.min(flow, inputsSRInfo[i + ii*nIn][0]*demand);
+						double sr;
+						if (demand > 0.001)
+							sr = flow / demand;
+						else
+							sr = inputsSRInfo[i + ii*nIn][0];
+						srm[i + ii*nIn][badColumns.get(minIndex)] += sr;
+						inputsSRInfo[i + ii*nIn][0] -= sr;
+						inputsSRInfo[i + ii*nIn][0] = Math.max(0, inputsSRInfo[i + ii*nIn][0]);
+						remainingCap[minIndex] -= flow;
+						remainingCap[minIndex] = Math.max(0, remainingCap[minIndex]);
+						totalRemainingCap -= flow;
+						totalRemainingCap = Math.max(0, totalRemainingCap);
+					} // 'while' loop
+				} // vehicle types 'for' loop
+			} // row 'for' loop
+			// 3. Assign the remaining split ratio shares proportionally to capacities
+			for (int i = 0; i < nIn; i++) {
+				for (int ii = 0; ii < nTypes; ii++) {
+					AuroraInterval totalCapacity = new AuroraInterval(); 
+					for (int j = 0; j < badColumns.size(); j++) {
+						if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0))
+							totalCapacity.add(outCapacity[badColumns.get(j)]);
+					}
+					for (int j = 0; j < badColumns.size(); j++) {
+						if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0)) {
+							if (totalCapacity.getCenter() > 0)
+								srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0] * (outCapacity[badColumns.get(j)].getCenter()/totalCapacity.getCenter());
+							else
+								srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0]/inputsSRInfo[i + ii*nIn][1];
+						}
+					}
+				} // vehicle types 'for' loop
+			} // row 'for' loop
+			// 4. Reduce inputs according to capacities if necessary 
+			for (int j = 0; j < badColumns.size(); j++) {
+				AuroraInterval sumIns = new AuroraInterval();
+				Vector<Integer> contributors = new Vector<Integer>();
+				for (int i = 0; i < nIn; i++) {
+					boolean isContributor = false;
+					for (int ii = 0; ii < nTypes; ii++) {
+						AuroraInterval val = new AuroraInterval();
+						val.copy(inDemand[i].get(ii));
+						if (srm[i + ii*nIn][badColumns.get(j)] >= 0) {
+							val.affineTransform(srm[i + ii*nIn][badColumns.get(j)], 0);
+							sumIns.add(val);
+							if (val.getUpperBound() > 0.0001)
+								isContributor = true;
+						}
+					} // vehicle types 'for' loop
+					if (isContributor)
+						contributors.add((Integer)i);
+				} // row 'for' loop
+				double cc = 1;
+				if (outCapacity[badColumns.get(j)].getCenter() < sumIns.getCenter())
+					cc = outCapacity[badColumns.get(j)].getCenter() / sumIns.getCenter();
+				if (cc < 1)
+					for (int i = 0; i < contributors.size(); i++)
+						for (int ii = 0; ii < nTypes; ii++)
+							inDemand[contributors.get(i)].get(ii).affineTransform(cc, 0);
+			}
+		} // end of processing undefined split ratios
+		//
+		// Assign split ratios
+		//
+		for (int j = 0; j < nOut; j++)
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++) {
+					splitRatioMatrix[i][j].get(ii).setCenter(srm[i + ii*nIn][j], 0);
+				}
 		//
 		// Assign input flows
 		//
@@ -482,7 +1101,275 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		return res;
 	}
 
-	
+	/**
+	 * Implementation greedy policy with fair distribution of demand.<br>
+	 * New implementation - unabridged.
+	 * (Algorithm of Ajith Muralidharan).
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	private synchronized boolean dataUpdate3(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		boolean res = super.dataUpdate(ts);
+		if (!res)
+			return res;
+		//
+		// Set current split ratio matrix
+		//
+		int idx = Math.max(0, (int)Math.floor(myNetwork.getSimTime()/srTP));
+		if (splitRatioMatrix0 != null)
+			setSplitRatioMatrix(splitRatioMatrix0);
+		else if (!srmProfile.isEmpty())
+			setSplitRatioMatrix(srmProfile.get(Math.min(idx, srmProfile.size()-1)));
+		int nIn = predecessors.size(); // number of inputs
+		int nOut = successors.size(); // number of outputs
+		int nTypes = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();  // number of vehicle types
+		//
+		// Initialize input demands
+		//
+		AuroraIntervalVector[] inDemand = new AuroraIntervalVector[nIn];
+		for (int i = 0; i < nIn; i++) {
+			inDemand[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlow();
+			if ((myNetwork.isControlled()) && (controllers.get(i) != null)) {
+				AuroraInterval sumDemand = inDemand[i].sum();
+				double controllerRate = (Double)controllers.get(i).computeInput(this);
+				if (controllerRate < sumDemand.getUpperBound()) { // adjust inputs according to controller rates
+					double c = controllerRate / sumDemand.getUpperBound();
+					for (int ii = 0; ii < nTypes; ii++)
+						inDemand[i].get(ii).setUpperBound(c * inDemand[i].get(ii).getUpperBound());
+				}
+			}
+		}
+		//
+		// Initialize output capacities
+		//
+		AuroraInterval[] outCapacity = new AuroraInterval[nOut];
+		for (int j = 0; j < nOut; j++)
+			outCapacity[j] = ((AbstractLinkHWC)successors.get(j)).getCapacity();
+		//
+		// Initialize split ratio matrix taking into account multiple vehicle types
+		//
+		// 1. Fill in the values
+		double[][] srm = new double[nIn * nTypes][nOut];
+		for (int j = 0; j < nOut; j++)
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++)
+					srm[i + ii*nIn][j] = splitRatioMatrix[i][j].get(ii).getCenter();
+		// 2. Make sure split ratio matrix is valid
+		Util.normalizeMatrix(srm);
+		// 3. Record outputs with undefined split ratios
+		Vector<Integer> badColumns = new Vector<Integer>();
+		for (int j = 0; j < nOut; j++) {
+			boolean badColumn = false;
+			for (int i = 0; i < nIn*nTypes; i++)
+				if (srm[i][j] < 0)
+					if (Util.countNegativeElements(srm, i) > 1)
+						badColumn = true;
+					else
+						srm[i][j] = Math.max(0, 1 - Util.rowSumPositive(srm, i));
+			if (badColumn) // save indices of the outputs that have undefined split ratios
+				badColumns.add(j);	
+		}
+		// 4. Collect info about available share for undefined split ratios
+		//    and the number of undefined split ratios for each input
+		double[][] inputsSRInfo = new double[nIn*nTypes][2];
+		for (int i = 0; i < nIn*nTypes; i++) {
+			inputsSRInfo[i][1] = Util.countNegativeElements(srm, i);  // number of undefined split ratios
+			if (inputsSRInfo[i][1] < 1)
+				inputsSRInfo[i][0] = 0;
+			else
+				inputsSRInfo[i][0] = 1; // remaining share for a split ratio
+		}
+		//
+		// Reduce input demand according to capacities on the outputs for which all split ratios are known
+		//
+		for (int j = 0; j < nOut; j++) {
+			if (badColumns.indexOf((Integer)j) > -1)
+				continue;
+			AuroraInterval sumIns = new AuroraInterval();
+			Vector<Integer> contributors = new Vector<Integer>();
+			// compute total input demand assigned to output 'j'
+			for (int i = 0; i < nIn; i++) {
+				boolean isContributor = false;
+				for (int ii = 0; ii < nTypes; ii++) {
+					AuroraInterval val = new AuroraInterval();
+					val.copy(inDemand[i].get(ii));
+					val.affineTransform(srm[i + ii*nIn][j], 0);
+					sumIns.add(val);
+					if (val.getUpperBound() > 0.0001)
+						isContributor = true;
+					inputsSRInfo[i + ii*nIn][0] -= srm[i + ii*nIn][j];
+				} // vehicle types 'for' loop
+				if (isContributor)
+					contributors.add((Integer)i);
+			} // row 'for' loop
+			// adjust inputs to capacity
+			double lbc = 1;
+			double ubc = 1;
+			if (outCapacity[j].getLowerBound() < sumIns.getLowerBound())
+				lbc = outCapacity[j].getLowerBound() / sumIns.getLowerBound();
+			if (outCapacity[j].getUpperBound() < sumIns.getUpperBound())
+				ubc = outCapacity[j].getUpperBound() / sumIns.getUpperBound();
+			if ((lbc < 1) || (ubc < 1)) {
+				for (int i = 0; i < contributors.size(); i++) {
+					for (int ii = 0; ii < nTypes; ii++) {
+						if ((inDemand[contributors.get(i)].get(ii).getSize() == 0) && (lbc == ubc))
+							inDemand[contributors.get(i)].get(ii).affineTransform(lbc, 0);
+						else {
+							inDemand[contributors.get(i)].get(ii).affineTransformLB(lbc, 0);
+							inDemand[contributors.get(i)].get(ii).affineTransformUB(ubc, 0);
+						}
+					} // vehicle types 'for' loop
+				} // contributors 'for' loop
+			} // 'if'
+		} // column 'for' loop
+		//
+		// Process outputs with undefined split ratios if there are any
+		//
+		if (!badColumns.isEmpty()) {
+			// 1. Reduce inputs according to available capacities for known split ratios
+			double[] outDemand = new double[badColumns.size()];
+			for (int j = 0; j < badColumns.size(); j++) {
+				AuroraInterval sumIns = new AuroraInterval();
+				for (int i = 0; i < nIn; i++) {
+					for (int ii = 0; ii < nTypes; ii++) {
+						AuroraInterval val = new AuroraInterval();
+						val.copy(inDemand[i].get(ii));
+						double sr = srm[i + ii*nIn][badColumns.get(j)];
+						if (sr >= 0) {
+							val.affineTransform(sr, 0);
+							sumIns.add(val);
+						}
+						else
+							srm[i + ii*nIn][badColumns.get(j)] = 0.0;
+					} // vehicle types 'for' loop
+				} // row 'for' loop
+				outDemand[j] = sumIns.getCenter();
+			}
+			// 2. Fill in the remaining capacity uniformly
+			for (int i = 0; i < nIn; i++) {
+				for (int ii = 0; ii < nTypes; ii++) {
+					double demand = inDemand[i].get(ii).getCenter();
+					while (inputsSRInfo[i + ii*nIn][0] > 0.00000001) {
+						double minRatio = 100.0;
+						double maxRatio = 0.0;
+						int minIndex = 0;
+						for (int j = 0; j < badColumns.size(); j++) {
+							if (splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() >= 0)
+								continue;
+							double a2cRatio;
+							if (outCapacity[badColumns.get(j)].getCenter() > 0)
+								a2cRatio = outDemand[j] / outCapacity[badColumns.get(j)].getCenter();
+							else
+								a2cRatio = 1.0;
+							if (a2cRatio < minRatio) {
+								minRatio = a2cRatio;
+								minIndex = j;
+							}
+							if (a2cRatio > maxRatio)
+								maxRatio = a2cRatio;
+						} // column 'for' loop
+						if ((maxRatio - minRatio) < 0.0000001)
+							break;
+						double flow;
+						flow = maxRatio * outCapacity[badColumns.get(minIndex)].getCenter() - outDemand[minIndex];
+						flow = Math.min(flow, inputsSRInfo[i + ii*nIn][0]*demand);
+						double sr;
+						if (demand > 0.0001)
+							sr = flow / demand;
+						else
+							sr = inputsSRInfo[i + ii*nIn][0];
+						srm[i + ii*nIn][badColumns.get(minIndex)] += sr;
+						inputsSRInfo[i + ii*nIn][0] -= sr;
+						inputsSRInfo[i + ii*nIn][0] = Math.max(0, inputsSRInfo[i + ii*nIn][0]);
+						outDemand[minIndex] += flow;
+					} // 'while' loop
+				} // vehicle types 'for' loop
+			} // row 'for' loop
+			// 3. Assign the remaining split ratio shares proportionally to capacities
+			for (int i = 0; i < nIn; i++) {
+				for (int ii = 0; ii < nTypes; ii++) {
+					AuroraInterval totalCapacity = new AuroraInterval(); 
+					for (int j = 0; j < badColumns.size(); j++) {
+						if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0))
+							totalCapacity.add(outCapacity[badColumns.get(j)]);
+					}
+					for (int j = 0; j < badColumns.size(); j++) {
+						if ((splitRatioMatrix[i][badColumns.get(j)].get(ii).getCenter() < 0) &&
+							(inputsSRInfo[i + ii*nIn][1] > 0)) {
+							if (totalCapacity.getCenter() > 0)
+								srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0] * (outCapacity[badColumns.get(j)].getCenter()/totalCapacity.getCenter());
+							else
+								srm[i + ii*nIn][badColumns.get(j)] += inputsSRInfo[i + ii*nIn][0]/inputsSRInfo[i + ii*nIn][1];
+						}
+					}
+				} // vehicle types 'for' loop
+			} // row 'for' loop
+			// 4. Reduce inputs according to capacities if necessary 
+			for (int j = 0; j < badColumns.size(); j++) {
+				AuroraInterval sumIns = new AuroraInterval();
+				Vector<Integer> contributors = new Vector<Integer>();
+				for (int i = 0; i < nIn; i++) {
+					boolean isContributor = false;
+					for (int ii = 0; ii < nTypes; ii++) {
+						AuroraInterval val = new AuroraInterval();
+						val.copy(inDemand[i].get(ii));
+						if (srm[i + ii*nIn][badColumns.get(j)] >= 0) {
+							val.affineTransform(srm[i + ii*nIn][badColumns.get(j)], 0);
+							sumIns.add(val);
+							if (val.getUpperBound() > 0.0001)
+								isContributor = true;
+						}
+					} // vehicle types 'for' loop
+					if (isContributor)
+						contributors.add((Integer)i);
+				} // row 'for' loop
+				double cc = 1;
+				if (outCapacity[badColumns.get(j)].getCenter() < sumIns.getCenter())
+					cc = outCapacity[badColumns.get(j)].getCenter() / sumIns.getCenter();
+				if (cc < 1)
+					for (int i = 0; i < contributors.size(); i++)
+						for (int ii = 0; ii < nTypes; ii++)
+							inDemand[contributors.get(i)].get(ii).affineTransform(cc, 0);
+			}
+		} // end of processing undefined split ratios
+		//
+		// Assign split ratios
+		//
+		for (int j = 0; j < nOut; j++)
+			for (int i = 0; i < nIn; i++)
+				for (int ii = 0; ii < nTypes; ii++) {
+					splitRatioMatrix[i][j].get(ii).setCenter(srm[i + ii*nIn][j], 0);
+				}
+		//
+		// Assign input flows
+		//
+		for (int i = 0; i < nIn; i++) {
+			inputs.set(i, inDemand[i]);
+			AbstractControllerSimple ctrl = controllers.get(i);
+			if (ctrl != null)
+				ctrl.setInput(new Double(inDemand[i].sum().getUpperBound()));
+		}
+		//
+		// Assign output flows
+		//
+		for (int j = 0; j < nOut; j++) {
+			AuroraIntervalVector outFlow = new AuroraIntervalVector(nTypes);
+			for (int i = 0; i < nIn; i++) {
+				double[] splitRatios = new double[nTypes];
+				for (int ii = 0; ii < nTypes; ii++)
+					splitRatios[ii] = srm[i + ii*nIn][j];
+				AuroraIntervalVector flw = new AuroraIntervalVector(nTypes);
+				flw.copy(inDemand[i]);
+				flw.affineTransform(splitRatios, 0);
+				outFlow.add(flw);
+			}
+			outputs.set(j, outFlow);
+		}
+		return res;
+	}
+
 	/**
 	 * Validates Node configuration.<br>
 	 * Checks if the dimensions of the split ratio matrix are correct.
@@ -516,6 +1403,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 */
 	public String[] getSimpleControllerTypes() {
 		String[] ctrlTypes = {"ALINEA",
+							  "Traffic Responsive",
 							  "TOD",
 							  "Simple Signal"};
 		return ctrlTypes;
@@ -526,6 +1414,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 */
 	public String[] getSimpleControllerClasses() {
 		String[] ctrlClasses = {"aurora.hwc.control.ControllerALINEA",
+								"aurora.hwc.control.ControllerTR",
 								"aurora.hwc.control.ControllerTOD",
 								"aurora.hwc.control.ControllerSimpleSignal"};
 		return ctrlClasses;
@@ -536,7 +1425,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 */
 	public String[] getQueueControllerTypes() {
 		String[] qcTypes = {"Queue Override",
-							"Proportional"};
+							"Proportional",
+							"PI Control"};
 		return qcTypes;
 	}
 	
@@ -545,7 +1435,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 */
 	public String[] getQueueControllerClasses() {
 		String[] qcClasses = {"aurora.hwc.control.QOverride",
-							  "aurora.hwc.control.QProportional"};
+							  "aurora.hwc.control.QProportional",
+							  "aurora.hwc.control.QPI"};
 		return qcClasses;
 	}
 	
@@ -562,6 +1453,23 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			for (int j = 0; j < n; j++) {
 				srm[i][j] = new AuroraIntervalVector();
 				srm[i][j].copy(splitRatioMatrix[i][j]);
+			}
+		return srm;
+	}
+	
+	/**
+	 * Returns split ratio matrix template.
+	 */
+	public AuroraIntervalVector[][] getSplitRatioMatrix0() {
+		if (splitRatioMatrix0 == null)
+			return null;
+		int m = splitRatioMatrix0.length;
+		int n = splitRatioMatrix0[0].length;
+		AuroraIntervalVector[][] srm = new AuroraIntervalVector[m][n];
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++) {
+				srm[i][j] = new AuroraIntervalVector();
+				srm[i][j].copy(splitRatioMatrix0[i][j]);
 			}
 		return srm;
 	}
@@ -672,6 +1580,32 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	}
 	
 	/**
+	 * Sets split ratio matrix template.
+	 * @param x split ratio matrix.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public boolean setSplitRatioMatrix0(AuroraIntervalVector[][] x) {
+		if (x == null)
+			if (!srmProfile.isEmpty()) {
+				splitRatioMatrix0 = null;
+				return true;
+			}
+			else
+				return false;
+		int m = x.length;
+		int n = x[0].length;
+		if ((m != inputs.size()) || (n != outputs.size()))
+			return false;
+		splitRatioMatrix0 = new AuroraIntervalVector[m][n];
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++) {
+				splitRatioMatrix0[i][j] = new AuroraIntervalVector();
+				splitRatioMatrix0[i][j].copy(x[i][j]);
+			}
+		return true;
+	}
+	
+	/**
 	 * Sets split ratio profile from text.
 	 * @param buf text buffer. Each line of this text describes a split ratio matrix,
 	 * and matrix rows are separated by ';' as in MATLAB.
@@ -708,12 +1642,11 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					}
 					srm[i][j] = srv;
 				}
-				while (j < n) {
+				while (++j < n) {
 					if (myNetwork.getContainer().isSimulation())
 						srm[i][j] = new AuroraIntervalVector(sz);
 					else
 						srm[i][j] = new AuroraIntervalVector();
-					j++;
 				}
 			}
 			srmProfile.add(srm);
@@ -892,6 +1825,27 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	}
 	
 	/**
+	 * Resets the simulation time step.
+	 */
+	public void resetTimeStep() {
+		super.resetTimeStep();
+		if (!srmProfile.isEmpty())
+			splitRatioMatrix0 = null;
+		boolean srmDefined = true;
+		if (splitRatioMatrix != null) {
+			int nIn = splitRatioMatrix.length;
+			int nOut = splitRatioMatrix[0].length;
+			for (int i = 0; i < nIn; i++)
+				for (int j = 0; j < nOut; j++)
+					if (splitRatioMatrix[i][j].minCenter() < 0)
+						srmDefined = false;
+		}
+		if (srmDefined)
+			splitRatioMatrix0 = null;
+		return;
+	}
+	
+	/**
 	 * Copies data from given Node to a current one.
 	 * @param x given Network Element.
 	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
@@ -901,6 +1855,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		if (res) {
 			AbstractNodeHWC nd = (AbstractNodeHWC)x;
 			splitRatioMatrix = nd.getSplitRatioMatrix();
+			splitRatioMatrix0 = nd.getSplitRatioMatrix0();
 		}
 		return res;
 	}

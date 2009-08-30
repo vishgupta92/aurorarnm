@@ -17,13 +17,12 @@ import aurora.hwc.*;
 /**
  * TOD controller implementation.
  * @author Gabriel Gomes
- * @version $Id: ControllerTOD.java,v 1.1.4.1.2.2 2009/01/14 01:46:25 akurzhan Exp $
+ * @version $Id: ControllerTOD.java,v 1.1.4.1.2.4.2.1 2009/06/19 21:09:28 gomes Exp $
  */
 public class ControllerTOD extends AbstractControllerHWC {
 	private static final long serialVersionUID = 4741791843202408263L;
 
 	private Vector<TODdataRow> todTable = new Vector<TODdataRow>();
-	
 	
 	/**
 	 * Returns controller description.
@@ -53,11 +52,10 @@ public class ControllerTOD extends AbstractControllerHWC {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if (p == null)
-			return !res;
+		boolean res = super.initFromDOM(p);
+		if (!res)
+			return res;
 		try  {
-			tp = Double.parseDouble(p.getAttributes().getNamedItem("tp").getNodeValue());
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
@@ -75,16 +73,6 @@ public class ControllerTOD extends AbstractControllerHWC {
 						if(!done)
 							todTable.add(new TODdataRow(time, rate));
 					}
-					if (pp.item(i).getNodeName().equals("limits")) {
-						limits = new Vector<Object>();
-						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmin").getNodeValue()));
-						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmax").getNodeValue()));
-					}
-					if (pp.item(i).getNodeName().equals("qcontroller")) {
-						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
-						myQController = (QueueController)c.newInstance();
-						res &= myQController.initFromDOM(pp.item(i));
-					}
 				}
 			}
 			else
@@ -98,7 +86,7 @@ public class ControllerTOD extends AbstractControllerHWC {
 	}
 
 	/**
-	 * Generates XML description of the ALINEA controller.<br>
+	 * Generates XML description of the TOD controller.<br>
 	 * If the print stream is specified, then XML buffer is written to the stream.
 	 * @param out print stream.
 	 * @throws IOException
@@ -120,7 +108,7 @@ public class ControllerTOD extends AbstractControllerHWC {
 		Double flw = (Double)super.computeInput(xx);		// flw - controlled inflow to the signal node 
 		if (flw != null)
 			return flw;
-		int idx = xx.getControllers().indexOf(this);
+		int idx = xx.getSimpleControllers().indexOf(this);
 		AbstractLinkHWC lnk = (AbstractLinkHWC)xx.getPredecessors().get(idx);
 		double time = ((AbstractNodeHWC)xx).getMyNetwork().getSimTime();
 		if ((todTable.isEmpty()) || (time < todTable.get(0).getTime()))
@@ -194,6 +182,3 @@ public class ControllerTOD extends AbstractControllerHWC {
 
 
 }
-
-
-

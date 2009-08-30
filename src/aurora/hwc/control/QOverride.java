@@ -14,7 +14,7 @@ import aurora.hwc.*;
 /**
  * Implementation of Queue Override queue controller.
  * @author Alex Kurzhanskiy
- * @version $Id: QOverride.java,v 1.1.4.1.2.2 2008/11/16 23:16:05 akurzhan Exp $
+ * @version $Id: QOverride.java,v 1.1.4.1.2.3 2009/06/08 00:13:12 akurzhan Exp $
  */
 public final class QOverride implements QueueController, Serializable, Cloneable {
 	private static final long serialVersionUID = -5580684114768655078L;
@@ -87,7 +87,7 @@ public final class QOverride implements QueueController, Serializable, Cloneable
 				if (idx < 0)
 					flw = 0.0;
 				else
-					flw = ((Double)nd.getInputs().get(idx)) + (delta * lk.getLanes());
+					flw = ((AuroraIntervalVector)nd.getInputs().get(idx)).sum().getCenter() + (delta * lk.getLanes());
 			}
 		else // link has begin node
 			if ((((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) <= lk.getCriticalDensity())
@@ -97,7 +97,7 @@ public final class QOverride implements QueueController, Serializable, Cloneable
 				if (idx < 0)
 					flw = 0.0;
 				else
-					flw = ((Double)nd.getInputs().get(idx)) + (delta * lk.getLanes());
+					flw = ((AuroraIntervalVector)nd.getInputs().get(idx)).sum().getCenter() + (delta * lk.getLanes());
 			}
 		return (Double)flw;
 	}

@@ -12,9 +12,9 @@ import aurora.util.SpringUtilities;
 /**
  * Panel for editing ALINEA properties.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelControllerALINEA.java,v 1.1.4.1 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: PanelControllerALINEA.java,v 1.1.4.1.4.1 2009/08/19 20:11:34 akurzhan Exp $
  */
-public final class PanelControllerALINEA extends AbstractControllerPanel {
+public final class PanelControllerALINEA extends AbstractSimpleControllerPanel {
 	private static final long serialVersionUID = 6013620151807393177L;
 	
 	private JCheckBox upstream = new JCheckBox("Feedback from upstream");

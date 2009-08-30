@@ -10,6 +10,7 @@ import javax.swing.event.*;
 import org.jfree.chart.*;
 import org.jfree.chart.plot.*;
 import org.jfree.data.xy.*;
+
 import aurora.*;
 import aurora.util.*;
 import aurora.hwc.*;
@@ -19,28 +20,32 @@ import aurora.hwc.util.*;
 /**
  * Form for fundamental diagram change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventFD.java,v 1.1.2.3 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: PanelEventFD.java,v 1.1.2.3.2.1 2009/06/09 20:58:49 akurzhan Exp $
  */
 public final class PanelEventFD extends AbstractEventPanel implements ChangeListener {
 	private static final long serialVersionUID = 364874061040182049L;
 	
 	private MyXYSeries ffFD = new MyXYSeries("Free Flow");
 	private MyXYSeries cFD = new MyXYSeries("Congestion");
+	private MyXYSeries cdFD = new MyXYSeries("Capacity Drop");
 	private JFreeChart fdChart;
 	
 	private JSpinner spinMaxFlow;
+	private JSpinner spinCapDrop;
 	private JSpinner spinCritDen;
 	private JSpinner spinJamDen;
 	private JSpinner spinVff;
 	private JSpinner spinWc;
 	
 	private final static String nmSpinMaxFlow = "spinMaxFlow";
+	private final static String nmSpinCapDrop = "spinCapDrop";
 	private final static String nmSpinCritDen = "spinCritDen";
 	private final static String nmSpinJamDen = "spinJamDen";
 	private final static String nmSpinVff = "spinVff";
 	private final static String nmSpinWc = "spinWc";
 	
 	private double mf;
+	private double drp;
 	private double cd;
 	private double jd;
 	
@@ -55,6 +60,7 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 		eventTable = etm;
 		myEvent = new EventFD();
 		mf = ((AbstractLinkHWC)ne).getMaxFlow();
+		drp = Math.max(0, Math.min(mf, ((AbstractLinkHWC)ne).getCapacityDrop()));
 		cd = ((AbstractLinkHWC)ne).getCriticalDensity();
 		jd = ((AbstractLinkHWC)ne).getJamDensity();
 		initialize(ne, em);
@@ -74,6 +80,7 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 		else
 			myEvent = new EventFD();
 		mf = ((EventFD)myEvent).getMaxFlow();
+		drp = Math.max(0, Math.min(mf, ((AbstractLinkHWC)ne).getCapacityDrop()));
 		cd = ((EventFD)myEvent).getCriticalDensity();
 		jd = ((EventFD)myEvent).getJamDensity();
 		initialize(ne, em);
@@ -84,6 +91,7 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 	 */
 	private void updateSpinners() {
 		spinMaxFlow.setValue((Double)mf);
+		spinCapDrop.setValue((Double)drp);
 		spinCritDen.setValue((Double)cd);
 		spinJamDen.setValue((Double)jd);
 		spinVff.setValue((Double)(mf/cd));
@@ -103,11 +111,18 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 			cFD.add(0.0, 0.0);
 			cFD.add(0.0, 0.0);
 		}
+		if (cdFD.getItemCount() == 0) {
+			cdFD.add(0.0, 0.0);
+			cdFD.add(0.0, 0.0);
+		}
 		ffFD.setDataItem(1, new XYDataItem(cd, mf));
 		cFD.setDataItem(0, new XYDataItem(cd, mf));
 		cFD.setDataItem(1, new XYDataItem(jd, 0.0));
+		cdFD.setDataItem(0, new XYDataItem(cd, mf - drp));
+		cdFD.setDataItem(1, new XYDataItem(jd, mf - drp));
 		ffFD.fireSeriesChanged();
 		cFD.fireSeriesChanged();
+		cdFD.fireSeriesChanged();
 		return;
 	}
 	
@@ -119,6 +134,7 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(ffFD);
 		dataset.addSeries(cFD);
+		dataset.addSeries(cdFD);
 		JFreeChart chart = ChartFactory.createXYLineChart(
 							null, // chart title
 							"Density (vpm)", // x axis label
@@ -132,6 +148,7 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 		XYPlot plot = (XYPlot)chart.getPlot();
 		plot.getRenderer().setSeriesPaint(0, Color.GREEN);
 		plot.getRenderer().setSeriesPaint(1, Color.RED);
+		plot.getRenderer().setSeriesPaint(2, Color.BLUE);
 		plot.getRenderer().setStroke(new BasicStroke(2));
 		return chart;
 	}
@@ -158,8 +175,14 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 		spinMaxFlow.setName(nmSpinMaxFlow);
 		l.setLabelFor(spinMaxFlow);
 		prmp.add(spinMaxFlow);
-		prmp.add(new JLabel(" "));
-		prmp.add(new JLabel(" "));
+		l = new JLabel("Cap.Drop:", JLabel.TRAILING);
+		prmp.add(l);
+		spinCapDrop = new JSpinner(new SpinnerNumberModel(drp, 0, 99999, 1.0));
+		spinCapDrop.setEditor(new JSpinner.NumberEditor(spinCapDrop, "####0.00"));
+		spinCapDrop.addChangeListener(this);
+		spinCapDrop.setName(nmSpinCapDrop);
+		l.setLabelFor(spinCapDrop);
+		prmp.add(spinCapDrop);
 		l = new JLabel("C.Density:", JLabel.TRAILING);
 		prmp.add(l);
 		spinCritDen = new JSpinner(new SpinnerNumberModel(cd, 0, 99999, 1.0));
@@ -213,7 +236,7 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 	 * Saves event.
 	 */
 	public synchronized void save() {
-		((EventFD)myEvent).setFD(mf, cd, jd);
+		((EventFD)myEvent).setFD(mf, cd, jd, drp);
 		super.save();
 		return;
 	}
@@ -227,6 +250,10 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 		if (nm.equals(nmSpinMaxFlow)) {
 			x = (Double)spinMaxFlow.getValue();
 			mf = x;
+		}
+		if (nm.equals(nmSpinCapDrop)) {
+			x = (Double)spinCapDrop.getValue();
+			drp = x;
 		}
 		if (nm.equals(nmSpinCritDen)) {
 			x = (Double)spinCritDen.getValue();

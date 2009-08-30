@@ -13,7 +13,7 @@ import aurora.util.Util;
 /**
  * Event that changes mainline and queue control modes on a given complex Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventNetworkControl.java,v 1.1.2.2 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: EventNetworkControl.java,v 1.1.2.2.2.1 2009/06/14 01:10:24 akurzhan Exp $
  */
 public final class EventNetworkControl extends AbstractEvent {
 	private static final long serialVersionUID = -8985021937408207013L;
@@ -49,21 +49,13 @@ public final class EventNetworkControl extends AbstractEvent {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if (p == null)
-			return !res;
+		boolean res = super.initFromDOM(p);
+		if (!res)
+			return res;
 		try  {
-			neid = Integer.parseInt(p.getAttributes().getNamedItem("neid").getNodeValue());
-			tstamp = Double.parseDouble(p.getAttributes().getNamedItem("tstamp").getNodeValue());
-			enabled = Boolean.parseBoolean(p.getAttributes().getNamedItem("enabled").getNodeValue());
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
-					if (pp.item(i).getNodeName().equals("description")) {
-						String desc = pp.item(i).getTextContent();
-						if (!desc.equals("null"))
-							description = desc;
-					}
 					if (pp.item(i).getNodeName().equals("control")) {
 						controlled = Boolean.parseBoolean(pp.item(i).getAttributes().getNamedItem("mainline").getNodeValue());
 						qControl = Boolean.parseBoolean(pp.item(i).getAttributes().getNamedItem("queue").getNodeValue());
@@ -87,10 +79,7 @@ public final class EventNetworkControl extends AbstractEvent {
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		if (out == null)
-			out = System.out;
-		out.print("<event class=\"" + this.getClass().getName() + "\" neid=\"" + Integer.toString(neid) + "\" tstamp=\"" + Double.toString(tstamp) + "\" enabled=\"" + Boolean.toString(enabled) + "\">");
-		out.print("<description>" + description + "</description>");
+		super.xmlDump(out);
 		out.print("<control mainline=\"" + controlled + "\" queue=\"" + qControl + "\" />");
 		out.print("</event>");
 		return;

@@ -17,8 +17,8 @@ import aurora.util.*;
 
 /**
  * Tree view of the Aurora network.
- * @author Alex Kurzhanskiy
- * @version $Id: TreePane.java,v 1.3.2.20.2.1 2009/01/01 02:19:09 akurzhan Exp $
+ * @author Alex Kurzhanskiy, Gabriel Gomes
+ * @version $Id: TreePane.java,v 1.3.2.20.2.2.2.4 2009/08/16 01:30:27 akurzhan Exp $
  */
 public class TreePane extends JPanel {
 	private static final long serialVersionUID = -855000922287970148L;
@@ -34,6 +34,13 @@ public class TreePane extends JPanel {
     private HashMap<Path, DefaultMutableTreeNode> pth2tn = new HashMap<Path, DefaultMutableTreeNode>();
     
     private File currentDir = new File(AuroraConstants.DEFAULT_HOME);
+    
+    private double minFlow = 0;
+	private double maxFlow = 1;
+	private double minDensity = 0;
+	private double maxDensity = 1;
+	private double minSpeed = 0;
+	private double maxSpeed = 1;
     
     
     public TreePane() { }
@@ -110,6 +117,23 @@ public class TreePane extends JPanel {
     }
     
     /**
+     * Opens Control Monitor internal frame.
+     */
+    private synchronized void openWindowMonitorController(AbstractNetworkElement ne, ImageIcon icon) {
+    	WindowMonitorController wn = new WindowMonitorController((MonitorControllerHWC)ne, this);
+		wn.setFrameIcon(icon);
+		wn.setVisible(true);
+		actionPane.getDesktopPane().add(wn);
+		try {
+			wn.setSelected(true);
+		}
+		catch(java.beans.PropertyVetoException e) { }
+		ne2win.put(ne, wn);
+		win2ne.put(wn, ne);
+    	return;
+    }
+    
+    /**
      * Opens Node internal frame.
      */
     private synchronized void openWindowNode(AbstractNetworkElement ne, ImageIcon icon) {
@@ -127,10 +151,44 @@ public class TreePane extends JPanel {
     }
     
     /**
+     * Opens Signal internal frame.
+     */
+    private synchronized void openWindowNodeSignal(AbstractNetworkElement ne, ImageIcon icon) {
+    	WindowNodeSignal wn = new WindowNodeSignal(mySystem, (AbstractNodeHWC)ne, this);
+		wn.setFrameIcon(icon);
+		wn.setVisible(true);
+		actionPane.getDesktopPane().add(wn);
+		try {
+			wn.setSelected(true);
+		}
+		catch(java.beans.PropertyVetoException e) { }
+		ne2win.put(ne, wn);
+		win2ne.put(wn, ne);
+    	return;
+    }
+    
+    /**
      * Opens Link internal frame.
      */
     private synchronized void openWindowLink(AbstractNetworkElement ne, ImageIcon icon) {
     	WindowLink wn = new WindowLink(mySystem, (AbstractLinkHWC)ne, this);
+		wn.setFrameIcon(icon);
+		wn.setVisible(true);
+		actionPane.getDesktopPane().add(wn);
+		try {
+			wn.setSelected(true);
+		}
+		catch(java.beans.PropertyVetoException e) { }
+		ne2win.put(ne, wn);
+		win2ne.put(wn, ne);
+    	return;
+    }
+    
+    /**
+     * Opens Sensor internal frame.
+     */
+    private synchronized void openWindowSensor(AbstractNetworkElement ne, ImageIcon icon) {
+    	WindowSensor wn = new WindowSensor(mySystem, (SensorLoopDetector)ne, this);
 		wn.setFrameIcon(icon);
 		wn.setVisible(true);
 		actionPane.getDesktopPane().add(wn);
@@ -196,12 +254,20 @@ public class TreePane extends JPanel {
     		return;
     	case TypesHWC.NODE_FREEWAY:
     	case TypesHWC.NODE_HIGHWAY:
-    	case TypesHWC.NODE_SIGNAL:
     	case TypesHWC.NODE_STOP:
     		openWindowNode(ne, icon);
     		return;
+    	case TypesHWC.NODE_SIGNAL:
+    		openWindowNodeSignal(ne, icon);
+    		return;
     	case AbstractTypes.MASK_MONITOR_ZIPPER:
     		openWindowMonitorZipper(ne, icon);
+    		return;
+    	case TypesHWC.MASK_MONITOR_CONTROLLER:
+    		openWindowMonitorController(ne, icon);
+    		return;
+    	case TypesHWC.SENSOR_LOOPDETECTOR:
+    		openWindowSensor(ne, icon);
     		return;
     	default:
     		
@@ -341,6 +407,16 @@ public class TreePane extends JPanel {
     			ne2tn.put(monitors.get(i), item);
     		}
     	}
+    	Vector<AbstractSensor> sensors = ntwk.getSensors();
+    	if (sensors.size() > 0) { // has sensors
+    		list = new DefaultMutableTreeNode("Sensors");
+    		root.add(list);
+    		for (i = 0; i < sensors.size(); i++) {
+    			item = new DefaultMutableTreeNode(sensors.get(i));
+    			list.add(item);
+    			ne2tn.put(sensors.get(i), item);
+    		}
+    	}
     	Vector<OD> ods = ntwk.getODList();
     	if (!ods.isEmpty()) // has ODs
     		addODs(root, ods);
@@ -399,6 +475,8 @@ public class TreePane extends JPanel {
     			((WindowNode)frame).updateView();
     		if ((ne.getType() & TypesHWC.MASK_LINK) > 0)
     			((WindowLink)frame).updateView();
+			if ((ne.getType() & TypesHWC.MASK_SENSOR) > 0)
+    			((WindowSensor)frame).updateView();
     	}
     	frames = win2pth.keySet();
     	for (iter = frames.iterator(); iter.hasNext();) {
@@ -431,6 +509,67 @@ public class TreePane extends JPanel {
     		((WindowPath)frame).resetView();
     	}
     	((EventTableModel)((TableSorter)actionPane.getEventsTable().getModel()).getTableModel()).updateData();
+    	return;
+    }
+    
+    /**
+     * Updates minimum flow.
+     */
+    public double updateMinFlow(double x) {
+    	minFlow = Math.min(minFlow, x);
+    	return minFlow;
+    }
+    
+    /**
+     * Updates maximum flow.
+     */
+    public double updateMaxFlow(double x) {
+    	maxFlow = Math.max(maxFlow, x);
+    	return maxFlow;
+    }
+    
+    /**
+     * Updates minimum density.
+     */
+    public double updateMinDensity(double x) {
+    	minDensity = Math.min(minDensity, x);
+    	return minDensity;
+    }
+    
+    /**
+     * Updates maximum density.
+     */
+    public double updateMaxDensity(double x) {
+    	maxDensity = Math.max(maxDensity, x);
+    	return maxDensity;
+    }
+    
+    /**
+     * Updates minimum speed.
+     */
+    public double updateMinSpeed(double x) {
+    	minSpeed = Math.min(minSpeed, x);
+    	return minSpeed;
+    }
+    
+    /**
+     * Updates maximum speed.
+     */
+    public double updateMaxSpeed(double x) {
+    	maxSpeed = Math.max(maxSpeed, x);
+    	return maxSpeed;
+    }
+    
+    /**
+     * Resets ranges for flow, density and speed. 
+     */
+    public void resetDataRanges() {
+    	minFlow = Double.MAX_VALUE;
+		maxFlow = 0.0;
+		minDensity = Double.MAX_VALUE;
+		maxDensity = 0.0;
+		minSpeed = Double.MAX_VALUE;
+		maxSpeed = 0.0;
     	return;
     }
     

@@ -5,6 +5,7 @@
 package aurora.hwc;
 
 import java.io.*;
+import java.text.NumberFormat;
 import java.util.*;
 import org.w3c.dom.*;
 import aurora.*;
@@ -17,11 +18,13 @@ import aurora.util.*;
  * @see LinkFwML, LinkFwHOV, LinkHw, LinkOR, LinkFR, LinkIc, LinkStreet, LinkDummy
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractLinkHWC.java,v 1.21.2.16.2.14 2009/01/16 01:43:27 akurzhan Exp $
+ * @version $Id: AbstractLinkHWC.java,v 1.21.2.16.2.20.2.7 2009/08/29 21:09:32 akurzhan Exp $
  */
 public abstract class AbstractLinkHWC extends AbstractLink {
 	protected double lanes = 1.0;
 	protected double flowMax = 1800; // in vph
+	AuroraInterval flowMaxRange = new AuroraInterval(flowMax, 0);
+	protected double capacityDrop = 0; // in vph
 	protected double densityCritical = 30; // in vpm
 	protected double densityJam = 150; // in vpm
 	
@@ -69,6 +72,9 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			id = Integer.parseInt(p.getAttributes().getNamedItem("id").getNodeValue());
 			length = Double.parseDouble(p.getAttributes().getNamedItem("length").getNodeValue());
 			lanes = Double.parseDouble(p.getAttributes().getNamedItem("lanes").getNodeValue());
+			Node sa = p.getAttributes().getNamedItem("record");
+			if ((sa != null) && Boolean.parseBoolean(sa.getNodeValue()))
+				saveState = 3;
 			if (lanes < 1.0)
 				lanes = 1.0;
 			if (p.hasChildNodes()) {
@@ -88,19 +94,30 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 					}
 					if (pp.item(i).getNodeName().equals("demand")) {
 						demandTP = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("tp").getNodeValue());
+						if (demandTP > 24) // sampling period in seconds
+							demandTP = demandTP/3600;
 						demandKnob = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("knob").getNodeValue());
 						setDemandVector(pp.item(i).getTextContent());
 					}
 					if (pp.item(i).getNodeName().equals("capacity")) {
 						capacityTP = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("tp").getNodeValue());
+						if (capacityTP > 24) // sampling period in seconds
+							capacityTP = capacityTP/3600;
 						setCapacityVector(pp.item(i).getTextContent());
 					}
 					if (pp.item(i).getNodeName().equals("qmax"))
 						qMax = Double.parseDouble(pp.item(i).getTextContent());
 					if (pp.item(i).getNodeName().equals("fd")) {
-						flowMax = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("flowMax").getNodeValue());
-						densityCritical = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("densityCritical").getNodeValue());
-						densityJam = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("densityJam").getNodeValue());
+						flowMaxRange.setIntervalFromString(pp.item(i).getAttributes().getNamedItem("flowMax").getNodeValue());
+						double cd = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("densityCritical").getNodeValue());
+						double jd = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("densityJam").getNodeValue());
+						if (!setFD(flowMaxRange.getCenter(), cd, jd))
+							defaultFD();
+						if (myNetwork.getContainer().isSimulation())
+							randomizeFD();
+						Node cdp = pp.item(i).getAttributes().getNamedItem("capacityDrop");
+						if (cdp != null)
+							capacityDrop = Math.max(0, Math.min(flowMax, Double.parseDouble(cdp.getNodeValue())));
 					}
 					if (pp.item(i).getNodeName().equals("position")) {
 						myPosition = new PositionLink();
@@ -128,13 +145,16 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<link class=\"" + this.getClass().getName() + "\" id=\"" + Integer.toString(id) + "\" length=\"" + Double.toString(length) + "\" lanes=\"" + Double.toString(lanes) + "\">");
+		boolean ss = false;
+		if ((saveState == 3) || (saveState == 2))
+			ss = true;
+		out.print("<link class=\"" + this.getClass().getName() + "\" id=\"" + Integer.toString(id) + "\" length=\"" + Double.toString(length) + "\" lanes=\"" + Double.toString(lanes) + "\" record=\"" + ss + "\">");
 		if (predecessors.size() > 0)
 			out.print("<begin id=\"" + Integer.toString(predecessors.firstElement().getId()) + "\"/>");
 		if (successors.size() > 0)
 			out.print("<end id=\"" + Integer.toString(successors.firstElement().getId()) + "\"/>");
 		out.print("<dynamics class=\"" + myDynamics.getClass().getName() + "\"/>");
-		out.print("<density>" + density.toStringWithInverseWeights(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights()) + "</density>");
+		out.print("<density>" + density.toStringWithInverseWeights(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights(), false) + "</density>");
 		if (!demand.isEmpty()) {
 			out.print("<demand tp=\"" + Double.toString(demandTP) + "\" knob=\"" + Double.toString(demandKnob) + "\">");
 			out.print(getDemandVectorAsString());
@@ -146,7 +166,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			out.print("</capacity>");
 		}
 		out.print("<qmax>" + Double.toString(qMax) + "</qmax>");
-		out.print("<fd densityCritical =\"" + Double.toString(densityCritical) + "\" densityJam=\"" + Double.toString(densityJam) + "\" flowMax=\"" + Double.toString(flowMax) + "\"/>");
+		out.print("<fd densityCritical =\"" + densityCritical + "\" densityJam=\"" + densityJam + "\" flowMax=\"" + flowMaxRange.toString() + "\" capacityDrop=\"" + capacityDrop + "\"/>");
 		myPosition.xmlDump(out);
 		out.print("</link>\n");
 		return;
@@ -164,6 +184,11 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			db.saveLinkData(this);
 		boolean res = super.dataUpdate(ts);
 		if (res) {
+			PrintStream os = null;
+			if (saveState == 3)
+				os = myNetwork.getContainer().getMySettings().getTmpDataOutput();
+			if (os != null)
+				os.print(", " + density.toString3() + ";");
 			if (predecessors.size() == 0) {
 				AbstractNode end = (AbstractNode)successors.firstElement(); // assumed != null
 				AuroraIntervalVector ofl = (AuroraIntervalVector)(end.getInputs().get(end.getPredecessors().indexOf(this)));
@@ -172,9 +197,24 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				qSize.add((AuroraIntervalVector)getDemand());
 				qSize.subtract(ofl);
 				qSize.affineTransform(tp, 0);
+				if (os != null)
+					os.print(getDemand().toString3());
 			}
-			else
+			else {
 				qSize.set(new AuroraInterval());
+				if (os != null) {
+					AuroraIntervalVector ifl = new AuroraIntervalVector();
+					ifl.copy((AuroraIntervalVector)getBeginNode().getOutputs().get(getBeginNode().getSuccessors().indexOf(this)));
+					os.print(ifl.toString3());
+				}
+			}
+			if (os != null) {
+				NumberFormat form = NumberFormat.getInstance();
+				form.setMinimumFractionDigits(0);
+				form.setMaximumFractionDigits(2);
+				form.setGroupingUsed(false);
+				os.print(";" + getActualFlow().toString3() + ";" + form.format(flowMax) + ":" + form.format(densityCritical) + ":" + form.format(densityJam));
+			}
 			for (int i = 0; i < qSize.size(); i++)  // make sure queue has no negative values
 				if (qSize.get(i).getUpperBound() < 0.0)
 					qSize.get(i).setCenter(0.0, 0.0);
@@ -239,6 +279,15 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		vmtSum = 0.0;
 		delaySum = 0.0;
 		plossSum = 0.0;
+		if (saveState == 1)
+			saveState = 0;
+		if (saveState == 2)
+			saveState = 3;
+		if (saveState == 3) {
+			PrintStream os = myNetwork.getContainer().getMySettings().getTmpDataOutput();
+			if (os != null)
+				os.print(", " + id + " / " + length + " mi");
+		}
 		return;
 	}
 	
@@ -306,6 +355,20 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 */
 	public final double getLanes() {
 		return lanes;
+	}
+	
+	/**
+	 * Returns capacity drop.
+	 */
+	public final double getCapacityDrop() {
+		return capacityDrop;
+	}
+	
+	/**
+	 * Returns capacity range.
+	 */
+	public final AuroraInterval getMaxFlowRange() {
+		return new AuroraInterval(flowMax, flowMaxRange.getSize());
 	}
 	
 	/**
@@ -453,6 +516,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			idx = n;
 		AuroraIntervalVector dmnd = new AuroraIntervalVector();
 		dmnd.copy(demand.get(idx));
+		dmnd.randomize();
 		dmnd.affineTransform(demandKnob, 0);
 		return dmnd;
 	}
@@ -492,9 +556,9 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		if (n < 1)
 			buf += "0.0";
 		else {
-			buf += demand.get(0).toStringWithInverseWeights(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights());
+			buf += demand.get(0).toStringWithInverseWeights(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights(), false);
 			for (int i = 1; i < n; i++)
-				buf += ", " + demand.get(i).toStringWithInverseWeights(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights());
+				buf += ", " + demand.get(i).toStringWithInverseWeights(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights(), false);
 		}
 		return buf;
 	}
@@ -633,6 +697,30 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Assigns capacity drop.
+	 * @param x capacity drop.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setCapacityDrop(double x) {
+		if (x < 0.0)
+			return false;
+		capacityDrop = x;
+		return true;
+	}
+	
+	/**
+	 * Assigns range for maximum flow.
+	 * @param x interval size maximum flow.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setMaxFlowRange(double x) {
+		if ((x < 0.0) || (x > (flowMax/2)))
+			return false;
+		flowMaxRange.setCenter(flowMax, x);
+		return true;
+	}
+	
+	/**
 	 * Assigns maximum flow.
 	 * @param x maximum flow.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
@@ -641,6 +729,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		if (x < 0.0)
 			return false;
 		flowMax = x;
+		flowMaxRange.setCenter(flowMax, Math.min(flowMaxRange.getSize(), 2*flowMax));
 		return true;
 	}
 	
@@ -683,6 +772,19 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Sets random maximum flow value and adjusts fundamental diagram accordingly.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean randomizeFD() {
+		flowMaxRange.constraintLB(0);
+		flowMaxRange.randomize();
+		double fm = flowMaxRange.getCenter();
+		double cd = fm/getV();
+		double jd = cd + (fm/getW());
+		return setFD(fm, cd, jd);
+	}
+	
+	/**
 	 * Assigns parameters of the fundamental diagram.
 	 * @param fmax maximum flow.
 	 * @param rhoc critical density.
@@ -701,13 +803,36 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Assigns parameters of the fundamental diagram.
+	 * @param fmax maximum flow.
+	 * @param rhoc critical density.
+	 * @param rhoj jam density.
+	 * @param capd capacity drop;
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setFD(double fmax, double rhoc, double rhoj, double capd) {
+		boolean res = false;
+		if ((fmax >= 0.0) && (rhoc >= 0.0) && (rhoj >= 0.0) && (rhoc <= rhoj)) {
+			flowMax = fmax;
+			densityCritical = rhoc;
+			densityJam = rhoj;
+			capacityDrop = Math.max(0, Math.min(fmax, capd));
+			flowMaxRange.setCenter(flowMax, Math.min(flowMaxRange.getSize(), 2*flowMax));
+			res = true;
+		}
+		return res;
+	}
+	
+	/**
 	 * Initializes the fundamental diagram with defaults.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	public synchronized boolean defaultFD() {
 		flowMax = 1800 * lanes;
+		flowMaxRange.setCenter(flowMax, 0);
 		densityCritical = 30.0 * lanes;
 		densityJam = 150 * lanes;
+		capacityDrop = 0.0;
 		return true;
 	}
 	
@@ -990,7 +1115,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			AbstractLinkHWC lnk = (AbstractLinkHWC)x;
 			lanes = lnk.getLanes();
 			myDynamics = lnk.getDynamics();
-			setFD(lnk.getMaxFlow(), lnk.getCriticalDensity(), lnk.getJamDensity());
+			setFD(lnk.getMaxFlow(), lnk.getCriticalDensity(), lnk.getJamDensity(), lnk.getCapacityDrop());
 			density = (AuroraIntervalVector)lnk.getDensity();
 			density0 = (AuroraIntervalVector)lnk.getInitialDensity();
 			qMax = lnk.getQueueMax();

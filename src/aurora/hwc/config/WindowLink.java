@@ -21,7 +21,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of Link Editor.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowLink.java,v 1.1.4.1.2.3 2008/11/30 06:08:55 akurzhan Exp $
+ * @version $Id: WindowLink.java,v 1.1.4.1.2.6.2.2 2009/08/26 02:25:21 akurzhan Exp $
  */
 public final class WindowLink extends JInternalFrame implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = -55251513483090686L;
@@ -32,12 +32,16 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	
 	private MyXYSeries ffFD = new MyXYSeries("Free Flow");
 	private MyXYSeries cFD = new MyXYSeries("Congestion");
+	private MyXYSeries cdFD = new MyXYSeries("Capacity Drop");
 	private JFreeChart fdChart;
 	
 	private double mf;
+	private double cr;
+	private double drp;
 	private double cd;
 	private double jd;
 	
+	private JComboBox cbSave = new JComboBox();
 	private JComboBox typeList = new JComboBox();
 	private JSpinner idSpinner;
 	private JSpinner lengthSpinner;
@@ -46,6 +50,8 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	//private JSpinner densitySpinner;
 	private JTextField densityTF;
 	private JSpinner capacitySpinner;
+	private JSpinner crSpinner;
+	private JSpinner capdropSpinner;
 	private JSpinner dencritSpinner;
 	private JSpinner denjamSpinner;
 	private JSpinner vffSpinner;
@@ -60,24 +66,29 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private JTextPane demandProfile = new JTextPane();
 	private JTextPane capacityProfile = new JTextPane();
 	private JPanel pTypes = new JPanel(new SpringLayout());
+	private JPanel pSave = new JPanel(new SpringLayout());
 	private JPanel pID = new JPanel(new SpringLayout());
 	private JPanel pLngth = new JPanel(new SpringLayout());
 	private JPanel pWdth = new JPanel(new SpringLayout());
 	private JPanel pQLim = new JPanel(new SpringLayout());
 	private JPanel pDen = new JPanel(new SpringLayout());
 	private Box fdp = Box.createVerticalBox();
+	private JPanel pCR = new JPanel(new SpringLayout());
 	private JPanel pDC = new JPanel(new SpringLayout());
 	private JPanel pT = new JPanel(new FlowLayout());
 	private JPanel pDP = new JPanel(new BorderLayout());
 	private JPanel pTC = new JPanel(new FlowLayout());
 	private JPanel pCP = new JPanel(new BorderLayout());
 	private final static String nmTypeList = "TypeList";
+	private final static String nmToSave = "ToSave";
 	private final static String nmID = "ID";
 	private final static String nmLength = "LengthSpin";
 	private final static String nmWidth = "WidthSpin";
 	private final static String nmQLim = "QLimSpin";
 	private final static String nmDensity = "DensitySpin";
 	private final static String nmCapacity = "CapacitySpin";
+	private final static String nmCapRange = "CapRangeSpin";
+	private final static String nmCapDrop = "CapDropSpin";
 	private final static String nmDenCrit = "CriticalDensitySpin";
 	private final static String nmDenJam = "JamDensitySpin";
 	private final static String nmVff = "VFreeFlowSpin";
@@ -97,6 +108,8 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private boolean dpModified = false;
 	private boolean ctpModified = false;
 	private boolean cpModified = false;
+	private boolean crModified = false;
+	private boolean saveModified = false;
 	
 	private int[] linkTypes;
 	
@@ -110,7 +123,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		mySystem = ctnr;
 		linkList = nelist;
 		treePane = tpane;
-		setSize(350, 450);
+		setSize(360, 450);
 		int n = treePane.getInternalFrameCount();
 		setLocation(20*n, 20*n);
 		AdapterWindowLink listener = new AdapterWindowLink();
@@ -175,6 +188,19 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		pTypes.add(typeList);
 		SpringUtilities.makeCompactGrid(pTypes, 1, 1, 2, 2, 2, 2);
 		linkPanel.add(pTypes);
+		// Record
+		cbSave.addItem("No");
+		cbSave.addItem("Yes");
+		if (lnk.toSave())
+			cbSave.setSelectedIndex(1);
+		else
+			cbSave.setSelectedIndex(0);
+		cbSave.setActionCommand(nmToSave);
+		cbSave.addActionListener(this);
+		pSave.setBorder(BorderFactory.createTitledBorder("Record State"));
+		pSave.add(cbSave);
+		SpringUtilities.makeCompactGrid(pSave, 1, 1, 2, 2, 2, 2);
+		linkPanel.add(pSave);
 		// Neighbors
 		if (linkList.size() == 1) {
 			JPanel pNeighbors = new JPanel(new SpringLayout());
@@ -274,7 +300,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		genPanel.add(pQLim);
 		// Initial Density
 		pDen.setBorder(BorderFactory.createTitledBorder("Initial Density (vpm)"));
-		densityTF = new JTextField(((AuroraIntervalVector)lnk.getInitialDensity()).toStringWithInverseWeights(((SimulationSettingsHWC)mySystem.getMySettings()).getVehicleWeights()));
+		densityTF = new JTextField(((AuroraIntervalVector)lnk.getInitialDensity()).toStringWithInverseWeights(((SimulationSettingsHWC)mySystem.getMySettings()).getVehicleWeights(), true));
 		densityTF.setName(nmDensity);
 		densityTF.getDocument().addDocumentListener(new DensityChangeListener());
 		//double dnsty = ((AuroraIntervalVector)lnk.getDensity()).sum().getCenter();
@@ -294,6 +320,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	 */
 	private void updateSpinners() {
 		capacitySpinner.setValue((Double)mf);
+		capdropSpinner.setValue((Double)drp);
 		dencritSpinner.setValue((Double)cd);
 		denjamSpinner.setValue((Double)jd);
 		vffSpinner.setValue((Double)(mf/cd));
@@ -313,11 +340,18 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 			cFD.add(0.0, 0.0);
 			cFD.add(0.0, 0.0);
 		}
+		if (cdFD.getItemCount() == 0) {
+			cdFD.add(0.0, 0.0);
+			cdFD.add(0.0, 0.0);
+		}
 		ffFD.setDataItem(1, new XYDataItem(cd, mf));
 		cFD.setDataItem(0, new XYDataItem(cd, mf));
 		cFD.setDataItem(1, new XYDataItem(jd, 0.0));
+		cdFD.setDataItem(0, new XYDataItem(cd, mf - drp));
+		cdFD.setDataItem(1, new XYDataItem(jd, mf - drp));
 		ffFD.fireSeriesChanged();
 		cFD.fireSeriesChanged();
+		cdFD.fireSeriesChanged();
 		return;
 	}
 	
@@ -329,6 +363,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(ffFD);
 		dataset.addSeries(cFD);
+		dataset.addSeries(cdFD);
 		JFreeChart chart = ChartFactory.createXYLineChart(
 							null, // chart title
 							"Density (vpml)", // x axis label
@@ -342,6 +377,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		XYPlot plot = (XYPlot)chart.getPlot();
 		plot.getRenderer().setSeriesPaint(0, Color.GREEN);
 		plot.getRenderer().setSeriesPaint(1, Color.RED);
+		plot.getRenderer().setSeriesPaint(2, Color.BLUE);
 		plot.getRenderer().setStroke(new BasicStroke(2));
 		return chart;
 	}
@@ -352,9 +388,12 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private JPanel fillTabFD() {
 		AbstractLinkHWC lnk = (AbstractLinkHWC)linkList.firstElement();
 		mf = lnk.getMaxFlow() / lnk.getLanes();
+		drp = lnk.getCapacityDrop() / lnk.getLanes();
+		drp = Math.max(0, Math.min(mf, drp));
 		cd = lnk.getCriticalDensity() / lnk.getLanes();
 		jd = lnk.getJamDensity() / lnk.getLanes();
 		JPanel panel = new JPanel(new BorderLayout());
+		Box genPanel = Box.createVerticalBox();
 		fdp.setBorder(BorderFactory.createTitledBorder("Fundamental Diagram per Lane"));
 		fdChart = makeFDChart();
 		ChartPanel cp = new ChartPanel(fdChart);
@@ -371,9 +410,15 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		capacitySpinner.setName(nmCapacity);
 		l.setLabelFor(capacitySpinner);
 		prmp.add(capacitySpinner);
-		prmp.add(new JLabel(" "));
-		prmp.add(new JLabel(" "));
-		l = new JLabel("C.Density:", JLabel.TRAILING);
+		l = new JLabel("Cap.Drop:", JLabel.TRAILING);
+		prmp.add(l);
+		capdropSpinner = new JSpinner(new SpinnerNumberModel(drp, 0, 99999, 1.0));
+		capdropSpinner.setEditor(new JSpinner.NumberEditor(capdropSpinner, "####0.00"));
+		capdropSpinner.addChangeListener(this);
+		capdropSpinner.setName(nmCapDrop);
+		l.setLabelFor(capdropSpinner);
+		prmp.add(capdropSpinner);
+				l = new JLabel("C.Density:", JLabel.TRAILING);
 		prmp.add(l);
 		dencritSpinner = new JSpinner(new SpinnerNumberModel(cd, 0, 99999, 1.0));
 		dencritSpinner.setEditor(new JSpinner.NumberEditor(dencritSpinner, "####0.00"));
@@ -410,7 +455,17 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		prmp.add(wcSpinner);
 		SpringUtilities.makeCompactGrid(prmp, 3, 4, 2, 2, 2, 2);
 		fdp.add(prmp);
-		panel.add(fdp);
+		genPanel.add(fdp);
+		// Capacity uncertainty
+		pCR.setBorder(BorderFactory.createTitledBorder("Capacity Uncertainty +/- (vphl)"));
+		crSpinner = new JSpinner(new SpinnerNumberModel((lnk.getMaxFlowRange().getSize()/lnk.getLanes())/2, 0.0, 999.99, 1.0));
+		crSpinner.setEditor(new JSpinner.NumberEditor(crSpinner, "##0.00"));
+		crSpinner.setName(nmCapRange);
+		crSpinner.addChangeListener(this);
+		pCR.add(crSpinner);
+		SpringUtilities.makeCompactGrid(pCR, 1, 1, 2, 2, 2, 2);
+		genPanel.add(pCR);
+		panel.add(genPanel);
 		return panel;
 	}
 	
@@ -529,7 +584,9 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 				lnk.setInitialDensity(denVec);
 			}
 			if (fdModified)
-				lnk.setFD(mf*lnk.getLanes(), cd*lnk.getLanes(), jd*lnk.getLanes());
+				lnk.setFD(mf*lnk.getLanes(), cd*lnk.getLanes(), jd*lnk.getLanes(), drp*lnk.getLanes());
+			if (crModified)
+				lnk.setMaxFlowRange(cr*lnk.getLanes()*2);
 			if (dcModified)
 				lnk.setDemandKnob((Double)dcSpinner.getValue());
 			if (dpModified)
@@ -559,8 +616,10 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 					return;
 				}
 				newlk.copyData(lnk);
-				lnk.getMyNetwork().replaceNetworkElement(lnk, newlk);
+				lnk.getTop().replaceNetworkElement(lnk, newlk);
 			}
+			if (saveModified)
+				lnk.setSave((cbSave.getSelectedIndex() == 1));
 			lnk.resetTimeStep();
 		}
 		return;
@@ -572,7 +631,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		if (cmdOK.equals(cmd)) {
-			if (idModified || lengthModified || widthModified || qlimModified || denModified || fdModified || dcModified || dpModified || tpModified || cpModified || ctpModified || typeModified) {
+			if (idModified || lengthModified || widthModified || qlimModified || denModified || fdModified || crModified || dcModified || dpModified || tpModified || cpModified || ctpModified || typeModified || saveModified) {
 				provisionLinkData();
 				mySystem.getMyStatus().setSaved(false);
 			}
@@ -592,6 +651,11 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		if (cmd.equals(nmTypeList)) {
 			typeModified = true;
 			pTypes.setBorder(BorderFactory.createTitledBorder("*Link Type"));
+			return;
+		}
+		if (cmd.equals(nmToSave)) {
+			saveModified = true;
+			pSave.setBorder(BorderFactory.createTitledBorder("*Record State"));
 			return;
 		}
 		return;	
@@ -649,6 +713,13 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 			mf = x;
 			fdc = true;
 		}
+		if (nm.equals(nmCapDrop)) {
+			x = (Double)capdropSpinner.getValue();
+			if ((x >= 0) && (x <= mf)) {
+				drp = x;
+				fdc = true;
+			}
+		}
 		if (nm.equals(nmDenCrit)) {
 			x = (Double)dencritSpinner.getValue();
 			if (x <= jd)
@@ -681,6 +752,11 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 			updateSpinners();
 			updateFDSeries();
 			fdp.setBorder(BorderFactory.createTitledBorder("*Fundamental Diagram per Lane"));
+		}
+		if (nm.equals(nmCapRange)) {
+			crModified = true;
+			cr = (Double)crSpinner.getValue();
+			pCR.setBorder(BorderFactory.createTitledBorder("*Capacity Uncertainty +/- (vphl)"));
 		}
 		return;
 	}

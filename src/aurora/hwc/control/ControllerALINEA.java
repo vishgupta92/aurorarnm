@@ -6,7 +6,6 @@ package aurora.hwc.control;
 
 import java.io.*;
 import java.text.NumberFormat;
-import java.util.*;
 import org.w3c.dom.*;
 import aurora.*;
 import aurora.hwc.*;
@@ -16,7 +15,7 @@ import aurora.util.Util;
 /**
  * Implementation of ALINEA controller.
  * @author Alex Kurzhanskiy
- * @version $Id: ControllerALINEA.java,v 1.1.4.1.2.3 2009/01/14 01:46:25 akurzhan Exp $
+ * @version $Id: ControllerALINEA.java,v 1.1.4.1.2.5.2.1 2009/08/16 19:16:40 akurzhan Exp $
  */
 public final class ControllerALINEA extends AbstractControllerHWC {
 	private static final long serialVersionUID = 4440581708032401841L;
@@ -55,11 +54,10 @@ public final class ControllerALINEA extends AbstractControllerHWC {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if (p == null)
-			return !res;
+		boolean res = super.initFromDOM(p);
+		if (!res)
+			return res;
 		try  {
-			tp = Double.parseDouble(p.getAttributes().getNamedItem("tp").getNodeValue());
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
@@ -68,16 +66,6 @@ public final class ControllerALINEA extends AbstractControllerHWC {
 							gain = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
 						if (pp.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("upstream"))
 							upstream = Boolean.parseBoolean(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
-					}
-					if (pp.item(i).getNodeName().equals("limits")) {
-						limits = new Vector<Object>();
-						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmin").getNodeValue()));
-						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmax").getNodeValue()));
-					}
-					if (pp.item(i).getNodeName().equals("qcontroller")) {
-						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
-						myQController = (QueueController)c.newInstance();
-						res &= myQController.initFromDOM(pp.item(i));
 					}
 				}
 			}
@@ -115,7 +103,7 @@ public final class ControllerALINEA extends AbstractControllerHWC {
 		Double flw = (Double)super.computeInput(x);
 		if (flw != null)
 			return flw;
-		int idx = x.getControllers().indexOf(this);
+		int idx = x.getSimpleControllers().indexOf(this);
 		AbstractLinkHWC lnk = (AbstractLinkHWC)x.getPredecessors().get(idx);
 		if (input == null)
 			input = (Double)limits.get(1);

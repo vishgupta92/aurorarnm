@@ -17,7 +17,7 @@ import aurora.util.*;
 /**
  * Tree view of the Aurora network.
  * @author Alex Kurzhanskiy
- * @version $Id: TreePane.java,v 1.1.4.1.2.4 2009/01/16 03:46:17 akurzhan Exp $
+ * @version $Id: TreePane.java,v 1.1.4.1.2.4.2.3 2009/08/26 01:15:33 akurzhan Exp $
  */
 public class TreePane extends JPanel {
 	private static final long serialVersionUID = 3976137906223422920L;
@@ -98,6 +98,23 @@ public class TreePane extends JPanel {
      */
     public MainPane getMainPane() {
     	return mainPane;
+    }
+    
+    /**
+     * Opens Control Monitor internal frame.
+     */
+    private synchronized void openWindowMonitorController(AbstractNetworkElement ne, ImageIcon icon) {
+    	WindowMonitorController wn = new WindowMonitorController(mySystem, (MonitorControllerHWC)ne, this);
+		wn.setFrameIcon(icon);
+		wn.setVisible(true);
+		actionPane.getDesktopPane().add(wn);
+		try {
+			wn.setSelected(true);
+		}
+		catch(java.beans.PropertyVetoException e) { }
+		ne2win.put(ne, wn);
+		win2netype.put(wn, TypesHWC.MASK_MONITOR_CONTROLLER);
+    	return;
     }
     
     /**
@@ -218,7 +235,11 @@ public class TreePane extends JPanel {
     		}
     		if (ne2win.get(nelist.get(i)) != null)
     			continue;
-    		if ((nelist.get(i).getType() & TypesHWC.MASK_MONITOR_ZIPPER) > 0) {
+    		if ((nelist.get(i).getType() == TypesHWC.MASK_MONITOR_CONTROLLER)) {
+    	    	ImageIcon icon = UtilGUI.createImageIcon("/icons/monitoredit.jpg");
+    	    	openWindowMonitorController(nelist.get(i), icon);
+    		}
+    		if ((nelist.get(i).getType() == TypesHWC.MASK_MONITOR_ZIPPER)) {
     	    	ImageIcon icon = UtilGUI.createImageIcon("/icons/monitoredit.jpg");
     	    	openWindowMonitorZipper(nelist.get(i), icon);
     		}
@@ -649,7 +670,7 @@ public class TreePane extends JPanel {
     		if ((ne.getType() & TypesHWC.MASK_NETWORK) > 0)
     			deleteNetwork((AbstractNodeComplex)ne); 
     		unsaved = true;
-    		ne.getMyNetwork().deleteNetworkElement(ne);
+    		ne.getTop().deleteNetworkElement(ne);
     		DefaultMutableTreeNode tn = ne2tn.get(ne);
     		((DefaultTreeModel)tree.getModel()).removeNodeFromParent(tn);
     		ne2tn.remove(ne);

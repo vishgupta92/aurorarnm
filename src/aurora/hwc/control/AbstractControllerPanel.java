@@ -5,26 +5,25 @@
 package aurora.hwc.control;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.util.Vector;
+
 import javax.swing.*;
-import aurora.hwc.*;
+
+import aurora.*;
 import aurora.util.*;
 
 
 /**
- * Base class for controller editing panels.
+ * Base class for complex controller editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerPanel.java,v 1.1.4.1.2.1 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: AbstractControllerPanel.java,v 1.1.4.1.2.1.2.8 2009/08/25 20:50:24 akurzhan Exp $
  */
-public abstract class AbstractControllerPanel extends JPanel implements ActionListener {
-	protected AbstractControllerHWC controller = null;
-	protected QueueController qcontroller = null;
-	
+public abstract class AbstractControllerPanel extends JPanel {
+	protected AbstractController controller = null;
+	boolean[] modified = null;
+
 	protected WindowControllerEditor winCE;
 	
-	protected JComboBox listQControllers;
-	protected JButton buttonProp = new JButton("Properties");
 	protected JSpinner lmin;
 	protected JSpinner lmax;
 	protected JSpinner hh;
@@ -48,14 +47,13 @@ public abstract class AbstractControllerPanel extends JPanel implements ActionLi
 	 * Initializes controller editing panel.
 	 * @param ctrl controller.
 	 */
-	public void initialize(AbstractControllerHWC ctrl, AbstractNodeHWC node) {
-		if ((ctrl == null) || (node == null))
+	public void initialize(AbstractController ctrl, boolean[] flag) {
+		if (ctrl == null)
 			return;
 		controller = ctrl;
-		qcontroller = controller.getQController();
+		modified = flag;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		fillPanel();
-		Box limp = Box.createVerticalBox();
 		JPanel pLim = new JPanel(new SpringLayout());
 		pLim.setBorder(BorderFactory.createTitledBorder("Rate Limits (vph)"));
 		double mn;
@@ -83,34 +81,7 @@ public abstract class AbstractControllerPanel extends JPanel implements ActionLi
 		l.setLabelFor(lmax);
 		pLim.add(lmax);
 		SpringUtilities.makeCompactGrid(pLim, 2, 2, 2, 2, 2, 2);
-		limp.add(pLim);
-		add(limp);
-		Box qctrp = Box.createVerticalBox();
-		JPanel pQCL = new JPanel(new FlowLayout());
-		pQCL.setBorder(BorderFactory.createTitledBorder("Queue Controller"));
-		buttonProp.setEnabled(false);
-		listQControllers = new JComboBox();
-		listQControllers.addItem("None");
-		String[] qctrlClasses = node.getQueueControllerClasses();
-		for (int i = 0; i < qctrlClasses.length; i++)
-			if ((qcontroller != null) && (qcontroller.getClass().getName().compareTo(qctrlClasses[i]) == 0)) {
-				listQControllers.addItem(qcontroller);
-				listQControllers.setSelectedIndex(i+1);
-				buttonProp.setEnabled(true);
-			}
-			else
-				try {
-					Class c = Class.forName(qctrlClasses[i]);
-					listQControllers.addItem((QueueController)c.newInstance());
-				}
-				catch(Exception e) { }
-		listQControllers.addActionListener(this);
-		pQCL.add(listQControllers);
-		buttonProp.addActionListener(new ButtonEventsListener());
-		pQCL.add(buttonProp);
-		qctrp.add(pQCL);
-		add(qctrp);	
-		Box fp = Box.createVerticalBox();
+		add(pLim);
 		JPanel pT = new JPanel(new FlowLayout());
 		pT.setBorder(BorderFactory.createTitledBorder("Time Period"));
 		hh = new JSpinner(new SpinnerNumberModel(Util.getHours(controller.getTP()), 0, 99, 1));
@@ -125,9 +96,9 @@ public abstract class AbstractControllerPanel extends JPanel implements ActionLi
 		ss.setEditor(new JSpinner.NumberEditor(ss, "00.##"));
 		pT.add(ss);
 		pT.add(new JLabel("s"));
-		fp.add(pT);
-		add(fp);
+		add(pT);
 		winCE = new WindowControllerEditor(this, null);
+		winCE.setSize(600,500);
 		winCE.setVisible(true);
 		return;
 	}
@@ -148,47 +119,15 @@ public abstract class AbstractControllerPanel extends JPanel implements ActionLi
 			lims.add(lmin.getValue());
 		}
 		controller.setLimits(lims);
-		controller.setQController(qcontroller);
 		int h = (Integer)hh.getValue();
 		int m = (Integer)mm.getValue();
 		double s = (Double)ss.getValue();
 		controller.setTP(h + (m/60.0) + (s/3600.0));
-		return;
-	}
-	
-	/**
-	 * Callback for combo box selection change.
-	 * @param e combo box selection change.
-	 */
-	public void actionPerformed(ActionEvent e) {
-		JComboBox cb = (JComboBox)e.getSource();
-		if (cb.getSelectedIndex() > 0) {
-			qcontroller = (QueueController)listQControllers.getSelectedItem();
-			buttonProp.setEnabled(true);
-		}
-		else {
-			buttonProp.setEnabled(false);
-			qcontroller = null;
-		}
+		if (modified != null)
+			modified[0] = true;
 		return;
 	}
 	
 	
-	/**
-	 * This class is needed to react to "Properties" button pressed.
-	 */
-	private class ButtonEventsListener implements ActionListener {
-
-		public void actionPerformed(ActionEvent ae) {
-			try {
-	    		Class c = Class.forName("aurora.hwc.control.Panel" + qcontroller.getClass().getSimpleName());
-	    		AbstractQControllerPanel qcp = (AbstractQControllerPanel)c.newInstance();
-	    		qcp.initialize(qcontroller);
-	    	}
-	    	catch(Exception e) { }
-			return;
-		}
-		
-	}
 
 }

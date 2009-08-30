@@ -4,6 +4,9 @@
 
 package aurora.hwc;
 
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import aurora.*;
 
 
@@ -15,12 +18,15 @@ import aurora.*;
  * @see LinkFwML, LinkFwHOV, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy
- * @version $Id: NodeFreeway.java,v 1.11.2.3.2.1 2009/01/14 18:52:34 akurzhan Exp $
+ * @version $Id: NodeFreeway.java,v 1.11.2.3.2.1.2.2 2009/07/30 04:11:03 akurzhan Exp $
  */
 public final class NodeFreeway extends AbstractNodeHWC {
 	private static final long serialVersionUID = -3841872997290136430L;
 
 
+	protected double postmile = 0;
+	
+	
 	public NodeFreeway() { }
 	public NodeFreeway(int id) { this.id = id; }
 	
@@ -33,10 +39,18 @@ public final class NodeFreeway extends AbstractNodeHWC {
 	}
 	
 	/**
+	 * Returns post mile.
+	 */
+	public double getPostmile(){
+		return postmile;
+	}
+	
+	/**
 	 * Returns compatible simple controller type names.
 	 */
 	public String[] getSimpleControllerTypes() {
 		String[] ctrlTypes = {"ALINEA",
+							  "Traffic Responsive",
 							  "TOD"};
 		return ctrlTypes;
 	}
@@ -46,8 +60,36 @@ public final class NodeFreeway extends AbstractNodeHWC {
 	 */
 	public String[] getSimpleControllerClasses() {
 		String[] ctrlClasses = {"aurora.hwc.control.ControllerALINEA",
+								"aurora.hwc.control.ControllerTR",
 								"aurora.hwc.control.ControllerTOD"};
 		return ctrlClasses;
+	}
+	
+	/**
+	 * Initializes the Freeway Node from given DOM structure.
+	 * @param p DOM node.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration
+	 */
+	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
+		boolean res = super.initFromDOM(p);
+		if (res) {
+			try  {
+				if (p.hasChildNodes()){
+					NodeList pp = p.getChildNodes();
+					for (int i = 0; i < pp.getLength(); i++)
+						if (pp.item(i).getNodeName().equals("postmile")) 
+							postmile = Double.parseDouble(pp.item(i).getTextContent());
+				}
+				else
+					res = false;
+			}
+			catch(Exception e) {
+				res = false;
+				throw new ExceptionConfiguration(e.getMessage());
+			}	
+		}
+		return res;
 	}
 	
 	/**

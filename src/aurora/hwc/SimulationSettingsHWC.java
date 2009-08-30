@@ -6,6 +6,7 @@ package aurora.hwc;
 
 import java.io.*;
 import java.util.*;
+import java.text.*;
 import org.w3c.dom.*;
 import aurora.*;
 
@@ -13,7 +14,7 @@ import aurora.*;
 /**
  * HWC specific simulation settings.
  * @author Alex Kurzhanskiy
- * @version $Id: SimulationSettingsHWC.java,v 1.1.2.4 2008/12/30 02:54:42 akurzhan Exp $
+ * @version $Id: SimulationSettingsHWC.java,v 1.1.2.5.2.2 2009/08/26 04:04:12 akurzhan Exp $
  */
 public class SimulationSettingsHWC extends SimulationSettings {
 	private static final long serialVersionUID = 6276880264620748221L;
@@ -103,6 +104,46 @@ public class SimulationSettingsHWC extends SimulationSettings {
 			out.print("<vtype name=\"" + vtypes.get(i) + "\" weight=\"" + weights.get(i) + "\" />\n");
 		out.print("</VehicleTypes>\n");
 		return;
+	}
+	
+	/**
+	 * Creates new data header.
+	 * @param fpath directory for temporary file.
+	 */
+	public synchronized boolean createDataHeader() {
+		boolean res = super.createDataHeader();
+		if (!res)
+			return res;
+		String ht = "";
+		String tw = "";
+		String vf = "";
+		for (int i = 0; i < vtypes.size(); i++) {
+			if (i > 0) {
+				ht += ", ";
+				tw += ", ";
+				vf += ":";
+			}
+			ht += vtypes.get(i);
+			tw += Double.toString(weights.get(i));
+			vf += vtypes.get(i);
+		}
+		tmpDataOutput.print(ht + "\n" + tw + "\n\n");
+		tmpDataOutput.print("Entry Format, Value Format, FD Format\nDensity_Value;In-Flow_Value;Out-Flow_Value;FD, " + vf + ", Capacity:Critical_Density:Jam_Density\n");
+		
+		return true;
+	}
+	
+	/**
+	 * Creates new temporary data file.
+	 * @param fpath directory for temporary file.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean createNewTmpDataFile(File fpath) throws IOException {
+		boolean res = super.createNewTmpDataFile(fpath);
+		if ((!res) || (tmpDataOutput == null))
+			return false;
+		res = createDataHeader();
+		return res;
 	}
 	
 

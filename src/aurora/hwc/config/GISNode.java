@@ -31,6 +31,10 @@ public class GISNode {
 		this.id = id;
 	}
 
+	public String getId() {
+		return(id);
+	}
+
 	public void setType(String type) {
 		this.type = type;
 	}
