@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AuroraRNM>
    <network class="aurora.hwc.NodeHWCNetwork" id="1" name="Simple Arterial Network" top="true" controlled="true" tp="0.001388888888888889">
-      <description>Simple arterial test.</description>
+	   <description>Trivial arterial test
+with simple signal control.</description>
 
       <position>
          <point x="0.0" y="0.0" z="0.0" />

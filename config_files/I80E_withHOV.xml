@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AuroraRNM>
    <network class="aurora.hwc.NodeHWCNetwork" controlled="true" id="-1" name="80E" top="true" tp="5">
-      <description>80E freeway from masterscript.</description>
+	   <description>I-80 East starting from Bay Bridge (postmile 7)
+and ending at Carquinez Bridge (postmile 24).
+HOV lane is included.
+No controllers are assigned.
+Average day is modeled.
+The configuration file is automatically generated
+by Masterscript.</description>
       <NodeList>
          <node class="aurora.hwc.NodeFreeway" id="1" name="- file_EB_ON_FROM_580_WB">
             <description>Node 1, PM 7.6300</description>

@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AuroraHWC>
    <network class="aurora.hwc.NodeHWCNetwork" controlled="true" id="-1" name="880N" top="true" tp="0.0011111">
-      <description>880N freeway from masterscript.</description>
+	   <description>I-880 North starting from Milpitas (postmile 8)
+ending in Oakland (postmile 45).
+No controllers are assigned.
+Average day is modeled.
+The configuration file is automatically generated
+by Masterscript.</description>
       <NodeList>
          <node class="aurora.hwc.NodeFreeway" id="0" name="Node 0">
             <description>Node 0, PM 14.4464</description>
