@@ -20,6 +20,15 @@
 		<mkdir dir="${build.dir}" />
 	</target>
 
+    <target name="clean">
+        <delete dir="${build.dir}/aurora" />
+        <delete file="${build.dir}/aurora.jar" />
+        <delete>
+            <fileset dir="${build.dir}" includes="**/*.class" />
+            <fileset dir="${build.dir}" includes="*.exe" />
+        </delete>
+    </target>
+
 	<path id="classpath">
 		<pathelement location="${build.classes}" />
 		<fileset dir="${lib.db.dir}">
@@ -50,20 +59,21 @@
 		</jar>
 	</target>
 
-	<target name="copy" depends="jar" description="Deploy">
-		<copy file="${build.dir}/aurora.jar" todir=".">
-		</copy>
+	<target name="copy.jar" depends="jar" description="Deploy">
 	</target>
 
-	<target name="exe4j" depends="copy" description="Create executables">
+	<target name="exe4j" depends="copy.jar" description="Create executables">
 		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
-			<arg value="C:\WORK\aurora\build\exe4j\importer.exe4j" />
+			<arg value="${build.dir}\exe4j\importer.exe4j" />
 		</exec>
 		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
-			<arg value="C:\WORK\aurora\build\exe4j\configurator.exe4j" />
+			<arg value="${build.dir}\exe4j\configurator.exe4j" />
 		</exec>
 		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
-			<arg value="C:\WORK\aurora\build\exe4j\simulator.exe4j" />
+			<arg value="${build.dir}\exe4j\simulator.exe4j" />
+		</exec>
+		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
+			<arg value="${build.dir}\exe4j\simbatch.exe4j" />
 		</exec>
 	</target>
 

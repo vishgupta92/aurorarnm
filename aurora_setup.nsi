@@ -23,11 +23,7 @@ SetCompress off
 Name "AuroraInstaller"
 Caption "Aurora Road Network Modeler"
 ;Icon "${NSISDIR}\Contrib\Graphics\Icons\nsis1-install.ico"
-; OutFile "Aurora_1.0_Beta_Pre-release_bugfix01.exe" ; include needed libGUI jars
-;OutFile "Aurora_1.0_Beta_Pre-release_bugfix02.exe" ; fix gisimporter startup error
-; OutFile "Aurora_1.0_Beta_Pre-release_bugfix03.exe" ; new Example files 
-; OutFile "Aurora_1.0_Beta_Pre-release_bugfix04.exe" ; fix gisimporter
-OutFile "Aurora_1.0_Beta_TOPL3.exe" ; latest TOPL3 release
+OutFile "build\AuroraRNM_ver.exe" ; release file
 
 SetDateSave on
 SetDatablockOptimize on
@@ -36,6 +32,7 @@ SilentInstall normal
 ;BGGradient 000000 800000 FFFFFF
 BGGradient 000000 0000FF FFFFFF
 InstallColors FF8080 000030
+RequestExecutionLevel admin
 XPStyle on
 
 InstallDir "$PROGRAMFILES\TOPL\Aurora"
@@ -68,7 +65,7 @@ Section "" ; empty string makes it hidden, so would starting with -
   Call DetectJRE 
   ; write uninstall strings
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aurora" "DisplayName" "TOPL Aurora(remove only)"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aurora" "UninstallString" '"$INSTDIR\bt-uninst.exe"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aurora" "UninstallString" '"$INSTDIR\aurora-uninst.exe"'
 
   CreateDirectory "$INSTDIR\libGUI" 
   CreateDirectory "$INSTDIR\libGIS" 
@@ -76,10 +73,11 @@ Section "" ; empty string makes it hidden, so would starting with -
 
   SetOutPath $INSTDIR
   File /a "silent.nsi"
-  File "aurora.jar"
+  File "build\aurora.jar"
   File "AuroraRNM_UserGuide.pdf"
   File "LICENSE.txt"
-  WriteUninstaller "bt-uninst.exe"
+  File "simbatch.bat"
+  WriteUninstaller "aurora-uninst.exe"
 
   SetOutPath "$INSTDIR\libGUI"
   File "libGUI\commons-collections-3.2.jar"
@@ -100,15 +98,16 @@ SectionEnd
 
 Section "Simulator"
   SetOutPath $INSTDIR
-  File "simulator.exe"
+  File "build\simulator.exe"
+  File "build\simbatch.exe"
 ;  File "Readme.txt"
 SectionEnd
 
 
 Section "Configurator"
   SetOutPath $INSTDIR
-  File "configurator.exe"
-  File "gis_importer.exe"
+  File "build\configurator.exe"
+  File "build\gis_importer.exe"
 SectionEnd
 
 Section "Sample Networks"
@@ -121,10 +120,12 @@ SectionEnd
 
 ; Uninstaller
 
-UninstallText "This will uninstall TOPL Aurora. Hit next to continue."
+UninstallText "This will uninstall Aurora RNM. Hit next to continue."
 UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\nsis1-uninstall.ico"
 
 Section "Uninstall"
+  SetShellVarContext all
+
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aurora"
   DeleteRegKey HKLM "Software\TOPL\Aurora"
   Delete "$INSTDIR\Examples\*.*"
@@ -133,21 +134,23 @@ Section "Uninstall"
   Delete "$INSTDIR\icons\*.*"
 
   Delete "$INSTDIR\silent.nsi"
-  Delete "$INSTDIR\bt-uninst.exe"
+  Delete "$INSTDIR\aurora-uninst.exe"
   Delete "$INSTDIR\simulator.exe"
+  Delete "$INSTDIR\simbatch.exe"
   Delete "$INSTDIR\configurator.exe"
   Delete "$INSTDIR\*.*"
 ; maybe this is too brutal...
+  Delete "$SMPROGRAMS\TOPL\Simulator.lnk"
+  Delete "$SMPROGRAMS\TOPL\Aurora RNM User Guide.lnk"
+  Delete "$SMPROGRAMS\TOPL\*.*"
 
   RMDir "$INSTDIR\libGIS"
   RMDir "$INSTDIR\libGUI"
   RMDir "$INSTDIR\Examples"
   RMDir "$INSTDIR\icons"
   RMDir "$INSTDIR"
-  Delete "$SMPROGRAMS\TOPL\*.*"
-  RMDir "$SMPROGRAMS\TOPL"
-
   RMDir "$PROGRAMFILES\TOPL"
+  RMDir "$SMPROGRAMS\TOPL"
 
 
   IfFileExists "$INSTDIR" 0 NoErrorMsg
@@ -168,16 +171,19 @@ SectionEnd
 ;---
 Function "CSCTest"
   
+  SetShellVarContext all
+  
   CreateDirectory "$SMPROGRAMS\TOPL"
+  Delete "$SMPROGRAMS\TOPL\*.*"
   SetOutPath $INSTDIR ; for working directory
   CreateShortCut "$SMPROGRAMS\TOPL\Simulator.lnk" "$INSTDIR\simulator.exe" 
   CreateShortCut "$SMPROGRAMS\TOPL\Configurator.lnk" "$INSTDIR\configurator.exe" 
   CreateShortCut "$SMPROGRAMS\TOPL\GIS Importer.lnk" "$INSTDIR\gis_importer.exe" 
 
   CreateShortCut "$SMPROGRAMS\TOPL\LICENSE.lnk" "$INSTDIR\LICENSE.txt" "" "$WINDIR\notepad.exe" 0 SW_SHOWMINIMIZED 
-  CreateShortCut "$SMPROGRAMS\TOPL\AuroraRNM User Guide.lnk" "$INSTDIR\AuroraRNM_UserGuide.pdf" 
+  CreateShortCut "$SMPROGRAMS\TOPL\Aurora RNM User Guide.lnk" "$INSTDIR\AuroraRNM_UserGuide.pdf" 
 
-  CreateShortCut "$SMPROGRAMS\TOPL\Uninstall TOPL.lnk" "$INSTDIR\bt-uninst.exe" ; use defaults for parameters, icon, etc.
+  CreateShortCut "$SMPROGRAMS\TOPL\Uninstall Aurora RNM.lnk" "$INSTDIR\aurora-uninst.exe" ; use defaults for parameters, icon, etc.
 
 FunctionEnd
 
