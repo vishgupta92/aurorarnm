@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exe4j version="4.2" transformSequenceNumber="1">
+  <directoryPresets config="C:/WORK/aurora/libGUI" />
+  <application name="Configurator" distributionSourceDir="..">
+    <languages>
+      <principalLanguage id="en" customLocalizationFile="" />
+    </languages>
+  </application>
+  <executable name="configurator" type="1" iconSet="true" iconFile="configlogo2.ico" executableDir="" redirectStderr="true" stderrFile="config_error.log" redirectStdout="true" stdoutFile="config_output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" amd64="false">
+    <messageSet />
+    <versionInfo include="true" fileVersion="" fileDescription="" legalCopyright="" internalName="Aurora Configurator" companyName="TOPL Group" productVersion="1.0.0.0" />
+  </executable>
+  <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="601" height="601" bitmapFile="configlogo0.jpg" java6SplashScreen="false">
+    <text>
+      <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
+      <versionLine x="20" y="40" text="version %VERSION%" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
+    </text>
+  </splashScreen>
+  <java mainClass="aurora.hwc.config.MainPane" vmParameters="-Xms512m -Xmx512m" arguments="" allowVMPassthroughParameters="true" preferredVM="" minVersion="1.6" maxVersion="" allowBetaVM="false" jdkOnly="false">
+    <searchSequence>
+      <registry />
+      <envVar name="JAVA_HOME" />
+      <envVar name="JDK_HOME" />
+    </searchSequence>
+    <classPath>
+      <archive location="./aurora.jar" failOnError="false" />
+      <archive location="./libGUI/commons-collections-3.2.jar" failOnError="false" />
+      <archive location="./libGUI/colt.jar" failOnError="false" />
+      <archive location="./libGUI/jung-1.7.6.jar" failOnError="false" />
+      <archive location="./libGUI/jfreechart-1.0.5.jar" failOnError="false" />
+      <archive location="./libGUI/jfreechart-1.0.5-experimental.jar" failOnError="false" />
+      <archive location="./libGUI/jfreechart-1.0.5-swt.jar" failOnError="false" />
+      <archive location="./libGUI/jcommon-1.0.9.jar" failOnError="false" />
+    </classPath>
+    <nativeLibraryDirectories />
+  </java>
+  <includedFiles />
+  <unextractableFiles />
+</exe4j>
+
