@@ -14,14 +14,14 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import aurora.*;
 import aurora.hwc.*;
-import aurora.hwc.control.AbstractControllerPanel;
+import aurora.hwc.control.AbstractPanelController;
 import aurora.util.*;
 
 
 /**
  * Window for Control Monitor display in the Configurator.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowMonitorController.java,v 1.1.2.2 2009/08/20 00:04:10 akurzhan Exp $
+ * @version $Id: WindowMonitorController.java,v 1.1.2.3 2009/10/01 05:49:01 akurzhan Exp $
  */
 public final class WindowMonitorController extends JInternalFrame implements ActionListener, ChangeListener, DocumentListener {
 	private static final long serialVersionUID = 6444306218621414981L;
@@ -268,7 +268,10 @@ public final class WindowMonitorController extends JInternalFrame implements Act
 			else {
 				try {
 					Class cl = Class.forName(ctrlClasses[i]);
-					listCControllers.addItem((AbstractControllerComplex)cl.newInstance());
+					AbstractControllerComplex cc = (AbstractControllerComplex)cl.newInstance();
+					cc.setMyMonitor(myMonitor);
+					cc.initialize();
+					listCControllers.addItem(cc);
 				}
 				catch(Exception e) { }
 			}
@@ -396,7 +399,7 @@ public final class WindowMonitorController extends JInternalFrame implements Act
 				boolean[] modified = new boolean[1];
 				modified[0] = false;
 	    		Class c = Class.forName("aurora.hwc.control.Panel" + myController.getClass().getSimpleName());
-	    		AbstractControllerPanel cp = (AbstractControllerPanel)c.newInstance();
+	    		AbstractPanelController cp = (AbstractPanelController)c.newInstance();
 	    		cp.initialize(myController, modified);
 	    		if (modified[0])
 	    			ctrlModified = true;

@@ -30,7 +30,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of Link detail window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowLink.java,v 1.1.2.16.2.7 2009/06/09 20:17:09 akurzhan Exp $
+ * @version $Id: WindowLink.java,v 1.1.2.16.2.7.2.5 2009/10/23 20:02:59 akurzhan Exp $
  */
 public final class WindowLink extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = -4659414889018345624L;
@@ -185,7 +185,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		double tt;
 		double mintt;
 		AuroraIntervalVector flow = myLink.getActualFlow();
-		cap = (Double)myLink.getMaxFlow();
+		cap = myLink.getCapacityValue().getCenter();
 		speed = myLink.getSpeed();
 		maxspeed = (Double)myLink.getV();
 		if (sourceLink) {
@@ -243,6 +243,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		simDataSets[0] = dataset;
 		rangeAxis = new NumberAxis("Flow(vph)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(simDataSets[0], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, Color.BLACK);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -256,6 +257,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		else
 			rangeAxis = new NumberAxis("Queue");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(simDataSets[1], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, Color.BLUE);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -266,6 +268,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		simDataSets[2] = dataset;
 		rangeAxis = new NumberAxis("Speed(mph)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(simDataSets[2], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.DARK_GREEN);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -279,6 +282,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		else
 			rangeAxis = new NumberAxis("Demand(vph)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(simDataSets[3], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_YELLOW);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -344,6 +348,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		perfDataSets[0] = dataset;
 		rangeAxis = new NumberAxis("VMT");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(perfDataSets[0], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_CYAN);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -354,6 +359,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		perfDataSets[1] = dataset;
 		rangeAxis = new NumberAxis("VHT");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(perfDataSets[1], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_GREEN);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -363,6 +369,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		perfDataSets[2] = dataset;
 		rangeAxis = new NumberAxis("Delay(vh)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(0.001);
 		subplot = new XYPlot(perfDataSets[2], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_BLUE);
 		perfPlot.add(subplot);
@@ -371,6 +378,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		perfDataSets[3] = dataset; 
 		rangeAxis = new NumberAxis("Prod.Loss(lmh)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(0.001);
 		subplot = new XYPlot(perfDataSets[3], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_RED);
 		perfPlot.add(subplot);
@@ -421,22 +429,37 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 	private void makeLabels() {
 		NumberFormat form = NumberFormat.getInstance();
 		form.setMaximumFractionDigits(2);
-		labelLength.setText("<html><font color=\"gray\"><u><b>Length:</b></u><font color=\"blue\"> " + form.format(myLink.getLength()) + " miles</font></font></html>");
-		labelLanes.setText("<html><font color=\"gray\"><u><b>Width:</b></u><font color=\"blue\"> " + form.format(myLink.getLanes()) + " lanes</font></font></html>");
+		labelLength.setText("<html><font color=\"black\">Length:<font color=\"blue\"> " + form.format(myLink.getLength()) + " miles</font></font></html>");
+		labelLanes.setText("<html><font color=\"black\">Width:<font color=\"blue\"> " + form.format(myLink.getLanes()) + " lanes</font></font></html>");
 		if (sourceLink) {
-			labelDemandK.setText("<html><font color=\"gray\"><u><b>Demand Coefficient:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getDemandKnob()) + "</font></font></html>");
-			labelQueue.setText("<html><font color=\"gray\"><u><b>Queue Limit:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getQueueMax()) + "</font></font></html>");
+			double[] knobs = myLink.getDemandKnobs();
+			boolean allequal = true;
+			String buf = "";
+			double val = knobs[0];
+			for (int i = 0; i < knobs.length; i++) {
+				if (i > 0) {
+					buf += "; ";
+					if (knobs[i] != val)
+						allequal = false;
+				}
+				buf += form.format(knobs[i]);
+			}
+			if (allequal)
+				labelDemandK.setText("<html><font color=\"black\">Demand Coefficient:<font color=\"blue\"> " + form.format(val) + "</font></font></html>");
+			else
+				labelDemandK.setText("<html><font color=\"black\">Demand Coefficients:<font color=\"blue\"> " + buf + "</font></font></html>");
+			labelQueue.setText("<html><font color=\"black\">Queue Limit:<font color=\"blue\"> " + form.format((Double)myLink.getQueueMax()) + "</font></font></html>");
 		}
 		double drop = Math.max(0, Math.min((Double)myLink.getMaxFlow(),(Double)myLink.getCapacityDrop()));
 		if (drop > 0)
-			labelCapDrop.setText("<html><font color=\"gray\"><u><b>Capacity Drop:</b></u><font color=\"blue\"> " + form.format(drop) + " vph</font></font></html>");
+			labelCapDrop.setText("<html><font color=\"black\">Capacity Drop:<font color=\"blue\"> " + form.format(drop) + " vph</font></font></html>");
 		else
 			labelCapDrop.setText("");
-		labelCapacity.setText("<html><font color=\"gray\"><u><b>Capacity:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getMaxFlow()) + " vph</font></font></html>");
-		labelCriticalD.setText("<html><font color=\"gray\"><u><b>Critical Density:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getCriticalDensity()) + " vpm</font></font></html>");
-		labelJamD.setText("<html><font color=\"gray\"><u><b>Jam Density:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getJamDensity()) + " vpm</font></font></html>");
-		labelVff.setText("<html> <font color=\"gray\"><u><b>V:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getV()) + " mph</font></font></html>");
-		labelWc.setText("<html> <font color=\"gray\"><u><b>W:</b></u><font color=\"blue\"> " + form.format((Double)myLink.getW()) + " mph</font></font></html>");
+		labelCapacity.setText("<html><font color=\"black\">Capacity:<font color=\"blue\"> " + form.format((Double)myLink.getMaxFlow()) + " vph</font></font></html>");
+		labelCriticalD.setText("<html><font color=\"black\">Critical Density:<font color=\"blue\"> " + form.format((Double)myLink.getCriticalDensity()) + " vpm</font></font></html>");
+		labelJamD.setText("<html><font color=\"black\">Jam Density:<font color=\"blue\"> " + form.format((Double)myLink.getJamDensity()) + " vpm</font></font></html>");
+		labelVff.setText("<html> <font color=\"black\">V:<font color=\"blue\"> " + form.format((Double)myLink.getV()) + " mph</font></font></html>");
+		labelWc.setText("<html> <font color=\"black\">W:<font color=\"blue\"> " + form.format((Double)myLink.getW()) + " mph</font></font></html>");
 		
 	}
 	
@@ -566,7 +589,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		events.setBorder(BorderFactory.createTitledBorder("Events"));
 		listEvents.addItem("Fundamental Diagram");
 		if (sourceLink) {
-			listEvents.addItem("Demand Coefficient");
+			listEvents.addItem("Demand Coefficient(s)");
 			listEvents.addItem("Queue Limit");
 		}
 		events1.add(listEvents);
@@ -659,22 +682,18 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		}
 		
 		public void componentHidden(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentMoved(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentResized(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentShown(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 		

@@ -6,7 +6,9 @@ package aurora.hwc.control;
 
 import java.io.*;
 import java.util.*;
+
 import org.w3c.dom.*;
+
 import aurora.*;
 import aurora.hwc.*;
 
@@ -14,9 +16,9 @@ import aurora.hwc.*;
 /**
  * Traffic responsive controller implementation.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: ControllerTR.java,v 1.1.2.4 2009/08/07 07:24:03 akurzhan Exp $
+ * @version $Id: ControllerTR.java,v 1.1.2.7 2009/11/14 00:32:47 akurzhan Exp $
  */
-public class ControllerTR extends AbstractControllerHWC {
+public class ControllerTR extends AbstractControllerSimpleHWC {
 	private static final long serialVersionUID = -4901478322713228948L;
 	
 	// thresholds
@@ -95,15 +97,55 @@ public class ControllerTR extends AbstractControllerHWC {
 	 * @return input flow.
 	 */
 	public synchronized Object computeInput(AbstractNodeSimple xx) {
-		Double flw = (Double)super.computeInput(xx);		// flw - controlled inflow to the signal node 
-		//TODO: Gabriel
-		flw = (Double)limits.get(1);
-		flw = Math.min((Double)limits.get(1), Math.max(flw, (Double)limits.get(0)));
-		flw = Math.max(flw, 0.0);
-		input = new Double(flw);
-		return flw;
+		Double flw = (Double)super.computeInput(xx);
+		if (flw != null)
+			return flw;
+		if (input == null)
+			input = (Double)limits.get(1);
+		
+		double MLocc,MLflw,MLspd;
+		if(this.usesensors){
+			MLocc = mlsensor.Occupancy();
+			MLflw = mlsensor.Flow() / mlup.getLanes();
+			MLspd = mlsensor.Speed();
+		}
+		else{
+			MLocc = mlup.getOccupancy();
+			MLflw = mlup.getFlow().sum().getCenter() / mlup.getLanes();
+			MLspd = mlup.getSpeed().getCenter();
+		}
+	    int ii =  findFirstGreaterThan(URMStable.t_occ,MLocc);
+	    int jj =  findFirstGreaterThan(URMStable.t_flw,MLflw);
+	    int kk =  findFirstLessThan(URMStable.t_spd,MLspd);
+	    Double TRrate = URMStable.meteringrate.get( Math.max( Math.max(ii,jj) , kk ) );
+		flw = ApplyURMS(TRrate);
+		flw = ApplyQueueControl(flw);
+		input = ApplyLimits(flw);
+		return input;
+
 	}
 	
+	private int findFirstLessThan(Vector<Float> v,double x){
+		if(URMStable.meteringrate.get(0).isNaN())
+			return -1;
+		for(int j=1;j<v.size();j++){
+			if( v.get(j)<x)
+				return j;
+		}
+		return v.size()-1;
+	}
+
+	private int findFirstGreaterThan(Vector<Float> v,double x){
+		if(URMStable.meteringrate.get(0).isNaN())
+			return -1;
+		for(int j=1;j<v.size();j++){
+			if( v.get(j)>x)
+				return j;
+		}
+		return v.size()-1;
+		
+	}
+
 	/**
 	 * Returns vector of density thresholds.
 	 */

@@ -1,25 +1,13 @@
 /**
- * 
+ * @(#)GISObject.java
  */
+
 package aurora.hwc.config;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
+import java.io.*;
+import java.net.*;
+import java.util.*;
 import javax.swing.JOptionPane;
-
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
@@ -35,9 +23,7 @@ import org.geotools.feature.IllegalAttributeException;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.opengis.filter.Filter;
-
 import aurora.Point;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -45,8 +31,9 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 /**
- * @author jkwon
- *
+ * The core of GIS Importer.
+ * @author Jaimyoung Kwon
+ * @version $Id: GISObject.java,v 1.1.4.1.2.1.2.1 2009/10/01 00:13:12 akurzhan Exp $
  */
 public class GISObject {
 	private FeatureCollection featureCollection;
@@ -392,7 +379,7 @@ public class GISObject {
 		GISEdge inEdge = links.get(inEdgeId);
 		GISEdge outEdge = links.get(outEdgeId);
 
-	    String upNodeId = inEdge.predecessors.get(0);
+	    //String upNodeId = inEdge.predecessors.get(0);
 	    String downNodeId = outEdge.successors.get(0);
 	    
 	    //# Modify incoming edge to point to down node

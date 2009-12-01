@@ -2,10 +2,13 @@ package aurora.hwc.control.signal;
 
 import java.util.Vector;
 
+import aurora.AbstractControllerComplex;
+import aurora.AbstractControllerSimple;
 import aurora.AbstractLink;
+import aurora.AbstractNodeSimple;
+import aurora.ExceptionConfiguration;
 import aurora.hwc.AbstractLinkHWC;
 import aurora.hwc.NodeUJSignal;
-import aurora.hwc.control.ControllerSlave;
 
 public class SignalManager {
 
@@ -334,11 +337,13 @@ public class SignalManager {
 		validated=true;	
 	}
 	
-	public void resetTimeStep()
-	{
-		int i;
-
-		for(i=0;i<8;i++){
+	/**
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
+	 */
+	public boolean initialize() {
+		for(int i = 0; i < 8; i++){
 			hasstoplinecall[i] = false;
 			hasapproachcall[i] = false;
 			hasconflictingcall[i] = false;
@@ -351,12 +356,22 @@ public class SignalManager {
 			conflictingcalltime[i] = 0.0f;
 			phase.get(i).SetRed();
 			phase.get(i).bulbtimer.SetTo(0.0f);
+				
+			AbstractControllerComplex A = (AbstractControllerComplex) this.myController;
+			AbstractLink lnk = phase.get(i).link;
+			if(lnk!=null){
+				AbstractNodeSimple nd = (AbstractNodeSimple)lnk.getEndNode();
+				AbstractControllerSimple aa = nd.getSimpleController(lnk);
+				int ii = A.getDependentControllerIndexOf(aa);
+				phase.get(i).myControlIndex = ii;
+			}
 		}
 		
 		/*
 		for(i=0;i<4;i++){
 			rphase[i].SetYellow();
 		}*/
+		return true;
 	}
 	
 	
@@ -602,12 +617,12 @@ public class SignalManager {
 		return false;
 	}*/
 //	-------------------------------------------------------------------------
-	public boolean attachSimpleController(NodeUJSignal a,AbstractLinkHWC l){
-		ControllerSlave x = new ControllerSlave();
+/*	public boolean attachSimpleController(NodeUJSignal a,AbstractLinkHWC l){
+		ControllerSlave x = new ControllerSlave(this.myController,l);
 		if(!a.setSimpleController(x,l))
 			return false;
 		return true;
-	}
+	}*/
 //	-------------------------------------------------------------------------
 	public SignalPhase FindPhaseByLink(AbstractLink L){
 		AbstractLinkHWC Z;

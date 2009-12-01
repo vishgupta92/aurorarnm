@@ -22,10 +22,11 @@ import aurora.util.*;
 /**
  * Main window of Aurora HWC.
  * @author Alex Kurzhanskiy
- * @version $Id: MainPane.java,v 1.2.2.18.2.3.2.2 2009/06/21 05:13:26 akurzhan Exp $
+ * @version $Id: MainPane.java,v 1.2.2.18.2.3.2.11 2009/11/14 02:01:32 akurzhan Exp $
  */
 public final class MainPane extends JFrame implements ActionListener, ItemListener, CommonMain {
 	private static final long serialVersionUID = 8711529895478014515L;
+	
 	private File currentDir = new File(AuroraConstants.DEFAULT_HOME);
 	private String configURI;
 	private ContainerHWC mySystem = null;
@@ -45,6 +46,8 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	private final static String cmdControlQueue = "ControlQueue";
 	private final static String cmdHelpAbout = "HelpAbout";
 	private final static String cmdHelpContactTOPL = "HelpContactTOPL";
+	
+	private final static String myTitle = "Aurora RNM Simulator";
 	
 
 	public MainPane() { super(); }
@@ -84,6 +87,9 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 					menu.getItem(j).setEnabled(false);
 		}
 		getContentPane().removeAll();
+		setTitle(myTitle);
+		setVisible(false);
+		setVisible(true);
 		if (treePane != null)
 			treePane.stop();
 		treePane = null;
@@ -121,7 +127,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	public void resetAll() {
 		try {
 			mySystem.getMySettings().createNewTmpDataFile(currentDir);
-			if (mySystem.dataReset()) {
+			if (mySystem.initialize()) {
 				prepareForSimulation();
 				if (treePane != null)
 					treePane.resetView();
@@ -167,6 +173,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 					JOptionPane.showMessageDialog(this, buf, e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
 				}
 				if (!error) {
+					setTitle(myTitle + " - " + fc.getSelectedFile());
 					currentDir = fc.getCurrentDirectory();
 					resetAll();
 				}
@@ -190,6 +197,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 					JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
 				}
 				if (!error) {
+					setTitle(myTitle + " - " + fc.getSelectedFile());
 					prepareForSimulation();
 					String status;
 					int ts = mySystem.getMyNetwork().getTS();
@@ -214,6 +222,9 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 				//getContentPane().add(new JScrollPane(treePane), BorderLayout.CENTER);
 				getContentPane().add(treePane, BorderLayout.CENTER);
 				getContentPane().add(statusBar, BorderLayout.SOUTH);
+				String s = new String(statusBar.getText());
+				statusBar.setText(" "); // this stuff is necessary, do not remove!
+				statusBar.setText(s);
 			}
 		}
 		setVisible(true);
@@ -347,11 +358,12 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 		while ((!mySystem.getMyStatus().isStopped()) && res) {
 			String status = "Simulation running: step " + Integer.toString(ts) + ", time ";
 			status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
-			status += ". Press 'F6' to stop...";
+			status += ".";
+			//status += " Press 'F6' to stop...";
 			statusBar.setText(status);
 			try {
 				res = mySystem.dataUpdate(++ts);
-				if (((ts - tsV) * mySystem.getMyNetwork().getTP()) >= mySystem.getMySettings().getDisplayTP()) {
+				if ((ts == 1) || (((ts - tsV) * mySystem.getMyNetwork().getTP()) >= mySystem.getMySettings().getDisplayTP())) {
 					JCheckBoxMenuItem miml = (JCheckBoxMenuItem)cmd2item.get(cmdControlMainline);
 					JCheckBoxMenuItem miq = (JCheckBoxMenuItem)cmd2item.get(cmdControlQueue);
 					boolean cv = mySystem.getMyNetwork().isControlled();
@@ -361,7 +373,6 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 					miq.setEnabled(cv);
 					tsV = ts;
 					treePane.updateView();
-					((NodeHWCNetwork)mySystem.getMyNetwork()).resetSums();
 					Thread.sleep(mySystem.getMySettings().getTimeout());
 				}
 			}
@@ -532,7 +543,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 		//menu = new JMenu("View");
 		//mainMenu.add(menu);
 		menu = new JMenu("Simulation");
-		item = new JMenuItem("Run");
+		item = new JMenuItem("Start");
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 		item.addActionListener(this);
 		item.setEnabled(false);
@@ -540,7 +551,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 		cmd2item.put(cmdSimulationRun, item);
         menu.add(item);
         item = new JMenuItem("Stop");
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+		//item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
 		item.addActionListener(this);
 		item.setEnabled(false);
 		item.setActionCommand(cmdSimulationStop);
@@ -597,11 +608,13 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 		oos.close();
 		mySystem.getM
 		*/
-		String str;
-		for(int i=0;i<e.size();i++){
+		String str = null;
+		for (int i = 0; i < e.size(); i++) {
 			str = e.get(i).getMessage();
+			if (false)
+				System.err.println(str);
 		}
-		
+		return;
 	}
 	
 	/**
@@ -612,6 +625,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	private static void runBatch(String infile, String outfile) {
 		File config = new File(infile);
 		ContainerHWC mySystem = new ContainerHWC();
+		mySystem.batchMode();
 		try {
 			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse("file:" + config.getAbsolutePath());
 			mySystem.initFromDOM(doc.getChildNodes().item(0));
@@ -639,7 +653,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 			return;
 		}
 		try {
-			mySystem.dataReset();
+			mySystem.initialize();
 		}
 		catch(Exception e) {
 			String buf = e.getMessage();
@@ -682,12 +696,13 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
     	// Use the Java look and feel.
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) { }
         // Make sure we have nice window decorations.
         JFrame.setDefaultLookAndFeelDecorated(true);
         JDialog.setDefaultLookAndFeelDecorated(true);
         // Create and set up the window.
-        new MainPane("Aurora RNM: Simulator");
+        new MainPane(myTitle);
     }
     
     public static void main(String[] args) {

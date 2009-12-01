@@ -15,7 +15,7 @@ import aurora.*;
  * @see NodeFreeway, NodeHWCNetwork
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: LinkFwML.java,v 1.12.2.2 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: LinkFwML.java,v 1.12.2.2.4.1 2009/09/11 23:33:54 akurzhan Exp $
  */
 public final class LinkFwML extends AbstractLinkHWC {
 	private static final long serialVersionUID = -4510519067401787436L;
@@ -31,6 +31,13 @@ public final class LinkFwML extends AbstractLinkHWC {
 	 */
 	public final int getType() {
 		return TypesHWC.LINK_FREEWAY;
+	}
+	
+	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "Freeway";
 	}
 	
 	/**

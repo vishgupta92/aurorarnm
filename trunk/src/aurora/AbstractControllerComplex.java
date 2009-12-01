@@ -4,17 +4,19 @@
 
 package aurora;
 
-import java.util.Vector;
+import java.util.*;
 
 /**
  * This class is a base for Sytem Wide Controllers.
  * @author Alex Kurzhanskiy, Gabriel Gomes
- * @version $Id: AbstractControllerComplex.java,v 1.1.2.2.4.1.2.4 2009/08/16 21:14:22 akurzhan Exp $
+ * @version $Id: AbstractControllerComplex.java,v 1.1.2.2.4.1.2.9 2009/11/22 22:19:35 akurzhan Exp $
  */
 public abstract class AbstractControllerComplex extends AbstractController {
+	private static final long serialVersionUID = 6181398228416347756L;
+	
 	protected AbstractMonitorController myMonitor = null;
-	protected Vector<AbstractControllerSimple> controllers = new Vector<AbstractControllerSimple>();
-	protected Vector<Double> controloutput = new Vector<Double>();
+	protected HashMap<AbstractController, Object> ctrl2input = new HashMap<AbstractController, Object>(); 
+	protected Vector<AbstractController> dependentControllers = new Vector<AbstractController>();
 	
 	
 	/**
@@ -30,7 +32,7 @@ public abstract class AbstractControllerComplex extends AbstractController {
 			this.ts = ts;
 			return true;
 		}
-		int period = (int)Math.round((double)(myMonitor.getTop().getTP()/tp));
+		int period = (int)Math.round((double)(tp/myMonitor.getTop().getTP()));
 		if (period == 0)
 			period = 1;
 		if ((ts - this.ts) < period)
@@ -67,19 +69,66 @@ public abstract class AbstractControllerComplex extends AbstractController {
 		return myMonitor;
 	}
 	
-	public double getControlInput(int i) {
-		return controloutput.get(i);
+	/**
+	 * Returns dependent controller input.
+	 * @param ctrl dependent controller.
+	 * @return input object.
+	 */
+	public Object getControlInput(AbstractController ctrl) {
+		return ctrl2input.get(ctrl);
 	}
 
-	public synchronized void setControlInput(int i, double x) {
-		controloutput.set(i,x);
+	/**
+	 * Sets input for a dependent controller.
+	 * @param ctrl dependent controller.
+	 * @param obj object the complex controller is supposed to set on the dependent controller.
+	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setControlInput(AbstractController ctrl, Object obj) {
+		if (ctrl == null)
+			return false;
+		ctrl2input.put(ctrl, obj);
+		return true;
 	}
 	
-	public int attachController(AbstractControllerSimple x){
-		controllers.add(x);
-		controloutput.add(0.0);
-		return controllers.size()-1;
+	/**
+	 * Sets input for a dependent controller.
+	 * @param idx index of the dependent controller in the list.
+	 * @param obj object the complex controller is supposed to set on the dependent controller.
+	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setControlInput(int idx, Object obj) {
+		if ((idx < 0) || (idx >= dependentControllers.size()))
+			return false;
+		ctrl2input.put(dependentControllers.get(idx), obj);
+		return true;
 	}
+	
+	/**
+	 * Adds dependent controller to the list.
+	 * @param ctrl dependent controller.
+	 * @param obj object the complex controller is supposed to set on the dependent controller.
+	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean addDependentController(AbstractController ctrl, Object obj) {
+		if (ctrl == null)
+			return false;
+		if (dependentControllers.indexOf(ctrl) < 0)
+			dependentControllers.add(ctrl);
+		ctrl2input.put(ctrl, obj);
+		return true;
+	}
+
+	/**
+	 * Get index of a particular controller in dependentControllers.
+	 * @param ctrl dependent controller.
+	 * @return integer index to vector of dependent controllers.
+	 */
+	public synchronized int getDependentControllerIndexOf(AbstractController ctrl) {
+		if (ctrl == null)
+			return -1;
+		return dependentControllers.indexOf(ctrl);
+	} 
 	
 	/**
 	 * Assigns monitor to which this controller should belong.
@@ -92,5 +141,6 @@ public abstract class AbstractControllerComplex extends AbstractController {
 		myMonitor = x;
 		return true;
 	}
+	
 
 }

@@ -43,7 +43,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of network internal frame.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNetwork.java,v 1.1.2.29.2.10 2009/05/31 19:23:48 akurzhan Exp $
+ * @version $Id: WindowNetwork.java,v 1.1.2.29.2.10.2.3 2009/10/22 02:58:13 akurzhan Exp $
  */
 public final class WindowNetwork extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = 6582260090722618374L;
@@ -248,15 +248,15 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 	 * Updates labels at the configuration tab
 	 */
 	private void updateConfLabels() {
-		labelTP.setText("<html><font color=\"gray\"><u><b>Sampling Period:</b></u><font color=\"blue\"> " + Util.time2string(myNetwork.getTP()) + "</font></font></html>");
+		labelTP.setText("<html><font color=\"black\">Sampling Period:<font color=\"blue\"> " + Util.time2string(myNetwork.getTP()) + "</font></font></html>");
 		String cvbuf = "Off";
 		if (myNetwork.isControlled())
 			cvbuf = "On";
-		labelControl.setText("<html><font color=\"gray\"><u><b>Mainline Control:</b></u><font color=\"blue\"> " + cvbuf + "</font></font></html>");
+		labelControl.setText("<html><font color=\"black\">Mainline Control:<font color=\"blue\"> " + cvbuf + "</font></font></html>");
 		String qcvbuf = "Off";
 		if (((NodeHWCNetwork)myNetwork).hasQControl())
 			qcvbuf = "On";
-		labelQControl.setText("<html><font color=\"gray\"><u><b>Queue Control:</b></u><font color=\"blue\"> " + qcvbuf + "</font></font></html>");
+		labelQControl.setText("<html><font color=\"black\">Queue Control:<font color=\"blue\"> " + qcvbuf + "</font></font></html>");
 		return;
 	}
 	
@@ -267,7 +267,7 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 		updateConfLabels();
 		JPanel desc = new JPanel(new GridLayout(1, 0));
 		desc.setBorder(BorderFactory.createTitledBorder("Description"));
-		desc.add(new JLabel("<html><font color=\"blue\">" + myNetwork.getDescription() + "</font></html>"));
+		desc.add(new JScrollPane(new JLabel("<html><pre><font color=\"blue\">" + myNetwork.getDescription() + "</font></pre></html>")));
 		confPanel.add(desc);
 		JPanel sttngs = new JPanel(new GridLayout(3, 0));
 		sttngs.setBorder(BorderFactory.createTitledBorder("Settings"));
@@ -584,8 +584,8 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 		String txt = "<html><font color=\"" + clr + "\"><b><u>" + lk.toString() + "</u></b> (" + TypesHWC.typeString(lk.getType()) + ")";
 		txt += "<br><b>Length:</b> " + form.format((Double)lk.getLength()) + " mi";
 		txt += "<br><b>Width:</b> " + form.format(lk.getLanes()) + " lanes";
-		txt += "<br><b>Density:</b> " + lk.getDensity().toString2() + " vpm";
-		txt += "<br><b>Speed:</b> " + form.format(((AuroraInterval)lk.getSpeed()).getCenter()) + " mph";
+		txt += "<br><b>Density:</b> " + lk.getAverageDensity().toString2() + " vpm";
+		txt += "<br><b>Speed:</b> " + form.format(((AuroraInterval)lk.getAverageSpeed()).getCenter()) + " mph";
 		if (lk.getBeginNode() == null) {
 			txt += "<br><b>Demand:</b> " + lk.getDemand().toString2() + " vph";
 			txt += "<br><b>Queue:</b> " + lk.getQueue().toString2();
@@ -764,11 +764,13 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 			EdgeLinkHWC el = (EdgeLinkHWC)e;
 			Color c;
 			if (showSpeeds) {
+				//FIXME
 				double speed = ((AuroraInterval)el.getLinkHWC().getSpeed()).getCenter();
 				double vff = (Double)el.getLinkHWC().getV();
 				c = UtilGUI.kgColor((int)Math.floor(10*(speed/vff)));
 			}
 			else {
+				//FIXME
 				double den = ((AuroraIntervalVector)el.getLinkHWC().getDensity()).sum().getCenter();
 				double cden = (Double)el.getLinkHWC().getCriticalDensity();
 				double jden = (Double)el.getLinkHWC().getJamDensity() - cden;

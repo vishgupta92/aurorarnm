@@ -42,7 +42,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of path internal frame.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowPath.java,v 1.1.2.11.2.8 2009/05/31 19:22:50 akurzhan Exp $
+ * @version $Id: WindowPath.java,v 1.1.2.11.2.8.2.2 2009/10/22 02:58:13 akurzhan Exp $
  */
 public final class WindowPath extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = -2799899518843864326L;
@@ -254,9 +254,9 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 	 * Updates simulation data.
 	 */
 	private void updateSimSeries() {
-		AuroraIntervalVector[] flows = myPath.getFlows();
-		AuroraIntervalVector[] densities = myPath.getDensities();
-		AuroraInterval[] speeds = myPath.getSpeeds();
+		AuroraIntervalVector[] flows = myPath.getAverageFlows();
+		AuroraIntervalVector[] densities = myPath.getAverageDensities();
+		AuroraInterval[] speeds = myPath.getAverageSpeeds();
 		for (int i = 0; i < linkCount; i++) {
 			flowData[2][linkCount*tStep + i] = flows[i].sum().getCenter();
 			minFlow = treePane.updateMinFlow(flows[i].sum().getCenter());
@@ -607,6 +607,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		perfDataSets[0] = dataset;
 		rangeAxis = new NumberAxis("Tr.Time(min)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(perfDataSets[0], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_YELLOW);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -617,6 +618,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		perfDataSets[1] = dataset;
 		rangeAxis = new NumberAxis("VMT");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(perfDataSets[1], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_CYAN);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -627,6 +629,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		perfDataSets[2] = dataset;
 		rangeAxis = new NumberAxis("VHT");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(1);
 		subplot = new XYPlot(perfDataSets[2], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_GREEN);
 		subplot.getRenderer().setSeriesPaint(1, Color.RED);
@@ -636,6 +639,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		perfDataSets[3] = dataset;
 		rangeAxis = new NumberAxis("Delay(vh)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(0.001);
 		subplot = new XYPlot(perfDataSets[3], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_RED);
 		perfPlot.add(subplot);
@@ -644,6 +648,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		perfDataSets[4] = dataset; 
 		rangeAxis = new NumberAxis("Prod.Loss(lmh)");
 		rangeAxis.setAutoRangeIncludesZero(false);
+		rangeAxis.setAutoRangeMinimumSize(0.001);
 		subplot = new XYPlot(perfDataSets[4], null, rangeAxis, new StandardXYItemRenderer());
 		subplot.getRenderer().setSeriesPaint(0, ChartColor.VERY_DARK_BLUE);
 		perfPlot.add(subplot);
@@ -945,8 +950,8 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		String txt = "<html><font color=\"" + clr + "\"><b><u>" + lk.toString() + "</u></b> (" + TypesHWC.typeString(lk.getType()) + ")";
 		txt += "<br><b>Length:</b> " + form.format((Double)lk.getLength()) + " mi";
 		txt += "<br><b>Width:</b> " + form.format(lk.getLanes()) + " lanes";
-		txt += "<br><b>Density:</b> " + lk.getDensity().toString2() + " vpm";
-		txt += "<br><b>Speed:</b> " + form.format(((AuroraInterval)lk.getSpeed()).getCenter()) + " mph";
+		txt += "<br><b>Density:</b> " + lk.getAverageDensity().toString2() + " vpm";
+		txt += "<br><b>Speed:</b> " + form.format(((AuroraInterval)lk.getAverageSpeed()).getCenter()) + " mph";
 		if (lk.getBeginNode() == null) {
 			txt += "<br><b>Demand:</b> " + lk.getDemand().toString2() + " vph";
 			txt += "<br><b>Queue:</b> " + lk.getQueue().toString2();
@@ -1122,11 +1127,13 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			EdgeLinkHWC el = (EdgeLinkHWC)e;
 			Color c;
 			if (showSpeeds) {
+				//FIXME
 				double speed = ((AuroraInterval)el.getLinkHWC().getSpeed()).getCenter();
 				double vff = (Double)el.getLinkHWC().getV();
 				c = UtilGUI.kgColor((int)Math.floor(10*(speed/vff)));
 			}
 			else {
+				//FIXME
 				double den = ((AuroraIntervalVector)el.getLinkHWC().getDensity()).sum().getCenter();
 				double cden = (Double)el.getLinkHWC().getCriticalDensity();
 				double jden = (Double)el.getLinkHWC().getJamDensity() - cden;

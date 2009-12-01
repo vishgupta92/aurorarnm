@@ -17,7 +17,7 @@ import aurora.*;
  * Top object that contains pointers
  * to all the Aurora system configuration.
  * @author Alex Kurzhanskiy
- * @version $Id: ContainerHWC.java,v 1.3.2.14.2.6.2.1 2009/06/14 22:41:42 akurzhan Exp $
+ * @version $Id: ContainerHWC.java,v 1.3.2.14.2.6.2.4 2009/10/18 00:58:29 akurzhan Exp $
  */
 public final class ContainerHWC extends AbstractContainer {
 	private static final long serialVersionUID = 2277054116304494673L;
@@ -46,10 +46,10 @@ public final class ContainerHWC extends AbstractContainer {
 					double demandTP = Double.parseDouble(pp.item(j).getAttributes().getNamedItem("tp").getNodeValue());
 					if (demandTP > 24) // sampling period in seconds
 						demandTP = demandTP/3600;
-					double demandKnob = Double.parseDouble(pp.item(j).getAttributes().getNamedItem("knob").getNodeValue());
+					String demandKnob = pp.item(j).getAttributes().getNamedItem("knob").getNodeValue();
 					AbstractLinkHWC lk = (AbstractLinkHWC)myNetwork.getLinkById(lkid);
 					if (lk != null) {
-						lk.setDemandKnob(demandKnob);
+						lk.setDemandKnobs(demandKnob);
 						lk.setDemandTP(demandTP);
 						lk.setDemandVector(pp.item(j).getTextContent());
 					}
@@ -123,6 +123,33 @@ public final class ContainerHWC extends AbstractContainer {
 	}
 	
 	/**
+	 * Initializes capacity profile from DOM structure.
+	 */
+	private boolean initInitialDensityProfileFromDOM(Node p) throws Exception {
+		if (p == null)
+			return false;
+		if (p.hasChildNodes()) {
+			NodeList pp = p.getChildNodes();
+			for (int j = 0; j < pp.getLength(); j++) {
+				if (pp.item(j).getNodeName().equals("density")) {
+					int lkid = Integer.parseInt(pp.item(j).getAttributes().getNamedItem("id").getNodeValue());
+					AbstractLinkHWC lk = (AbstractLinkHWC)myNetwork.getLinkById(lkid);
+					if (lk != null) {
+						lk.setInitialDensity(pp.item(j).getTextContent());
+					}
+				}
+				if (pp.item(j).getNodeName().equals("include")) {
+					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp.item(j).getAttributes().getNamedItem("uri").getNodeValue());
+					for (int i = 0; i < doc.getChildNodes().getLength(); i++)
+						if (doc.getChildNodes().item(i).getNodeName().equals("InitialDensityProfile"))
+							initInitialDensityProfileFromDOM(doc.getChildNodes().item(i));
+				}
+			}
+		}
+		return true;
+	}
+	
+	/**
 	 * Initializes the container contents from given DOM structure.
 	 * @param p top level DOM node.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
@@ -141,6 +168,8 @@ public final class ContainerHWC extends AbstractContainer {
 					res &= initSRProfileFromDOM(p.getChildNodes().item(i));
 				if (p.getChildNodes().item(i).getNodeName().equals("CapacityProfile"))
 					res &= initCapacityProfileFromDOM(p.getChildNodes().item(i));
+				if (p.getChildNodes().item(i).getNodeName().equals("InitialDensityProfile"))
+					res &= initInitialDensityProfileFromDOM(p.getChildNodes().item(i));
 			}
 		}
 		catch(Exception e) {
@@ -188,7 +217,7 @@ public final class ContainerHWC extends AbstractContainer {
 	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
 	 * @throws ExceptionDatabase, ExceptionEvent
 	 */
-	public synchronized boolean dataReset() throws ExceptionDatabase, ExceptionEvent {
+	public synchronized boolean initialize() throws ExceptionConfiguration, ExceptionDatabase, ExceptionEvent {
 		boolean res = true;
 		myStatus.setStopped(true);
 		myStatus.setSaved(true);
@@ -198,7 +227,7 @@ public final class ContainerHWC extends AbstractContainer {
 		double maxTime = Math.min(getMySettings().getTSMax()*myNetwork.getTP(), getMySettings().getTimeMax());
 		myNetwork.setMaxTimeStep((int)Math.floor(maxTime/myNetwork.getTP()));
 		// reset network
-		res &= myNetwork.setSimNo(myNetwork.getSimNo() + 1);
+		res &= myNetwork.initialize();
 		return res;
 	}
 	

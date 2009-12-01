@@ -4,18 +4,18 @@
 
 package aurora;
 
-import java.util.*;
-
-
 /**
  * Base class for simple controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerSimple.java,v 1.3.2.3.2.3.2.4 2009/08/25 20:49:13 akurzhan Exp $
+ * @version $Id: AbstractControllerSimple.java,v 1.3.2.3.2.3.2.8 2009/11/22 22:19:35 akurzhan Exp $
  */
 public abstract class AbstractControllerSimple extends AbstractController {
+	private static final long serialVersionUID = 677340356984323986L;
+	
 	protected AbstractLink myLink = null;
-	protected Object input; // current input value
-	protected boolean allowInputSet = false;
+	protected Object input = null; // current input value
+	protected Object actualInput = null; // current input value
+	protected boolean allowActualInputSet = false;
 
 	/**
 	 * Returns <code>true</code> indicating that it is a simple controller.
@@ -53,6 +53,20 @@ public abstract class AbstractControllerSimple extends AbstractController {
 	}
 	
 	/**
+	 * Returns input.
+     */
+	public final Object getInput() {
+		return input;
+	}
+	
+	/**
+	 * Returns actual input.
+     */
+	public final Object getActualInput() {
+		return input;
+	}
+	
+	/**
 	 * Assigns link for this controller.
 	 * @param x link.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
@@ -75,11 +89,12 @@ public abstract class AbstractControllerSimple extends AbstractController {
 			input = null;
 			return null;
 		}
-		int period = (int)Math.round((double)(x.getTop().getTP()/tp));
+		int period = (int)Math.round((double)(tp/x.getTop().getTP()));
 		if (period == 0)
 			period = 1;
 		if ((x.getTS() - ts) < period)
 			return input;
+		ts = x.getTS();
 		return null;
 	}
 	
@@ -90,11 +105,11 @@ public abstract class AbstractControllerSimple extends AbstractController {
 	 * @param inpt input object.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setInput(Object inpt) {
-		boolean res = allowInputSet;
-		if (allowInputSet) {
-			input = inpt;
-			allowInputSet = false;
+	public synchronized boolean setActualInput(Object inpt) {
+		boolean res = allowActualInputSet;
+		if (allowActualInputSet) {
+			actualInput = inpt;
+			allowActualInputSet = false;
 		}
 		return res;
 	}

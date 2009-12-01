@@ -811,30 +811,30 @@ public class ControllerActuated extends BaseSignalController {
 		int barrier;
 	}
 //	 --------------------------------------------------------------------------
-	@Override
-	public void resetTimeStep() {
-		
-		int index,intid,i;
-
-		super.resetTimeStep();
-		
-		for(index=0;index<numintersections;index++){
-			
+	/**
+	 * Additional optional initialization steps.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration
+	 */
+	public boolean initialize() throws ExceptionConfiguration {
+		int intid;
+		boolean res = super.initialize();
+		for (int index = 0; index < numintersections; index++) {
 			intid = interIndexToId.get(index);
 			NodeUJSignal node = intersection.get(index);
 			SignalManager s = node.getSigMan();
 			
-			if(    s.Phase(NEMA._2).Protected() && s.Phase(NEMA._2).Valid() 
+			if (    s.Phase(NEMA._2).Protected() && s.Phase(NEMA._2).Valid() 
 				&& s.Phase(NEMA._6).Protected() && s.Phase(NEMA._6).Valid() ){
-				resetIntersection(intid,NEMA._2,NEMA._6);
+				resetIntersection(intid, NEMA._2, NEMA._6);
 			}
 			else 
-			if(    s.Phase(NEMA._4).Protected() && s.Phase(NEMA._4).Valid() 
+			if (    s.Phase(NEMA._4).Protected() && s.Phase(NEMA._4).Valid() 
 			    && s.Phase(NEMA._8).Protected() && s.Phase(NEMA._8).Valid() ){
-				resetIntersection(intid,NEMA._4,NEMA._8);
+				resetIntersection(intid, NEMA._4, NEMA._8);
 			}
 		}
-
+		return res;
 	}
-
+	
 }

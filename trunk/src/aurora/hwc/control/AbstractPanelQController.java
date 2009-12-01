@@ -10,10 +10,12 @@ import javax.swing.*;
 /**
  * Base class for queue controller editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractQControllerPanel.java,v 1.1.4.1 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: AbstractPanelQController.java,v 1.1.2.1 2009/10/01 05:49:01 akurzhan Exp $
  */
-public abstract class AbstractQControllerPanel extends JPanel {
-	protected QueueController qcontroller = null;
+public abstract class AbstractPanelQController extends JPanel {
+	private static final long serialVersionUID = 1048949988339374993L;
+
+	protected AbstractQueueController qcontroller = null;
 	
 	protected WindowQControllerEditor winQCE;
 	
@@ -34,7 +36,7 @@ public abstract class AbstractQControllerPanel extends JPanel {
 	 * Initializes controller editing panel.
 	 * @param qctrl queue controller.
 	 */
-	public void initialize(QueueController qctrl) {
+	public void initialize(AbstractQueueController qctrl) {
 		qcontroller = qctrl;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		fillPanel();

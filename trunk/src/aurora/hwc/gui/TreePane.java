@@ -18,7 +18,7 @@ import aurora.util.*;
 /**
  * Tree view of the Aurora network.
  * @author Alex Kurzhanskiy, Gabriel Gomes
- * @version $Id: TreePane.java,v 1.3.2.20.2.2.2.4 2009/08/16 01:30:27 akurzhan Exp $
+ * @version $Id: TreePane.java,v 1.3.2.20.2.2.2.5 2009/10/18 05:17:14 akurzhan Exp $
  */
 public class TreePane extends JPanel {
 	private static final long serialVersionUID = -855000922287970148L;
@@ -70,7 +70,7 @@ public class TreePane extends JPanel {
         tree.setCellRenderer(new MyRenderer());
         tree.collapseRow(0);
         JScrollPane treeView = new JScrollPane(tree);
-        actionPane = new ActionPane(mySystem);
+        actionPane = new ActionPane(mySystem, this);
         //actionPane.getDesktopPane().addComponentListener(new DesktopFrameListener(this));
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setLeftComponent(treeView);

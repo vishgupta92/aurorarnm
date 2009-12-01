@@ -21,7 +21,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of Link Editor.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowLink.java,v 1.1.4.1.2.6.2.2 2009/08/26 02:25:21 akurzhan Exp $
+ * @version $Id: WindowLink.java,v 1.1.4.1.2.6.2.4 2009/10/18 00:58:29 akurzhan Exp $
  */
 public final class WindowLink extends JInternalFrame implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = -55251513483090686L;
@@ -47,8 +47,8 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private JSpinner lengthSpinner;
 	private JSpinner widthSpinner;
 	private JSpinner qlimSpinner;
-	//private JSpinner densitySpinner;
 	private JTextField densityTF;
+	private JTextField dcTF;
 	private JSpinner capacitySpinner;
 	private JSpinner crSpinner;
 	private JSpinner capdropSpinner;
@@ -56,7 +56,6 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private JSpinner denjamSpinner;
 	private JSpinner vffSpinner;
 	private JSpinner wcSpinner;
-	private JSpinner dcSpinner;
 	private JSpinner hh;
 	private JSpinner mm;
 	private JSpinner ss;
@@ -85,7 +84,6 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private final static String nmLength = "LengthSpin";
 	private final static String nmWidth = "WidthSpin";
 	private final static String nmQLim = "QLimSpin";
-	private final static String nmDensity = "DensitySpin";
 	private final static String nmCapacity = "CapacitySpin";
 	private final static String nmCapRange = "CapRangeSpin";
 	private final static String nmCapDrop = "CapDropSpin";
@@ -93,7 +91,6 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private final static String nmDenJam = "JamDensitySpin";
 	private final static String nmVff = "VFreeFlowSpin";
 	private final static String nmWc = "CongestionWaveSpeedSpin";
-	private final static String nmDC = "CoefficientSpin";
 	private final static String nmTP = "TimePeriod";
 	private final static String nmTPC = "TimePeriodC";
 	private boolean idModified = false;
@@ -301,13 +298,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		// Initial Density
 		pDen.setBorder(BorderFactory.createTitledBorder("Initial Density (vpm)"));
 		densityTF = new JTextField(((AuroraIntervalVector)lnk.getInitialDensity()).toStringWithInverseWeights(((SimulationSettingsHWC)mySystem.getMySettings()).getVehicleWeights(), true));
-		densityTF.setName(nmDensity);
 		densityTF.getDocument().addDocumentListener(new DensityChangeListener());
-		//double dnsty = ((AuroraIntervalVector)lnk.getDensity()).sum().getCenter();
-		//densitySpinner = new JSpinner(new SpinnerNumberModel(dnsty, 0.0, 99999.99, 1.0));
-		//densitySpinner.setEditor(new JSpinner.NumberEditor(densitySpinner, "####0.00"));
-		//densitySpinner.setName(nmDensity);
-		//densitySpinner.addChangeListener(this);
 		pDen.add(densityTF);
 		SpringUtilities.makeCompactGrid(pDen, 1, 1, 2, 2, 2, 2);
 		genPanel.add(pDen);
@@ -477,13 +468,11 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		AbstractLinkHWC lnk = (AbstractLinkHWC)linkList.firstElement();
 		JPanel panel = new JPanel(new BorderLayout());
 		Box demandPanel = Box.createVerticalBox();
-		// Demand Coefficient
-		pDC.setBorder(BorderFactory.createTitledBorder("Demand Coefficient"));
-		dcSpinner = new JSpinner(new SpinnerNumberModel(lnk.getDemandKnob(), 0.0, 999.99, 0.01));
-		dcSpinner.setEditor(new JSpinner.NumberEditor(dcSpinner, "##0.00"));
-		dcSpinner.setName(nmDC);
-		dcSpinner.addChangeListener(this);
-		pDC.add(dcSpinner);
+		// Demand Coefficient(s)
+		pDC.setBorder(BorderFactory.createTitledBorder("Demand Coefficient(s)"));
+		dcTF = new JTextField(lnk.getDemandKnobsAsString());
+		dcTF.getDocument().addDocumentListener(new DCChangeListener());
+		pDC.add(dcTF);
 		SpringUtilities.makeCompactGrid(pDC, 1, 1, 2, 2, 2, 2);
 		demandPanel.add(pDC);
 		// Sampling Period
@@ -588,7 +577,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 			if (crModified)
 				lnk.setMaxFlowRange(cr*lnk.getLanes()*2);
 			if (dcModified)
-				lnk.setDemandKnob((Double)dcSpinner.getValue());
+				lnk.setDemandKnobs(dcTF.getText());
 			if (dpModified)
 				lnk.setDemandVector(demandProfile.getText());
 			if (cpModified)
@@ -620,7 +609,10 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 			}
 			if (saveModified)
 				lnk.setSave((cbSave.getSelectedIndex() == 1));
-			lnk.resetTimeStep();
+			try {
+				lnk.initialize();
+			}
+			catch(Exception e) { }
 		}
 		return;
 	}
@@ -684,16 +676,6 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		if (nm.equals(nmQLim)) {
 			qlimModified = true;
 			pQLim.setBorder(BorderFactory.createTitledBorder("*Queue Limit"));
-			return;
-		}
-		if (nm.equals(nmDensity)) {
-			denModified = true;
-			pDen.setBorder(BorderFactory.createTitledBorder("*Initial Density (vpm)"));
-			return;
-		}
-		if (nm.equals(nmDC)) {
-			dcModified = true;
-			pDC.setBorder(BorderFactory.createTitledBorder("*Demand Coefficient"));
 			return;
 		}
 		if (nm.equals(nmTP)) {
@@ -773,6 +755,15 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	/**
 	 * Reaction to demand profile update.
 	 */
+	private void dcUpdate() {
+		dcModified = true;
+		pDC.setBorder(BorderFactory.createTitledBorder("*Demand Coefficient(s)"));
+		return;
+	}
+	
+	/**
+	 * Reaction to demand profile update.
+	 */
 	private void dpUpdate() {
 		dpModified = true;
 		pDP.setBorder(BorderFactory.createTitledBorder("*Demand Profile"));
@@ -805,6 +796,27 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		
 		public void removeUpdate(DocumentEvent e) {
 			densityUpdate();
+			return;
+		}
+	}
+	
+	
+	/**
+	 * Document listener for demand coefficient(s).
+	 */
+	private class DCChangeListener implements DocumentListener {
+		public void changedUpdate(DocumentEvent e) {
+			dcUpdate();
+			return;
+		}
+		
+		public void insertUpdate(DocumentEvent e) {
+			dcUpdate();
+			return;
+		}
+		
+		public void removeUpdate(DocumentEvent e) {
+			dcUpdate();
 			return;
 		}
 	}
@@ -867,22 +879,18 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		}
 		
 		public void componentHidden(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentMoved(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentResized(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentShown(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 		

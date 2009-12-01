@@ -15,9 +15,11 @@ import org.w3c.dom.*;
  * @see AbstractNode, AbstractLink, AbstractMonitor.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNetworkElement.java,v 1.24.2.5.2.2.2.1 2009/08/26 02:08:26 akurzhan Exp $
+ * @version $Id: AbstractNetworkElement.java,v 1.24.2.5.2.2.2.5 2009/11/22 22:19:35 akurzhan Exp $
  */
 public abstract class AbstractNetworkElement implements AuroraConfigurable, Serializable {
+	private static final long serialVersionUID = -1658852405459300241L;
+	
 	protected boolean initialized = false;
 	protected int id;
 	protected int ts = 0; // time step of the simulation
@@ -42,6 +44,16 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 	public abstract boolean initFromDOM(Node p) throws ExceptionConfiguration;
 	
 	/**
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
+	 */
+	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
+		ts = 0;
+		return true;
+	}
+	
+	/**
 	 * Generates XML description of the NE.<br>
 	 * If the print stream is specified, then XML buffer is written to the stream.
 	 * @param out print stream.
@@ -62,7 +74,7 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 			this.ts = ts;
 			return true;
 		}
-		int period = (int)Math.round((double)(getTop().getTP()/myNetwork.getTP()));
+		int period = (int)Math.round((double)(myNetwork.getTP()/getTop().getTP()));
 		if (period == 0)
 			period = 1;
 		if ((ts - this.ts) < period)
@@ -109,6 +121,11 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 	 * Returns type of a NE
 	 */
 	public abstract int getType();
+	
+	/**
+	 * Returns type description of a NE
+	 */
+	public abstract String getTypeString();
 	
 	/**
 	 * Returns time step.
@@ -266,14 +283,6 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 				default: saveState = 0; break;
 				}
 		return true;
-	}
-	
-	/**
-	 * Resets the simulation time step.
-	 */
-	public synchronized void resetTimeStep() {
-		ts = 0;
-		return;
 	}
 	
 	/**

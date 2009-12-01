@@ -13,7 +13,7 @@ import aurora.*;
 /**
  * Derby specific implementation of database interface. 
  * @author Alex Kurzhanskiy
- * @version $Id: DBDerby.java,v 1.4.2.1.4.5 2008/12/11 20:42:37 akurzhan Exp $
+ * @version $Id: DBDerby.java,v 1.4.2.1.4.5.2.1 2009/09/22 21:11:02 akurzhan Exp $
  */
 public final class DBDerby implements DataStorage, Serializable {
 	private static final long serialVersionUID = -714746697588917594L;
@@ -343,7 +343,7 @@ public final class DBDerby implements DataStorage, Serializable {
 				simno = sr.getInt(1) + 1;
 			String stmt = "insert into simulations values (" + Integer.toString(simno) + ", '" + descr + "', current_timestamp)";
 			res = !sqlcmd.execute(stmt);
-			res &= top.setSimNo(simno);
+			res &= top.initialize();
 			if (res) {
 				conn.commit();
 			}

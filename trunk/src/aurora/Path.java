@@ -12,7 +12,7 @@ import org.w3c.dom.Node;
 /**
  * Implementation of Path as sequence of Links.
  * @author Alex Kurzhanskiy
- * @version $Id: Path.java,v 1.1.2.7.2.1 2008/12/31 01:56:02 akurzhan Exp $
+ * @version $Id: Path.java,v 1.1.2.7.2.1.2.4 2009/11/19 19:47:01 akurzhan Exp $
  */
 public class Path implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = 368831207374115827L;
@@ -41,12 +41,15 @@ public class Path implements AuroraConfigurable, Serializable {
 		StringTokenizer st = new StringTokenizer(p.getTextContent(), ", \t");
 		while (st.hasMoreTokens()) {
 			AbstractLink lk = myOD.getMyNetwork().getLinkById(Integer.parseInt(st.nextToken()));
-			if (lk != null)
+			if (lk != null) {
+				if ((myOD.getMyNetwork().getContainer().isSimulation()) && (myOD.getMyNetwork().getContainer().isBatch()))
+					lk.setSave(true);
 				linkSequence.add(lk);
+			}
 			else
 				res = false;
-			linkCount = linkSequence.size();
 		}
+		linkCount = linkSequence.size();
 		return res;
 	}
 	
@@ -88,6 +91,13 @@ public class Path implements AuroraConfigurable, Serializable {
 				throw new ExceptionConfiguration("Invalid Path (" + name + "): wrong Link sequence (...," + linkSequence.get(i-1).getId() + "," + linkSequence.get(i).getId() + ",...).");
 		}
 		return res;
+	}
+	
+	/**
+	 * Returns the name
+	 */
+	public final String getName() {
+		return name;
 	}
 	
 	/**

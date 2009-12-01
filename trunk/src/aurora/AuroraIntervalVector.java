@@ -12,7 +12,7 @@ import java.util.*;
  * Implementation of the interval vector type.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AuroraIntervalVector.java,v 1.1.2.11.2.3 2009/08/29 21:08:51 akurzhan Exp $
+ * @version $Id: AuroraIntervalVector.java,v 1.1.2.11.2.4 2009/10/02 00:10:30 akurzhan Exp $
  */
 public class AuroraIntervalVector implements Serializable {
 	private static final long serialVersionUID = 8459142305862530744L;
@@ -1026,7 +1026,7 @@ public class AuroraIntervalVector implements Serializable {
 		for (int i = 0; i < sz; i++)
 			if (data[i] != null)
 				buf += data[i].toString3() + ":";
-		buf += data[sz].toString2();
+		buf += data[sz].toString3();
 		return buf;
 	}
 	

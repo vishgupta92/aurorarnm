@@ -22,7 +22,7 @@ import aurora.util.*;
 /**
  * Main window of Aurora Configuration Utility.
  * @author Alex Kurzhanskiy
- * @version $Id: MainPane.java,v 1.1.4.1.2.6 2009/01/15 05:05:44 akurzhan Exp $
+ * @version $Id: MainPane.java,v 1.1.4.1.2.6.2.4 2009/11/22 01:05:27 akurzhan Exp $
  */
 public final class MainPane extends JFrame implements ActionListener, ItemListener {
 	private static final long serialVersionUID = 3515636962372050014L;
@@ -43,6 +43,8 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	private final static String cmdToolsValidate = "ToolsValidate";
 	private final static String cmdHelpAbout = "HelpAbout";
 	private final static String cmdHelpContactTOPL = "HelpContactTOPL";
+	
+	private final static String myTitle = "Aurora RNM Configurator";
 	
 
 	public MainPane() { super(); }
@@ -96,6 +98,9 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 					menu.getItem(j).setEnabled(false);
 		}
 		getContentPane().removeAll();
+		setTitle(myTitle);
+		setVisible(false);
+		setVisible(true);
 		if (treePane != null)
 			treePane.stop();
 		treePane = null;
@@ -122,7 +127,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 	 */
 	public void resetAll() {
 		try {
-			if (mySystem.dataReset()) {
+			if (mySystem.initialize()) {
 				if (treePane != null)
 					treePane.resetView();
 				statusBar.setText("");
@@ -173,6 +178,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 				}
 			}
 			if (!error) {
+				setTitle(myTitle + " - " + fc.getSelectedFile());
 				mySystem.getMySettings().setWindowSize(getSize());
 				treePane = new TreePane(mySystem, this);
 				getContentPane().add(treePane, BorderLayout.CENTER);
@@ -211,6 +217,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 				mySystem.xmlDump(oos);
 				oos.close();
 				mySystem.getMyStatus().setSaved(true);
+				setTitle(myTitle + " - " + fc.getSelectedFile());
 			}
 			catch(Exception e) {
 				JOptionPane.showMessageDialog(this, e.getMessage(), e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
@@ -468,12 +475,13 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
     	// Use the Java look and feel.
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) { }
         // Make sure we have nice window decorations.
         JFrame.setDefaultLookAndFeelDecorated(true);
         JDialog.setDefaultLookAndFeelDecorated(true);
         // Create and set up the window.
-        new MainPane("Aurora RNM: Configurator");
+        new MainPane(myTitle);
     }
     
     public static void main(String[] args) {

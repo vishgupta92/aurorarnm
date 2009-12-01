@@ -14,7 +14,7 @@ import aurora.util.Util;
  * Event that changes the fundamental diagram parameters
  * on the given Link.
  * @author Alex Kurzhanskiy
- * @version $Id: EventFD.java,v 1.4.2.5.2.3.2.1 2009/06/24 00:01:34 akurzhan Exp $
+ * @version $Id: EventFD.java,v 1.4.2.5.2.3.2.4 2009/10/18 01:23:16 akurzhan Exp $
  */
 public final class EventFD extends AbstractEvent {
 	private static final long serialVersionUID = 2419264559064698446L;
@@ -24,6 +24,7 @@ public final class EventFD extends AbstractEvent {
 	protected double capacityDrop = 0;
 	protected double densityCritical = 40;
 	protected double densityJam = 160;
+	protected double fraction = -1;
 
 	
 	public EventFD() { description = "Fundamental Diagram change at Link"; }
@@ -74,6 +75,12 @@ public final class EventFD extends AbstractEvent {
 						Node cdp = attr.getNamedItem("capacityDrop");
 						if (cdp != null)
 							capacityDrop = Double.parseDouble(cdp.getNodeValue());
+						Node cp = attr.getNamedItem("fdScale");
+						if (cp != null) {
+							fraction = Double.parseDouble(cp.getNodeValue());
+							if (fraction >= 0)
+								fraction = Math.max(0.0001, fraction);
+						}
 					}
 				}
 			}
@@ -98,8 +105,12 @@ public final class EventFD extends AbstractEvent {
 	public void xmlDump(PrintStream out) throws IOException {
 		super.xmlDump(out);
 		AuroraInterval fm = new AuroraInterval(flowMax, intervalSize);
-		out.print("<fd densityCritical=\"" + Double.toString(densityCritical) + "\" densityJam=\"" + Double.toString(densityJam) + "\" flowMax=\"" + fm.toString() + "\" capacityDrop=\"" + Double.toString(capacityDrop) +"\"/>");
-		out.print("</event>");
+		out.print("<fd densityCritical=\"" + Double.toString(densityCritical) + "\" densityJam=\"" + Double.toString(densityJam) + "\" flowMax=\"" + fm.toString() + "\"");
+		if (capacityDrop > 0)
+			out.print(" capacityDrop=\"" + Double.toString(capacityDrop) + "\"");
+		if (fraction > 0)
+			out.print(" fdScale=\"" + Double.toString(fraction) + "\"");
+		out.print(" /></event>");
 		return;
 	}
 	
@@ -123,8 +134,15 @@ public final class EventFD extends AbstractEvent {
 		double fm = ((AbstractLinkHWC)alnk).getMaxFlow();
 		double sz = ((AbstractLinkHWC)alnk).getMaxFlowRange().getSize();
 		double cd = ((AbstractLinkHWC)alnk).getCapacityDrop();
-		boolean res = ((AbstractLinkHWC)alnk).setFD(flowMax, densityCritical, densityJam, capacityDrop);
-		res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(sz);
+		boolean res = true;
+		if (fraction > 0) {
+			res &= ((AbstractLinkHWC)alnk).setFD(fraction * fm, fraction * dc, fraction * dj, fraction * cd);
+			res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(fraction * sz);
+		}
+		else {
+			res &= ((AbstractLinkHWC)alnk).setFD(flowMax, densityCritical, densityJam, capacityDrop);
+			res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(sz);
+		}
 		res &= ((AbstractLinkHWC)alnk).randomizeFD();
 		densityCritical = dc;
 		densityJam = dj;
@@ -162,6 +180,13 @@ public final class EventFD extends AbstractEvent {
 		intervalSize = sz;
 		capacityDrop = cd;
 		return res;
+	}
+	
+	/**
+	 * Returns type description. 
+	 */
+	public final String getTypeString() {
+		return "Fundamental Diagram";
 	}
 	
 	/**

@@ -13,10 +13,11 @@ import org.w3c.dom.*;
  * Partial implementation of Zipper Monitor.<br>
  * This Monitor is needed to glue two subnetworks together.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractMonitorZipper.java,v 1.1.2.5.2.1 2009/08/26 01:17:13 akurzhan Exp $
+ * @version $Id: AbstractMonitorZipper.java,v 1.1.2.5.2.2 2009/09/30 23:51:17 akurzhan Exp $
  */
 public abstract class AbstractMonitorZipper extends AbstractMonitor {
-
+	private static final long serialVersionUID = -6823494198602290832L;
+	
 
 	/**
 	 * Initializes Zipper from given DOM structure.

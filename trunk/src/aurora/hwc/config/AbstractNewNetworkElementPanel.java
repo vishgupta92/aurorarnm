@@ -11,9 +11,11 @@ import aurora.*;
 /**
  * Base class for new Network Element panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNewNetworkElementPanel.java,v 1.1.4.1 2008/10/16 04:27:06 akurzhan Exp $
+ * @version $Id: AbstractNewNetworkElementPanel.java,v 1.1.4.1.4.1 2009/09/30 23:53:39 akurzhan Exp $
  */
 public abstract class AbstractNewNetworkElementPanel extends JPanel {
+	private static final long serialVersionUID = -4358604370435744251L;
+	
 	protected TreePane tpane;
 	protected AbstractNodeComplex myNetwork;
 	protected Point pointPosition = null;

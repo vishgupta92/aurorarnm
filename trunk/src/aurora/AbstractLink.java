@@ -11,9 +11,11 @@ import java.util.Vector;
  * Base class for Links.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractLink.java,v 1.12.2.2.2.1 2008/12/29 05:29:32 akurzhan Exp $
+ * @version $Id: AbstractLink.java,v 1.12.2.2.2.1.2.2 2009/10/22 23:06:23 akurzhan Exp $
  */
 public abstract class AbstractLink extends AbstractNetworkElement {
+	private static final long serialVersionUID = 2434370630381957283L;
+
 	protected double length;
 	
 	protected PositionLink myPosition;
@@ -89,6 +91,11 @@ public abstract class AbstractLink extends AbstractNetworkElement {
 	public final double getLength() {
 		return length;
 	}
+	
+	/**
+	 * Returns the width of the link.
+	 */
+	public abstract double getWidth();
 	
 	/**
 	 * Returns begin node.

@@ -16,9 +16,9 @@ import aurora.hwc.control.ControllerTOD.TODdataRow;
 /**
  * Panel for editing TOD controller properties.
  * @author Gabriel Gomes
- * @version $Id: PanelControllerTOD.java,v 1.1.4.1.2.4.2.3 2009/08/20 20:11:13 akurzhan Exp $
+ * @version $Id: PanelControllerTOD.java,v 1.1.4.1.2.4.2.4 2009/10/01 05:49:01 akurzhan Exp $
  */
-public class PanelControllerTOD extends AbstractSimpleControllerPanel {
+public class PanelControllerTOD extends AbstractPanelSimpleController {
 	private static final long serialVersionUID = -648570173796184722L;
 
 	private JButton buttonAdd = new JButton("Add");
@@ -222,7 +222,6 @@ public class PanelControllerTOD extends AbstractSimpleControllerPanel {
 		private final static String cmdOK = "pressedOK";
 		private final static String cmdCancel = "pressedCancel";
 
-		public WindowTOD() { }
 		public WindowTOD(JFrame parent, String title) {
 			super(parent, title);
 			setSize(300, 180);
@@ -296,7 +295,7 @@ public class PanelControllerTOD extends AbstractSimpleControllerPanel {
 	private final class WindowAdd extends WindowTOD {
 		private static final long serialVersionUID = -2411923362676291860L;
 		
-		public WindowAdd() { }
+		//public WindowAdd() { }
 		public WindowAdd(JFrame parent) {
 			super(parent, "New");
 			setContentPane(createForm());
@@ -306,7 +305,7 @@ public class PanelControllerTOD extends AbstractSimpleControllerPanel {
 	private final class WindowEdit extends WindowTOD {
 		private static final long serialVersionUID = -3418864048397054006L;
 
-		public WindowEdit() { }
+		//public WindowEdit() { }
 		public WindowEdit(JFrame parent,TODdataRow x) {
 			super(parent, "Edit");
 			if (x != null) {

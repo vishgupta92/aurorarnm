@@ -18,9 +18,12 @@ import aurora.util.*;
  * @see NodeFreeway, NodeHighway, NodeUJSignal, NodeUJStop
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeHWC.java,v 1.12.2.9.2.28.2.3 2009/07/30 04:11:03 akurzhan Exp $
+ * @version $Id: AbstractNodeHWC.java,v 1.12.2.9.2.28.2.17 2009/11/28 02:35:30 akurzhan Exp $
  */
 public abstract class AbstractNodeHWC extends AbstractNodeSimple {
+	private static final long serialVersionUID = 3609519064761135698L;
+	
+	protected double[][] weavingFactorMatrix = null;
 	protected AuroraIntervalVector[][] splitRatioMatrix = null;
 	protected AuroraIntervalVector[][] splitRatioMatrix0 = null;
 	protected Vector<AuroraIntervalVector[][]> srmProfile = new Vector<AuroraIntervalVector[][]>();
@@ -43,7 +46,9 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				if (p.hasChildNodes()) {
 					NodeList pp = p.getChildNodes();
 					Vector<String> srbuf = new Vector<String>();
+					Vector<String> wfbuf = new Vector<String>();
 					int i, j;
+					int m = 0;
 					int n = 0;
 					for (i = 0; i < pp.getLength(); i++) {
 						if (pp.item(i).getNodeName().equals("inputs"))
@@ -58,6 +63,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 											for (int k = 0; k < pp3.getLength(); k++) {
 												if (pp3.item(k).getNodeName().equals("splitratios"))
 													srbuf.add(pp3.item(k).getTextContent());
+												if (pp3.item(k).getNodeName().equals("weavingfactors"))
+													wfbuf.add(pp3.item(k).getTextContent());
 												if (pp3.item(k).getNodeName().equals("controller")) {
 													Class c = Class.forName(pp3.item(k).getAttributes().getNamedItem("class").getNodeValue());
 													ctrl = (AbstractControllerSimple)c.newInstance();
@@ -65,9 +72,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 												}
 											}
 										}
-										else
-											res = false;
 										addInLink(lk, ctrl);
+										m++;
 									}
 							}
 						if (pp.item(i).getNodeName().equals("outputs"))
@@ -82,6 +88,28 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 						if (pp.item(i).getNodeName().equals("splitratios"))
 							initSplitRatioProfileFromDOM(pp.item(i));
 					}
+					if ((wfbuf.size() > 0) && (n > 0)) {
+						weavingFactorMatrix = new double[wfbuf.size()][n];
+						for (i = 0; i < wfbuf.size(); i++) {
+							StringTokenizer st = new StringTokenizer(wfbuf.get(i), ", \t");
+							j = 0;
+							while ((st.hasMoreTokens()) && (j < n)) {
+								try {
+									weavingFactorMatrix[i][j] = Double.parseDouble(st.nextToken());
+								}
+								catch(Exception e) {
+									weavingFactorMatrix[i][j] = 1;
+								}
+								j++;
+							}
+						}
+					}
+					else {
+						weavingFactorMatrix = new double[m][n];
+						for (i = 0; i < m; i++)
+							for (j = 0; j < n; j++)
+								weavingFactorMatrix[i][j] = 1;
+					}
 					if ((srbuf.size() > 0) && (n > 0)) {
 						splitRatioMatrix = new AuroraIntervalVector[srbuf.size()][n];
 						splitRatioMatrix0 = new AuroraIntervalVector[srbuf.size()][n];
@@ -90,7 +118,6 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 							StringTokenizer st = new StringTokenizer(srbuf.get(i), ", \t");
 							j = 0;
 							while ((st.hasMoreTokens()) && (j < n)) {
-								
 								String srvtxt = st.nextToken();
 								AuroraIntervalVector srv = new AuroraIntervalVector();
 								srv.setRawIntervalVectorFromString(srvtxt);
@@ -222,7 +249,6 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			res = false;
 			throw new ExceptionConfiguration(e.getMessage());
 		}
-	
 		return res;
 	}
 	
@@ -236,6 +262,12 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		int i;
 		if (out == null)
 			out = System.out;
+		/*/ FIXME
+		if (srmProfile.size() > 1) {
+			for (i = 0; i < 48; i++)
+				srmProfile.remove(0);
+			//System.err.println(srmProfile.size());
+		}//*/
 		out.print("<node class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" name=\"" + name + "\">");
 		out.print("<description>" + description + "</description>\n");
 		out.print("<outputs>");
@@ -244,13 +276,18 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		out.print("</outputs>\n<inputs>");
 		for (i = 0; i < predecessors.size(); i++) {
 			String buf = "";
+			String buf2 = "";
 			for (int j = 0; j < successors.size(); j++) {
-				if (j > 0)
+				if (j > 0) {
 					buf += ", ";
+					buf2 += ", ";
+				}
 				buf += splitRatioMatrix[i][j].toString();
+				buf2 += Double.toString(weavingFactorMatrix[i][j]);
 			}
 			out.print("<input id=\"" + predecessors.get(i).getId() + "\">");
 			out.print("<splitratios>" + buf + "</splitratios>");
+			out.print("<weavingfactors>" + buf2 + "</weavingfactors>");
 			if (controllers.get(i) != null)
 				controllers.get(i).xmlDump(out);
 			out.print("</input>");
@@ -282,6 +319,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
+	@SuppressWarnings("unused")
 	private synchronized boolean dataUpdate0(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		boolean res = super.dataUpdate(ts);
 		if (!res)
@@ -515,7 +553,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			inputs.set(i, inDemand[i]);
 			AbstractControllerSimple ctrl = controllers.get(i);
 			if (ctrl != null)
-				ctrl.setInput(new Double(inDemand[i].sum().getUpperBound()));
+				ctrl.setActualInput(new Double(inDemand[i].sum().getUpperBound()));
 		}
 		//
 		// Assign output flows
@@ -542,6 +580,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
+	@SuppressWarnings("unused")
 	private synchronized boolean dataUpdate1(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		boolean res = super.dataUpdate(ts);
 		if (!res)
@@ -790,7 +829,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			inputs.set(i, inDemand[i]);
 			AbstractControllerSimple ctrl = controllers.get(i);
 			if (ctrl != null)
-				ctrl.setInput(new Double(inDemand[i].sum().getUpperBound()));
+				ctrl.setActualInput(new Double(inDemand[i].sum().getUpperBound()));
 		}
 		//
 		// Assign output flows
@@ -818,6 +857,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
+	@SuppressWarnings("unused")
 	private synchronized boolean dataUpdate2(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		boolean res = super.dataUpdate(ts);
 		if (!res)
@@ -1080,7 +1120,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			inputs.set(i, inDemand[i]);
 			AbstractControllerSimple ctrl = controllers.get(i);
 			if (ctrl != null)
-				ctrl.setInput(new Double(inDemand[i].sum().getUpperBound()));
+				ctrl.setActualInput(new Double(inDemand[i].sum().getUpperBound()));
 		}
 		//
 		// Assign output flows
@@ -1283,6 +1323,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 						inputsSRInfo[i + ii*nIn][0] -= sr;
 						inputsSRInfo[i + ii*nIn][0] = Math.max(0, inputsSRInfo[i + ii*nIn][0]);
 						outDemand[minIndex] += flow;
+						if (sr < 0.000000001)
+							break;
 					} // 'while' loop
 				} // vehicle types 'for' loop
 			} // row 'for' loop
@@ -1349,27 +1391,52 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			inputs.set(i, inDemand[i]);
 			AbstractControllerSimple ctrl = controllers.get(i);
 			if (ctrl != null)
-				ctrl.setInput(new Double(inDemand[i].sum().getUpperBound()));
+				ctrl.setActualInput(new Double(inDemand[i].sum().getUpperBound()));
+		}
+		//
+		// Assign output weaving factors
+		//
+		for (int i = 0; i < nIn; i++) {
+			double[] owf = new double[nTypes];
+			for (int ii = 0; ii < nTypes; ii++) {
+				double wf = 1;
+				for (int j = 0; j < nOut; j++)
+					wf += (Math.max(1, -weavingFactorMatrix[i][j]) - 1) * srm[i + ii*nIn][j];
+				owf[ii] = wf;
+			}
+			((AbstractLinkHWC)predecessors.get(i)).setOutputWeavingFactors(owf);
 		}
 		//
 		// Assign output flows
 		//
 		for (int j = 0; j < nOut; j++) {
 			AuroraIntervalVector outFlow = new AuroraIntervalVector(nTypes);
+			AuroraIntervalVector outFlow2 = new AuroraIntervalVector(nTypes);
 			for (int i = 0; i < nIn; i++) {
 				double[] splitRatios = new double[nTypes];
 				for (int ii = 0; ii < nTypes; ii++)
 					splitRatios[ii] = srm[i + ii*nIn][j];
 				AuroraIntervalVector flw = new AuroraIntervalVector(nTypes);
+				AuroraIntervalVector flw2 = new AuroraIntervalVector(nTypes);
 				flw.copy(inDemand[i]);
 				flw.affineTransform(splitRatios, 0);
 				outFlow.add(flw);
+				flw2.copy(flw);
+				flw2.affineTransform(Math.max(1, weavingFactorMatrix[i][j]), 0);
+				outFlow2.add(flw2);
 			}
 			outputs.set(j, outFlow);
+			double nm = outFlow2.sum().getCenter();
+			double dnm = outFlow.sum().getCenter();
+			if (nm > 0.000000001)
+				nm = nm / dnm;
+			else
+				nm = 1;
+			((AbstractLinkHWC)successors.get(j)).setInputWeavingFactor(nm);
 		}
 		return res;
 	}
-
+	
 	/**
 	 * Validates Node configuration.<br>
 	 * Checks if the dimensions of the split ratio matrix are correct.
@@ -1378,21 +1445,31 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 */
 	public boolean validate() throws ExceptionConfiguration {
 		boolean res = super.validate();
+		if (weavingFactorMatrix == null) {
+			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Weaving factor matrix not assigned."));
+			res = false;
+			return res;
+		}
+		if (weavingFactorMatrix.length != inputs.size()) {
+			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Weaving factor matrix inputs (" + Integer.toString(weavingFactorMatrix.length) + ") does not match number of in-links (" + Integer.toString(inputs.size()) + ")."));
+			res = false;
+		}
+		if (weavingFactorMatrix[0].length != outputs.size()) {
+			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Weaving factor matrix outputs (" + Integer.toString(weavingFactorMatrix[0].length) + ") does not match number of out-links (" + Integer.toString(outputs.size()) + ")."));
+			res = false;
+		}
 		if (splitRatioMatrix == null) {
 			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Split ratio matrix not assigned."));
 			res = false;
 			return res;
-			//throw new ExceptionConfiguration(this, "Split ratio matrix not assigned.");
 		}
 		if (splitRatioMatrix.length != inputs.size()) {
 			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Split ratio matrix inputs (" + Integer.toString(splitRatioMatrix.length) + ") does not match number of in-links (" + Integer.toString(inputs.size()) + ")."));
 			res = false;
-			//throw new ExceptionConfiguration(this, "Split ratio matrix inputs (" + Integer.toString(splitRatioMatrix.length) + ") does not match number of in-links (" + Integer.toString(inputs.size()) + ").");
 		}
 		if (splitRatioMatrix[0].length != outputs.size()) {
 			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Split ratio matrix outputs (" + Integer.toString(splitRatioMatrix[0].length) + ") does not match number of out-links (" + Integer.toString(outputs.size()) + ")."));
 			res = false;
-			//throw new ExceptionConfiguration(this, "Split ratio matrix outputs (" + Integer.toString(splitRatioMatrix[0].length) + ") does not match number of out-links (" + Integer.toString(outputs.size()) + ").");
 		}
 		return res;
 	}
@@ -1405,6 +1482,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		String[] ctrlTypes = {"ALINEA",
 							  "Traffic Responsive",
 							  "TOD",
+							  "VSL TOD",
 							  "Simple Signal"};
 		return ctrlTypes;
 	}
@@ -1416,6 +1494,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		String[] ctrlClasses = {"aurora.hwc.control.ControllerALINEA",
 								"aurora.hwc.control.ControllerTR",
 								"aurora.hwc.control.ControllerTOD",
+								"aurora.hwc.control.ControllerVSLTOD",
 								"aurora.hwc.control.ControllerSimpleSignal"};
 		return ctrlClasses;
 	}
@@ -1438,6 +1517,21 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 							  "aurora.hwc.control.QProportional",
 							  "aurora.hwc.control.QPI"};
 		return qcClasses;
+	}
+	
+	/**
+	 * Returns weaving factor matrix.
+	 */
+	public double[][] getWeavingFactorMatrix() {
+		if (weavingFactorMatrix == null)
+			return null;
+		int m = weavingFactorMatrix.length;
+		int n = weavingFactorMatrix[0].length;
+		double[][] wfm = new double[m][n];
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				wfm[i][j] = weavingFactorMatrix[i][j];
+		return wfm;
 	}
 	
 	/**
@@ -1559,6 +1653,24 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			sr.copy(splitRatioMatrix[i][j]);
 		}
 		return sr;
+	}
+	
+	/**
+	 * Sets weaving factor matrix.
+	 * @param x weaving factor matrix.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public boolean setWeavingFactorMatrix(double[][] x) {
+		if (x == null)
+			return false;
+		int m = x.length;
+		int n = x[0].length;
+		if ((m != inputs.size()) || (n != outputs.size()))
+			return false;
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				weavingFactorMatrix[i][j] = x[i][j];
+		return true;
 	}
 	
 	/**
@@ -1713,10 +1825,14 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				return idx;
 			}
 			int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
+			double[][] wfm = new double[m][n];
 			AuroraIntervalVector[][] srm = new AuroraIntervalVector[m][n];
-			for (int i = 0; i < m; i++)
-				for (int j = 0; j < n; j++)
+			for (int i = 0; i < m; i++) {
+				for (int j = 0; j < n; j++) {
+					wfm[i][j] = 1;
 					srm[i][j] = new AuroraIntervalVector(sz, new AuroraInterval(1/n, 0));
+				}
+			}
 			splitRatioMatrix = srm;
 		}
 		return idx;
@@ -1746,10 +1862,14 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				return idx;
 			}
 			int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
+			double[][] wfm = new double[m][n];
 			AuroraIntervalVector[][] srm = new AuroraIntervalVector[m][n];
-			for (int i = 0; i < m; i++)
-				for (int j = 0; j < n; j++)
+			for (int i = 0; i < m; i++) {
+				for (int j = 0; j < n; j++) {
+					wfm[i][j] = 1;
 					srm[i][j] = new AuroraIntervalVector(sz, new AuroraInterval(1/n, 0));
+				}
+			}
 			splitRatioMatrix = srm;
 		}
 		return idx;
@@ -1769,10 +1889,14 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			return idx;
 		}
 		int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
+		double[][] wfm = new double[m][n];
 		AuroraIntervalVector[][] srm = new AuroraIntervalVector[m][n];
-		for (int i = 0; i < m; i++)
-			for (int j = 0; j < n; j++)
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				wfm[i][j] = 1;
 				srm[i][j] = new AuroraIntervalVector(sz, new AuroraInterval(1/n, 0));
+			}
+		}
 		splitRatioMatrix = srm;
 		return idx;
 	}
@@ -1791,10 +1915,14 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			return idx;
 		}
 		int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
+		double[][] wfm = new double[m][n];
 		AuroraIntervalVector[][] srm = new AuroraIntervalVector[m][n];
-		for (int i = 0; i < m; i++)
-			for (int j = 0; j < n; j++)
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				wfm[i][j] = 1;
 				srm[i][j] = new AuroraIntervalVector(sz, new AuroraInterval(1/n, 0));
+			}
+		}
 		splitRatioMatrix = srm;
 		return idx;
 	}
@@ -1825,10 +1953,12 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	}
 	
 	/**
-	 * Resets the simulation time step.
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
 	 */
-	public void resetTimeStep() {
-		super.resetTimeStep();
+	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
+		boolean res = super.initialize();
 		if (!srmProfile.isEmpty())
 			splitRatioMatrix0 = null;
 		boolean srmDefined = true;
@@ -1842,7 +1972,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		}
 		if (srmDefined)
 			splitRatioMatrix0 = null;
-		return;
+		return res;
 	}
 	
 	/**
@@ -1854,6 +1984,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		boolean res = super.copyData(x);
 		if (res) {
 			AbstractNodeHWC nd = (AbstractNodeHWC)x;
+			weavingFactorMatrix = nd.getWeavingFactorMatrix();
 			splitRatioMatrix = nd.getSplitRatioMatrix();
 			splitRatioMatrix0 = nd.getSplitRatioMatrix0();
 		}

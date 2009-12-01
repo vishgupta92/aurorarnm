@@ -14,7 +14,7 @@ import aurora.util.Util;
 /**
  * Event that changes complex controller at given Monitor.
  * @author Alex Kurzhanskiy
- * @version $Id: EventControllerComplex.java,v 1.4.2.4.2.2 2009/06/14 01:10:24 akurzhan Exp $
+ * @version $Id: EventControllerComplex.java,v 1.4.2.4.2.2.2.1 2009/10/18 01:23:16 akurzhan Exp $
  */
 public final class EventControllerComplex extends AbstractEvent {
 	private static final long serialVersionUID = 4872783738180737465L;
@@ -117,6 +117,13 @@ public final class EventControllerComplex extends AbstractEvent {
 		boolean res = mon.setMyController(controller);
 		controller = ctrl;
 		return res;
+	}
+	
+	/**
+	 * Returns type description. 
+	 */
+	public final String getTypeString() {
+		return "Complex Controller";
 	}
 	
 	/**

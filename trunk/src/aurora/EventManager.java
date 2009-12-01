@@ -15,7 +15,7 @@ import org.w3c.dom.*;
 /**
  * Implementation of a managed event list.
  * @author Alex Kurzhanskiy
- * @version $Id: EventManager.java,v 1.5.2.5.2.4 2008/12/02 03:38:35 akurzhan Exp $
+ * @version $Id: EventManager.java,v 1.5.2.5.2.4.2.1 2009/10/18 02:58:34 akurzhan Exp $
  */
 public class EventManager implements Serializable {
 	private static final long serialVersionUID = 6743420186787314016L;
@@ -142,6 +142,7 @@ public class EventManager implements Serializable {
 		idx = 0;
 		while ((idx < eventList.size()) && (eventList.get(idx).getTime() <= x.getTime()))
 			idx++;
+		x.setEventManager(this);
 		eventList.add(idx, x);
 		return idx;
 	}

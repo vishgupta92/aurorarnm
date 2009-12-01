@@ -16,10 +16,12 @@ import aurora.util.*;
 /**
  * Base class for simple controller editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractSimpleControllerPanel.java,v 1.1.2.2 2009/08/28 03:21:14 akurzhan Exp $
+ * @version $Id: AbstractPanelSimpleController.java,v 1.1.2.1 2009/10/01 05:49:01 akurzhan Exp $
  */
-public abstract class AbstractSimpleControllerPanel extends AbstractControllerPanel implements ActionListener {
-	protected QueueController qcontroller = null;
+public abstract class AbstractPanelSimpleController extends AbstractPanelController implements ActionListener {
+	private static final long serialVersionUID = 4408308365725315058L;
+
+	protected AbstractQueueController qcontroller = null;
 	
 	protected boolean[] modified = null;
 	protected int index = -1;
@@ -28,6 +30,8 @@ public abstract class AbstractSimpleControllerPanel extends AbstractControllerPa
 	
 	protected JComboBox listQControllers;
 	protected JButton buttonProp = new JButton("Properties");
+	protected JSpinner lmin;
+	protected JSpinner lmax;
 	
 	
 	/**
@@ -45,7 +49,7 @@ public abstract class AbstractSimpleControllerPanel extends AbstractControllerPa
 		controller = ctrl;
 		modified = flags;
 		index = idx;
-		qcontroller = ((AbstractControllerHWC)controller).getQController();
+		qcontroller = ((AbstractControllerSimpleHWC)controller).getQController();
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		fillPanel();
 		Box limp = Box.createVerticalBox();
@@ -53,10 +57,10 @@ public abstract class AbstractSimpleControllerPanel extends AbstractControllerPa
 		pLim.setBorder(BorderFactory.createTitledBorder("Rate Limits (vph)"));
 		double mn;
 		double mx;
-		Vector<Object> lims = ((AbstractControllerHWC)controller).getLimits();
+		Vector<Object> lims = ((AbstractControllerSimpleHWC)controller).getLimits();
 		if ((lims != null) && (lims.size() == 2)) {
-			mn = (Double)((AbstractControllerHWC)controller).getLimits().get(0);
-			mx = (Double)((AbstractControllerHWC)controller).getLimits().get(1);
+			mn = (Double)((AbstractControllerSimpleHWC)controller).getLimits().get(0);
+			mx = (Double)((AbstractControllerSimpleHWC)controller).getLimits().get(1);
 		}
 		else {
 			mn = 0.0;
@@ -94,7 +98,7 @@ public abstract class AbstractSimpleControllerPanel extends AbstractControllerPa
 			else
 				try {
 					Class c = Class.forName(qctrlClasses[i]);
-					listQControllers.addItem((QueueController)c.newInstance());
+					listQControllers.addItem((AbstractQueueController)c.newInstance());
 				}
 				catch(Exception e) { }
 		listQControllers.addActionListener(this);
@@ -131,7 +135,19 @@ public abstract class AbstractSimpleControllerPanel extends AbstractControllerPa
 	 */
 	public synchronized void save() {
 		super.save();
-		((AbstractControllerHWC)controller).setQController(qcontroller);
+		double mn = (Double)lmin.getValue();
+		double mx = (Double)lmax.getValue();
+		Vector<Object> lims = new Vector<Object>();
+		if (mn <= mx) {
+			lims.add(lmin.getValue());
+			lims.add(lmax.getValue());
+		}
+		else {
+			lims.add(lmax.getValue());
+			lims.add(lmin.getValue());
+		}
+		((AbstractControllerSimpleHWC)controller).setLimits(lims);
+		((AbstractControllerSimpleHWC)controller).setQController(qcontroller);
 		if ((modified != null) && (index < modified.length) && (index >= 0))
 			modified[index] = true;
 		return;
@@ -144,7 +160,7 @@ public abstract class AbstractSimpleControllerPanel extends AbstractControllerPa
 	public void actionPerformed(ActionEvent e) {
 		JComboBox cb = (JComboBox)e.getSource();
 		if (cb.getSelectedIndex() > 0) {
-			qcontroller = (QueueController)listQControllers.getSelectedItem();
+			qcontroller = (AbstractQueueController)listQControllers.getSelectedItem();
 			buttonProp.setEnabled(true);
 		}
 		else {
@@ -163,7 +179,7 @@ public abstract class AbstractSimpleControllerPanel extends AbstractControllerPa
 		public void actionPerformed(ActionEvent ae) {
 			try {
 	    		Class c = Class.forName("aurora.hwc.control.Panel" + qcontroller.getClass().getSimpleName());
-	    		AbstractQControllerPanel qcp = (AbstractQControllerPanel)c.newInstance();
+	    		AbstractPanelQController qcp = (AbstractPanelQController)c.newInstance();
 	    		qcp.initialize(qcontroller);
 	    	}
 	    	catch(Exception e) { }

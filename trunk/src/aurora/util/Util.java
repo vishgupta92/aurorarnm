@@ -15,7 +15,7 @@ import org.jfree.data.time.Second;
 /**
  * Some useful utilities.
  * @author Alex Kurzhanskiy
- * @version $Id: Util.java,v 1.1.2.6.2.5.2.1 2009/06/14 06:30:12 akurzhan Exp $
+ * @version $Id: Util.java,v 1.1.2.6.2.5.2.2 2009/11/01 00:58:30 akurzhan Exp $
  */
 public class Util {
 	public final static double EPSILON = Math.pow(10, -7);
@@ -231,12 +231,22 @@ public class Util {
 		int n = M[0].length;
 		for (int i = 0; i < m; i++) {
 			boolean hasNegative = false;
+			int countNegative = 0;
+			int idxNegative = -1;
 			double sum = 0.0;
 			for (int j = 0; j < n; j++)
-				if (M[i][j] < 0)
-					hasNegative = true;
+				if (M[i][j] < 0) {
+					countNegative++;
+					idxNegative = j;
+					if (countNegative > 1)
+						hasNegative = true;
+				}
 				else
 					sum += M[i][j];
+			if (countNegative == 1) {
+				M[i][idxNegative] = Math.max(0, (1-sum));
+				sum += M[i][idxNegative];
+			}
 			if ((!hasNegative) && (sum == 0.0)) {
 				M[i][0] = 1;
 				//for (int j = 0; j < n; j++)

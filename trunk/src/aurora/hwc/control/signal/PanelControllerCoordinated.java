@@ -1,8 +1,8 @@
 package aurora.hwc.control.signal;
 
-import aurora.hwc.control.AbstractControllerComplexPanel;
+import aurora.hwc.control.AbstractPanelControllerComplex;
 
-public class PanelControllerCoordinated extends AbstractControllerComplexPanel {
+public class PanelControllerCoordinated extends AbstractPanelControllerComplex {
 	private static final long serialVersionUID = 2780430939589570271L;
 
 

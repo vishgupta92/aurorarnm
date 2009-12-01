@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import aurora.*;
+import aurora.hwc.AbstractLinkHWC;
 import aurora.hwc.TypesHWC;
 import aurora.hwc.control.ControllerSWARM.Zone;
 
@@ -18,10 +19,16 @@ import aurora.hwc.control.ControllerSWARM.Zone;
 /**
  * Implementation of SWARM editor.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: PanelControllerSWARM.java,v 1.1.4.8 2009/08/25 20:49:58 akurzhan Exp $
+ * @version $Id: PanelControllerSWARM.java,v 1.1.4.9 2009/10/01 05:49:01 akurzhan Exp $
  */
-public class PanelControllerSWARM extends AbstractControllerPanel implements ActionListener {
+public class PanelControllerSWARM extends AbstractPanelController implements ActionListener {
 	private static final long serialVersionUID = 4029100437243156023L;
+
+	//private final static String stswarm1 = "swarm1";	
+	//private final static String stswarm2a = "swarm2a";	
+	//private final static String stswarm2b = "swarm2b";	
+	//private final static String dynbott = "dynbott";	
+	//CheckboxListener checkboxListener = new CheckboxListener();
 	
 	private Vector<Zone> zones = new Vector<Zone>();
 	
@@ -57,30 +64,30 @@ public class PanelControllerSWARM extends AbstractControllerPanel implements Act
 	public void fillPanel() {
 		// Zone initialization
 		ControllerSWARM z = (ControllerSWARM)controller;
-		Vector<Zone> cz = z.getZones();
+		Vector<Zone> cz = z.zones;
 		for (int i = 0; i < cz.size(); i++)
 			zones.add(cz.get(i).clone());
 		// Parameter initialization
-		density_sample_size = z.get_density_sample_size();
-		epsilon = z.get_epsilon();
-		forecast_lead_time = z.get_forecast_lead_time();
-		input_var_lane = z.get_input_var_lane();
-		meas_var_lane = z.get_meas_var_lane();
-		phi = z.get_phi();
-		psi = z.get_psi();
-		sat_den_multiplier = z.get_sat_den_multiplier();
-		sat_smoother = z.get_sat_smoother();
-		slope_sample_size = z.get_slope_sample_size();
+		density_sample_size = z.P.SWARM_DENSITY_SAMPLE_SIZE;
+		epsilon = z.P.epsilon;
+		forecast_lead_time = z.P.SWARM_FORECAST_LEAD_TIME;
+		input_var_lane = z.P.input_var_lane;
+		meas_var_lane = z.P.meas_var_lane;
+		phi = z.P.swarm_phi;
+		psi = z.P.swarm_psi;
+		sat_den_multiplier = z.P.SWARM_SAT_DEN_NUMBER;
+		sat_smoother = z.P.sat_smoother;
+		slope_sample_size = z.P.SWARM_SLOPE_SAMPLE_SIZE;
 		// Components
 		JPanel comp = new JPanel(new FlowLayout());
 		comp.setBorder(BorderFactory.createTitledBorder("Components"));
-		cbsw1.setSelected(z.get_swarm1());
+		cbsw1.setSelected(z.P.SWARM1);
 		comp.add(cbsw1);
 		comp.add(new JLabel("  "));
-		cbsw2a.setSelected(z.get_swarm2a());
+		cbsw2a.setSelected(z.P.SWARM2A);
 		comp.add(cbsw2a);
 		comp.add(new JLabel("  "));
-		cbsw2b.setSelected(z.get_swarm2b());
+		cbsw2b.setSelected(z.P.SWARM2B);
 		comp.add(cbsw2b);
 		comp.add(new JLabel("  "));
 		cbdynbott.setEnabled(false);
@@ -206,13 +213,13 @@ public class PanelControllerSWARM extends AbstractControllerPanel implements Act
 			if (column == 0)
 				return row + 1;
 			if (column == 1)
-				return zones.get(row).getBottleneckLink();
+				return zones.get(row).bottleneck;
 			if (column == 2)
-				return zones.get(row).getFromOnramp();
+				return zones.get(row).onramps.firstElement();
 			if (column == 3)
-				return zones.get(row).getToOnramp();
+				return zones.get(row).onramps.lastElement();
 			if (column == 4)
-				return zones.get(row).getSaturationDensityMultiplier();
+				return zones.get(row).sat_den_multiplier;
 			return null;
 		}
 		
@@ -226,19 +233,19 @@ public class PanelControllerSWARM extends AbstractControllerPanel implements Act
 			if ((row < 0) || (row >= zones.size()) || (value == null))
 				return;
 			if (column == 1) {
-				zones.get(row).setBottleneckLink((AbstractLink)value);
+				zones.get(row).bottleneck = (AbstractLinkHWC) value;
 			}
 			if (column == 2) {
-				zones.get(row).setFromOnramp((AbstractLink)value);
+				zones.get(row).setFromOnramp((AbstractLinkHWC)value);
 			}
 			if (column == 3) {
-				zones.get(row).setToOnramp((AbstractLink)value);
+				zones.get(row).setToOnramp((AbstractLinkHWC)value);
 			}
 			if (column == 4) {
 				try {
 					double v = Double.parseDouble((String)value);
 					if (v >= 0)
-						zones.get(row).setSaturationDensityMultiplier(v);
+						zones.get(row).sat_den_multiplier = v;
 				}
 				catch(Exception e) {}
 			}
@@ -354,22 +361,22 @@ public class PanelControllerSWARM extends AbstractControllerPanel implements Act
 	 */
 	public synchronized void save() {
 		super.save();
-		((ControllerSWARM)controller).set_swarm1(cbsw1.isSelected());
-		((ControllerSWARM)controller).set_swarm2a(cbsw2a.isSelected());
-		((ControllerSWARM)controller).set_swarm2b(cbsw2b.isSelected());
+		((ControllerSWARM)controller).P.SWARM1 =  cbsw1.isSelected();
+		((ControllerSWARM)controller).P.SWARM2A = cbsw2a.isSelected();
+		((ControllerSWARM)controller).P.SWARM2B = cbsw2b.isSelected();
 		//((ControllerSWARM)controller).set_swarm2b(cbdynbott.isSelected());
-		((ControllerSWARM)controller).setZones(zones);
+		((ControllerSWARM)controller).zones = zones;
 		ControllerSWARM z = (ControllerSWARM)controller;
-		z.set_density_sample_size(density_sample_size);
-		z.set_epsilon(epsilon);
-		z.set_forecast_lead_time(forecast_lead_time);
-		z.set_input_var_lane(input_var_lane);
-		z.set_meas_var_lane(meas_var_lane);
-		z.set_phi(phi);
-		z.set_psi(psi);
-		z.set_sat_den_multiplier(sat_den_multiplier);
-		z.set_sat_smoother(sat_smoother);
-		z.set_slope_sample_size(slope_sample_size);
+		z.P.SWARM_DENSITY_SAMPLE_SIZE = density_sample_size;
+		z.P.epsilon = epsilon;
+		z.P.SWARM_FORECAST_LEAD_TIME = forecast_lead_time;
+		z.P.input_var_lane = input_var_lane;
+		z.P.meas_var_lane = meas_var_lane;
+		z.P.swarm_phi = phi;
+		z.P.swarm_psi = psi;
+		z.P.SWARM_SAT_DEN_NUMBER = sat_den_multiplier;
+		z.P.sat_smoother = sat_smoother;
+		z.P.SWARM_SLOPE_SAMPLE_SIZE = slope_sample_size;
 		return;
 	}
 	
@@ -383,13 +390,17 @@ public class PanelControllerSWARM extends AbstractControllerPanel implements Act
 			Vector<AbstractNetworkElement> ml = ((AbstractControllerComplex)controller).getMyMonitor().getPredecessors();
 			Vector<AbstractNetworkElement> cl = ((AbstractControllerComplex)controller).getMyMonitor().getSuccessors();
 			if (ml.size() > 0)
-				z.setBottleneckLink((AbstractLink)ml.firstElement());
+				z.bottleneck = (AbstractLinkHWC) ml.firstElement();
 			if (cl.size() > 0) {
-				z.setFromOnramp((AbstractLink)cl.firstElement());
-				z.setToOnramp((AbstractLink)cl.firstElement());
+				z.setFromOnramp((AbstractLinkHWC)cl.firstElement());
+				z.setToOnramp((AbstractLinkHWC)cl.firstElement());
 			}
+			z.initialize();
 			zones.add(z);
 			zoneTM.fireTableStructureChanged();
+			setUpBottleneckColumn();
+			setUpFromOnrampColumn();
+			setUpToOnrampColumn();
 		}
 		if (cmdDelete.equals(cmd)) {
 			try {
@@ -400,6 +411,9 @@ public class PanelControllerSWARM extends AbstractControllerPanel implements Act
 						if ((idx >= 0) && (idx < zones.size())) {
 							zones.remove(idx);
 							zoneTM.fireTableStructureChanged();
+							setUpBottleneckColumn();
+							setUpFromOnrampColumn();
+							setUpToOnrampColumn();
 						}
 					}
 	    	}

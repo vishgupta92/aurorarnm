@@ -14,7 +14,7 @@ import aurora.util.Util;
  * Event that changes local controller for given Link
  * at the assigned Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventControllerSimple.java,v 1.4.2.5.2.2 2009/06/14 01:10:24 akurzhan Exp $
+ * @version $Id: EventControllerSimple.java,v 1.4.2.5.2.2.2.2 2009/10/19 05:20:29 akurzhan Exp $
  */
 public final class EventControllerSimple extends AbstractEvent {
 	private static final long serialVersionUID = -4895477288111895032L;
@@ -111,13 +111,19 @@ public final class EventControllerSimple extends AbstractEvent {
 		System.out.println("Event! Time " + Util.time2string(tstamp) + ": " + description);
 		AbstractControllerSimple ctrl = ((AbstractNodeSimple)nd).getSimpleController(lk);
 		boolean res = ((AbstractNodeSimple)nd).setSimpleController(controller, lk);
+		if (controller != null) {
+			try {
+				controller.initialize();
+			}
+			catch(Exception e) { }
+		}
 		controller = ctrl;
 		return res;
 	}
 	
 	/**
 	 * Changes controller for given Link at the assigned simple Node back to what it was.
-	 * @return <code>true</code> if operation succeded, <code>false</code> - otherwise.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionEvent
 	 */
 	public final boolean deactivate(AbstractNodeComplex top) throws ExceptionEvent {
@@ -138,6 +144,13 @@ public final class EventControllerSimple extends AbstractEvent {
 		boolean res = ((AbstractNodeSimple)nd).setSimpleController(controller, lk);
 		controller = ctrl;
 		return res;
+	}
+	
+	/**
+	 * Returns type description. 
+	 */
+	public final String getTypeString() {
+		return "Local Controller";
 	}
 	
 	/**

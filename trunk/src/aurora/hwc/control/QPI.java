@@ -14,18 +14,17 @@ import aurora.hwc.*;
 /**
  * Implementation of PI queue controller.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: QPI.java,v 1.1.2.1 2009/07/29 21:11:23 akurzhan Exp $
+ * @version $Id: QPI.java,v 1.1.2.4 2009/11/28 02:31:57 akurzhan Exp $
  */
-public final class QPI implements QueueController, Serializable, Cloneable {
+public final class QPI extends AbstractQueueController implements Serializable, Cloneable {
 	private static final long serialVersionUID = -2675153457120198296L;
 	
-	public double kp = 1.0;
-	public double ki = 1.0;
+	public double Kp = 1.0;		// proportional gain
+	public double Ki = 1.0;		// integral gain
 	
 	
 	public QPI() { }
-	public QPI(double kp, double ki) { this.kp = kp; this.ki = ki; }
-	
+	public QPI(double kp, double ki) { this.Kp = kp; this.Ki = ki; }
 	
 	/**
 	 * Initializes the PI queue controller from given DOM structure.
@@ -34,7 +33,7 @@ public final class QPI implements QueueController, Serializable, Cloneable {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
+		boolean res = super.initFromDOM(p);
 		if (p == null)
 			return !res;
 		try  {
@@ -43,9 +42,9 @@ public final class QPI implements QueueController, Serializable, Cloneable {
 				for (int i = 0; i < pp.getLength(); i++) {
 					if (pp.item(i).getNodeName().equals("parameter")) {
 						if (pp.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("kp")) 
-							kp = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
+							Kp = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
 						if (pp.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("ki")) 
-							ki = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
+							Ki = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
 					}
 				}
 			}
@@ -66,15 +65,13 @@ public final class QPI implements QueueController, Serializable, Cloneable {
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		if (out == null)
-			out = System.out;
-		out.print("<qcontroller class=\"" + this.getClass().getName() + "\">");
-		out.print("<parameter name=\"kp\" value=\"" + Double.toString(kp) + "\"/>");
-		out.print("<parameter name=\"ki\" value=\"" + Double.toString(ki) + "\"/>");
+		super.xmlDump(out);
+		out.print("<parameter name=\"kp\" value=\"" + Double.toString(Kp) + "\"/>");
+		out.print("<parameter name=\"ki\" value=\"" + Double.toString(Ki) + "\"/>");
 		out.print("</qcontroller>");
 		return;
 	}
-	
+
 	/**
 	 * Computes desired input Link flow.<br>
 	 * The flow value depends on the queue size and queue limit.
@@ -83,26 +80,35 @@ public final class QPI implements QueueController, Serializable, Cloneable {
 	 * @return desired flow.  
 	 */
 	public Object computeInput(AbstractNodeHWC nd, AbstractLinkHWC lk) {
+		double queue;
+		if (lk.getPredecessors().size() == 0)
+			queue = ((AuroraIntervalVector)lk.getQueue()).sum().getCenter();
+		else
+			queue = (((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) * lk.getLength();
 		double qmax = lk.getQueueMax();
-		double qest = lk.getDensity().sum().getCenter();
-		//TODO
-		return (Double)0.0;
+		inOverride = queue > qmax;
+		double r_i = (Ki / lk.getMyNetwork().getTP()) * (queue - qmax) + lk.getActualFlow().sum().getCenter();
+		double flw = 0.0;
+		if (inOverride)
+			flw = (Kp / lk.getMyNetwork().getTP()) * (queue - qmax) + r_i;
+		return (Double)Math.max(flw, 0.0);
 	}
 	
 	/**
 	 * Returns controller description.
 	 */
-	public String getDescription() {
+	public String getDescription() 
+	{
 		NumberFormat form = NumberFormat.getInstance();
 		form.setMinimumFractionDigits(2);
 		form.setMaximumFractionDigits(2);
-		return "PI (Kp = " + form.format(kp) + ", Ki = " + form.format(ki) + ")";
+		return "PI (Kp = " + form.format(Kp) + ", Ki = " + form.format(Ki) + ")";
 	}
 	
 	/**
 	 * Implementation of a "deep copy" of the object.
 	 */
-	public QueueController deepCopy() {
+	public AbstractQueueController deepCopy() {
 		QPI qcCopy = null;
 		try {
 			qcCopy = (QPI)clone();

@@ -260,8 +260,8 @@ public class SignalPhase {
 	public void SetGreen()
 	{
 		if(!valid) 
-			return;
-		mySigMan.myController.setControlInput(myControlIndex, link.getFlow().sum().getCenter());
+			return;		
+		mySigMan.myController.setControlInput(myControlIndex, link.getCapacityValue().getCenter() );
 		bulbcolor = BulbColor.GREEN;
 	}
 //	-------------------------------------------------------------------------
@@ -269,7 +269,7 @@ public class SignalPhase {
 	{
 		if(!valid) 
 			return;
-		mySigMan.myController.setControlInput(myControlIndex, link.getFlow().sum().getCenter());
+		mySigMan.myController.setControlInput(myControlIndex, link.getCapacityValue().getCenter() );
 		bulbcolor = BulbColor.YELLOW;
 	}
 //	-------------------------------------------------------------------------

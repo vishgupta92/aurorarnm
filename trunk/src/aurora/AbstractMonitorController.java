@@ -13,9 +13,11 @@ import org.w3c.dom.*;
  * Partial implementation of Controller Monitor.<br>
  * This Monitor is needed for coordinated control of multiple nodes.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractMonitorController.java,v 1.1.2.2.2.9 2009/08/26 02:06:06 akurzhan Exp $
+ * @version $Id: AbstractMonitorController.java,v 1.1.2.2.2.11 2009/10/01 05:49:01 akurzhan Exp $
  */
 public abstract class AbstractMonitorController extends AbstractMonitor {
+	private static final long serialVersionUID = 8329990843622747175L;
+	
 	protected AbstractControllerComplex myController;
 	
 	/**
@@ -239,7 +241,10 @@ public abstract class AbstractMonitorController extends AbstractMonitor {
 		}
 		myController = x;
 		myController.setMyMonitor(this);
-		myController.initialize();
+		try {
+			myController.initialize();
+		}
+		catch(Exception e) { }
 		return true;
 	}
 	
@@ -319,7 +324,10 @@ public abstract class AbstractMonitorController extends AbstractMonitor {
 	public synchronized int deletePredecessor(AbstractNetworkElement x) {
 		int idx = super.deletePredecessor(x);
 		if (myController != null)
-			myController.initialize();
+			try {
+				myController.initialize();
+			}
+			catch(Exception e) { }
 		return idx;
 	}
 	
@@ -331,7 +339,10 @@ public abstract class AbstractMonitorController extends AbstractMonitor {
 	public synchronized int deleteSuccessor(AbstractNetworkElement x) {
 		int idx = super.deleteSuccessor(x);
 		if (myController != null)
-			myController.initialize();
+			try {
+				myController.initialize();
+			}
+			catch(Exception e) { }
 		return idx;
 	}
 	
@@ -350,13 +361,15 @@ public abstract class AbstractMonitorController extends AbstractMonitor {
 	}
 	
 	/**
-	 * Resets the simulation time step.
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
 	 */
-	public synchronized void resetTimeStep() {
-		super.resetTimeStep();
+	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
+		boolean res = super.initialize();
 		if (myController != null)
-			myController.resetTimeStep();
-		return;
+			myController.initialize();
+		return res;
 	}
 
 	/**
@@ -367,5 +380,20 @@ public abstract class AbstractMonitorController extends AbstractMonitor {
 		String buf = "Control Monitor (" + id + ")";
 		return buf;
 	}
+	
+	public int getMonitoredIndexById (Integer id){
+		if(id==null)
+			return -1;
+		for(int i=0;i<predecessors.size();i++)
+			if(predecessors.get(i).id==id)
+				return i;
+		return -1;
+	}
 
+	public int getControlledIndexById (int id){
+		for(int i=0;i<successors.size();i++)
+			if(successors.get(i).id==id)
+				return i;
+		return -1;
+	}
 }

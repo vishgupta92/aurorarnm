@@ -8,13 +8,16 @@ import java.util.Vector;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import aurora.AbstractControllerComplex;
 import aurora.AbstractLink;
+import aurora.AbstractNetworkElement;
+import aurora.AbstractNodeSimple;
 import aurora.ExceptionConfiguration;
 import aurora.hwc.NodeUJSignal;
+import aurora.hwc.TypesHWC;
+import aurora.hwc.control.AbstractControllerComplexHWC;
 import aurora.hwc.control.ControllerSlave;
 
-public class BaseSignalController extends AbstractControllerComplex {
+public class BaseSignalController extends AbstractControllerComplexHWC {
 	private static final long serialVersionUID = 6659839156661203567L;
 
 	protected int numintersections;
@@ -77,27 +80,27 @@ public class BaseSignalController extends AbstractControllerComplex {
 		if(!res)
 			return res;
 
-		int i,index;
+		int index;
 		for(index=0;index<numintersections;index++){
 			
 			NodeUJSignal node = intersection.get(index);
+			
 			SignalManager s = node.getSigMan();
 			s.myController = this;
 			
-	    	for(i=0;i<node.getSimpleControllers().size();i++){
+/*	    	for(i=0;i<node.getSimpleControllers().size();i++){
 	    		ControllerSlave c = (ControllerSlave) node.getSimpleControllers().get(i);
 	    		if(c==null)
 	    			continue;
-	    		c.myComplexController = this;
+	    		c.setMyComplexController(this);
 	    		AbstractLink L = (AbstractLink) node.getPredecessors().get(i);
 	    		SignalPhase p = node.getSigMan().FindPhaseByLink(L);
 	    		if(p==null)
 	    			continue;
-	    		p.myControlIndex = attachController(c);
-	    		c.setIndex(p.myControlIndex);
-	    	}
+	    		addDependentController(c, new Double(0));
+	    		p.myControlIndex = dependentControllers.indexOf(c);
+	    	}*/
 			s.validate();
-			s.resetTimeStep();
 		}
 		return true;
 	}
@@ -105,6 +108,36 @@ public class BaseSignalController extends AbstractControllerComplex {
 	@Override
 	public String getDescription() {
 		return "Base Signal Controller";
+	}
+
+	@Override
+	public boolean initialize() throws ExceptionConfiguration {
+		boolean res = super.initialize();
+		
+		int i;
+		Vector<AbstractNetworkElement> nes = myMonitor.getSuccessors();
+		for (i = 0; i < nes.size(); i++) {
+			if ((nes.get(i).getType() & TypesHWC.MASK_LINK) == 0)
+				continue;
+			AbstractLink lnk = (AbstractLink)nes.get(i);
+			ControllerSlave ctrl = new ControllerSlave();
+			AbstractNodeSimple nd = (AbstractNodeSimple)lnk.getEndNode();
+			if ((nd.getSimpleController(lnk) != null) && (nd.getSimpleController(lnk).getClass().getName().equals(ctrl.getClass().getName()))) {
+				ctrl = (ControllerSlave)nd.getSimpleController(lnk);
+			}
+			else {
+				if (nd.getSimpleController(lnk) != null)
+					nd.getSimpleController(lnk).setDependent(false);
+				res &= nd.setSimpleController(ctrl, lnk);
+			}
+			ctrl.setMyLink(lnk);
+			ctrl.setMyComplexController(this);
+			addDependentController(ctrl, new Double(0));
+			
+			
+		}
+		
+		return res;
 	}
 
 

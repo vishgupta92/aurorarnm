@@ -12,18 +12,18 @@ import javax.swing.*;
 /**
  * Implementation of Queue Controller Editor window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowQControllerEditor.java,v 1.1.4.1 2008/10/16 04:27:07 akurzhan Exp $
+ * @version $Id: WindowQControllerEditor.java,v 1.1.4.1.4.1 2009/10/01 05:49:01 akurzhan Exp $
  */
 public final class WindowQControllerEditor extends JDialog {
 	private static final long serialVersionUID = -5564887467060912284L;
 	
-	private AbstractQControllerPanel myQCP;
+	private AbstractPanelQController myQCP;
 	private final static String cmdOK = "pressedOK";
 	private final static String cmdCancel = "pressedCancel";
 	
 	
 	public WindowQControllerEditor() { }
-	public WindowQControllerEditor(AbstractQControllerPanel cp, JFrame parent) {
+	public WindowQControllerEditor(AbstractPanelQController cp, JFrame parent) {
 		super(parent, "Queue Controller: " + cp.getHeader());
 		myQCP = cp;
 		setSize(300, 400);

@@ -18,10 +18,12 @@ import aurora.hwc.*;
 /**
  * Base class for simple Node controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerHWC.java,v 1.1.4.1.2.1 2009/06/14 01:13:21 akurzhan Exp $
+ * @version $Id: AbstractControllerHWC.java,v 1.1.4.1.2.1.2.2 2009/10/01 05:53:41 akurzhan Exp $
  */
 public abstract class AbstractControllerHWC extends AbstractControllerSimple {
-	protected QueueController myQController;
+	private static final long serialVersionUID = -241436581476989974L;
+	
+	protected AbstractQueueController myQController;
 	
 	
 	public AbstractControllerHWC() {
@@ -52,7 +54,7 @@ public abstract class AbstractControllerHWC extends AbstractControllerSimple {
 					}
 					if (pp.item(i).getNodeName().equals("qcontroller")) {
 						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
-						myQController = (QueueController)c.newInstance();
+						myQController = (AbstractQueueController)c.newInstance();
 						res &= myQController.initFromDOM(pp.item(i));
 					}
 				}
@@ -91,7 +93,7 @@ public abstract class AbstractControllerHWC extends AbstractControllerSimple {
 	/**
 	 * Returns queue controller.
 	 */
-	public final QueueController getQController() {
+	public final AbstractQueueController getQController() {
 		return myQController;
 	}
 	
@@ -100,7 +102,7 @@ public abstract class AbstractControllerHWC extends AbstractControllerSimple {
 	 * @param x queue controller.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setQController(QueueController x) {
+	public synchronized boolean setQController(AbstractQueueController x) {
 		myQController = x;
 		return true;
 	}

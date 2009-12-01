@@ -11,7 +11,7 @@ import aurora.*;
 /**
  * Implementation of Cell Transmission Model (CTM).
  * @author Alex Kurzhanskiy
- * @version $Id: DynamicsCTM.java,v 1.4.2.5.2.11.2.2 2009/07/29 19:26:53 akurzhan Exp $
+ * @version $Id: DynamicsCTM.java,v 1.4.2.5.2.11.2.5 2009/11/15 04:39:58 akurzhan Exp $
  */
 public class DynamicsCTM implements DynamicsHWC, Serializable {
 	private static final long serialVersionUID = 1295134323359426734L;
@@ -25,6 +25,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 */
 	public Object computeCapacity(AbstractLinkHWC x) {
 		AuroraInterval cap = x.getDensity().sum();
+		cap.affineTransform(x.getWeavingFactor(), 0);
 		double fmax = Math.max(0, x.getMaxFlow());
 		if (cap.getUpperBound() <= x.getCriticalDensity())
 			return new AuroraInterval(fmax);
@@ -53,10 +54,13 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 */
 	public Object computeDensity(AbstractLinkHWC x) {
 		AuroraIntervalVector den = new AuroraIntervalVector();
+		AuroraIntervalVector den2 = new AuroraIntervalVector();
+		AuroraIntervalVector den3 = new AuroraIntervalVector();
 		AbstractNode bnd = x.getBeginNode();
 		if (bnd == null) {
 			den.copy((AuroraIntervalVector)x.getQueue());
 			den.inverseAffineTransform(x.getLength(), 0);
+			den2.copy(den);
 		}
 		else {
 			AuroraIntervalVector ifl = new AuroraIntervalVector();
@@ -72,16 +76,48 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 			else
 				ofl.copy((AuroraIntervalVector)end.getInputs().get(end.getPredecessors().indexOf(x)));
 			den.copy((AuroraIntervalVector)x.getDensity());
+			AuroraIntervalVector ifl2 = new AuroraIntervalVector();
+			AuroraIntervalVector ofl2 = new AuroraIntervalVector();
+			den2.copy(den);
+			ifl2.copy(ifl);
+			ofl2.copy(ofl);
+			den2.affineTransform(x.getWeavingFactor(), 0);
+			ifl2.affineTransform(x.getInputWeavingFactor(), 0);
+			ofl2.affineTransform(x.getWeavingFactor(), 0);
 			ifl.subtract(ofl);
 			ifl.affineTransform(x.getMyNetwork().getTP()/x.getLength(), 0);
 			den.add(ifl);
+			ifl2.subtract(ofl2);
+			ifl2.affineTransform(x.getMyNetwork().getTP()/x.getLength(), 0);
+			den2.add(ifl2);
 		}
 		den.constraintLB(0);
+		den2.constraintLB(0);
 		if (x.getJamDensity() < den.sum().getUpperBound()) {
 			double s = x.getJamDensity() / den.sum().getUpperBound();
 			for (int i = 0; i < den.size(); i++)
 				den.get(i).setUpperBound(s * den.get(i).getUpperBound());
 		}
+		if (x.getJamDensity() < den2.sum().getUpperBound()) {
+			double s = x.getJamDensity() / den2.sum().getUpperBound();
+			for (int i = 0; i < den2.size(); i++)
+				den2.get(i).setUpperBound(s * den2.get(i).getUpperBound());
+		}
+		den3.copy(den);
+		double[] owf = x.getOutputWeavingFactors();
+		den3.affineTransform(owf, 0);
+		double wf3 = den3.sum().getCenter();
+		double wf2 = den2.sum().getCenter();
+		double dnm = den.sum().getCenter();
+		if (dnm > 0.000000001) {
+			wf2 = wf2 / dnm;
+			wf3 = wf3 / dnm;
+		}
+		else {
+			wf2 = 1;
+			wf3 = 1;
+		}
+		x.setWeavingFactor(Math.max(wf2, wf3));
 		return den;
 	}
 
@@ -140,6 +176,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 */
 	public Object computeSpeed(AbstractLinkHWC x) {
 		AuroraInterval rho = ((AuroraIntervalVector)x.getDensity()).sum();
+		rho.affineTransform(x.getWeavingFactor(), 0);
 		if (rho.getUpperBound() < 1) // in lieu of (rho == 0)
 			return new AuroraInterval(x.getV());
 		AuroraInterval v = x.getActualFlow().sum();

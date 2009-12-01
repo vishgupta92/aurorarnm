@@ -18,7 +18,7 @@ import aurora.*;
  * @see LinkFwML, LinkFwHOV, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy
- * @version $Id: NodeFreeway.java,v 1.11.2.3.2.1.2.2 2009/07/30 04:11:03 akurzhan Exp $
+ * @version $Id: NodeFreeway.java,v 1.11.2.3.2.1.2.4 2009/11/12 02:33:29 akurzhan Exp $
  */
 public final class NodeFreeway extends AbstractNodeHWC {
 	private static final long serialVersionUID = -3841872997290136430L;
@@ -39,6 +39,13 @@ public final class NodeFreeway extends AbstractNodeHWC {
 	}
 	
 	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "Freeway Node";
+	}
+	
+	/**
 	 * Returns post mile.
 	 */
 	public double getPostmile(){
@@ -51,7 +58,8 @@ public final class NodeFreeway extends AbstractNodeHWC {
 	public String[] getSimpleControllerTypes() {
 		String[] ctrlTypes = {"ALINEA",
 							  "Traffic Responsive",
-							  "TOD"};
+							  "TOD",
+							  "VSL TOD"};
 		return ctrlTypes;
 	}
 	
@@ -61,7 +69,8 @@ public final class NodeFreeway extends AbstractNodeHWC {
 	public String[] getSimpleControllerClasses() {
 		String[] ctrlClasses = {"aurora.hwc.control.ControllerALINEA",
 								"aurora.hwc.control.ControllerTR",
-								"aurora.hwc.control.ControllerTOD"};
+								"aurora.hwc.control.ControllerTOD",
+								"aurora.hwc.control.ControllerVSLTOD"};
 		return ctrlClasses;
 	}
 	

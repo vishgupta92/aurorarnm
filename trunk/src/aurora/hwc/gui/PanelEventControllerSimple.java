@@ -17,13 +17,13 @@ import aurora.util.*;
 /**
  * Form for simple controller change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventControllerSimple.java,v 1.1.2.6.2.2.2.2 2009/08/19 20:42:45 akurzhan Exp $
+ * @version $Id: PanelEventControllerSimple.java,v 1.1.2.6.2.2.2.3 2009/10/01 05:49:01 akurzhan Exp $
  */
 public final class PanelEventControllerSimple extends AbstractEventPanel implements ActionListener {
 	private static final long serialVersionUID = 2103920304528351836L;
 	
 	private int linkId = -1;
-	private AbstractControllerHWC controller = null;
+	private AbstractControllerSimpleHWC controller = null;
 	
 	private JComboBox listInLinks;
 	private JComboBox listControllers;
@@ -40,7 +40,7 @@ public final class PanelEventControllerSimple extends AbstractEventPanel impleme
 		eventTable = etm;
 		myEvent = new EventControllerSimple();
 		initialize(ne, em);
-		controller = (AbstractControllerHWC)((AbstractNodeSimple)ne).getSimpleControllers().firstElement();
+		controller = (AbstractControllerSimpleHWC)((AbstractNodeSimple)ne).getSimpleControllers().firstElement();
 		return;
 	}
 	
@@ -57,7 +57,7 @@ public final class PanelEventControllerSimple extends AbstractEventPanel impleme
 			myEvent = evt;
 		else
 			myEvent = new EventControllerSimple();
-		controller = (AbstractControllerHWC)((EventControllerSimple)myEvent).getController();
+		controller = (AbstractControllerSimpleHWC)((EventControllerSimple)myEvent).getController();
 		linkId = ((EventControllerSimple)myEvent).getLinkId();
 		initialize(ne, em);
 		return;
@@ -97,7 +97,7 @@ public final class PanelEventControllerSimple extends AbstractEventPanel impleme
 			else
 				try {
 					Class c = Class.forName(ctrlClasses[i]);
-					listControllers.addItem((AbstractControllerHWC)c.newInstance());
+					listControllers.addItem((AbstractControllerSimpleHWC)c.newInstance());
 				}
 				catch(Exception e) { }
 		listControllers.addActionListener(this);
@@ -134,7 +134,7 @@ public final class PanelEventControllerSimple extends AbstractEventPanel impleme
 	public void actionPerformed(ActionEvent e) {
 		JComboBox cb = (JComboBox)e.getSource();
 		if (cb.getSelectedIndex() > 0) {
-			controller = (AbstractControllerHWC)listControllers.getSelectedItem();
+			controller = (AbstractControllerSimpleHWC)listControllers.getSelectedItem();
 			buttonProp.setEnabled(true);
 		}
 		else {
@@ -153,8 +153,8 @@ public final class PanelEventControllerSimple extends AbstractEventPanel impleme
 		public void actionPerformed(ActionEvent ae) {
 			try {
 	    		Class c = Class.forName("aurora.hwc.control.Panel" + controller.getClass().getSimpleName());
-	    		AbstractSimpleControllerPanel cp = (AbstractSimpleControllerPanel)c.newInstance();
-	    		cp.initialize((AbstractControllerHWC)controller, null, -1, (AbstractNodeHWC)myNE);
+	    		AbstractPanelSimpleController cp = (AbstractPanelSimpleController)c.newInstance();
+	    		cp.initialize((AbstractControllerSimpleHWC)controller, null, -1, (AbstractNodeHWC)myNE);
 	    	}
 	    	catch(Exception e) { }
 	    	return;

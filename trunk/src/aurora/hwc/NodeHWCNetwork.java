@@ -10,13 +10,15 @@ import aurora.*;
 /**
  * Road Network Node.
  * @author Alex Kurzhanskiy
- * @version $Id: NodeHWCNetwork.java,v 1.8.2.8.2.1.2.1 2009/06/21 05:16:02 akurzhan Exp $
+ * @version $Id: NodeHWCNetwork.java,v 1.8.2.8.2.1.2.3 2009/10/22 02:58:13 akurzhan Exp $
  */
 public final class NodeHWCNetwork extends AbstractNodeComplex {
 	private static final long serialVersionUID = -124608463365357280L;
 	
 	private double totalDelay = 0.0;
 	private double totalDelaySum = 0.0;
+	private boolean resetAllSums = true;
+	private int tsV = 0;
 	private boolean qControl = true;
 	
 
@@ -38,8 +40,14 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
-		totalDelay = 0.0;
+		totalDelay = 0;
 		boolean res = super.dataUpdate(ts);
+		if (resetAllSums)
+			resetSums();
+		if ((ts == 1) || (((ts - tsV) * getTop().getTP()) >= getTop().getContainer().getMySettings().getDisplayTP())) {
+			tsV = ts;
+			resetAllSums = true;
+		}
 		totalDelaySum += totalDelay;
 		if (!isTop())
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(totalDelay);
@@ -69,6 +77,13 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 */
 	public final int getType() {
 		return TypesHWC.NETWORK_HWC;
+	}
+	
+	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "Network";
 	}
 	
 	/**
@@ -114,17 +129,8 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 * Resets quantities derived by integration: VHT, VMT, Delay, Productivity Loss.
 	 */
 	public synchronized void resetSums() {
-		int i;
-		for (i = 0; i < links.size(); i++) {
-			((AbstractLinkHWC)links.get(i)).resetSumVMT();
-			((AbstractLinkHWC)links.get(i)).resetSumVHT();
-			((AbstractLinkHWC)links.get(i)).resetSumDelay();
-			((AbstractLinkHWC)links.get(i)).resetSumPLoss();
-		}
-		for (i = 0; i < nodes.size(); i++)
-			if (!nodes.get(i).isSimple())
-				((NodeHWCNetwork)nodes.get(i)).resetSums();
-		totalDelaySum = 0.0;
+		totalDelaySum = 0;
+		resetAllSums = false;
 		return;
 	}
 	

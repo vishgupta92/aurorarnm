@@ -15,9 +15,9 @@ import javax.swing.table.*;
 /**
  * Panel for editing traffic responsive controller properties.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelControllerTR.java,v 1.1.2.3 2009/08/19 20:11:34 akurzhan Exp $
+ * @version $Id: PanelControllerTR.java,v 1.1.2.4 2009/10/01 05:49:01 akurzhan Exp $
  */
-public final class PanelControllerTR extends AbstractSimpleControllerPanel {
+public final class PanelControllerTR extends AbstractPanelSimpleController {
 	private static final long serialVersionUID = 3757750722401395160L;
 	
 	// data
@@ -272,7 +272,6 @@ public final class PanelControllerTR extends AbstractSimpleControllerPanel {
 		private final static String cmdOK = "pressedOK";
 		private final static String cmdCancel = "pressedCancel";
 
-		public WindowTR() { }
 		public WindowTR(JFrame parent, String title) {
 			super(parent, title);
 			setSize(300, 420);
@@ -375,7 +374,6 @@ public final class PanelControllerTR extends AbstractSimpleControllerPanel {
 	
 	private final class WindowAdd extends WindowTR {
 		private static final long serialVersionUID = 96083476285596430L;
-		public WindowAdd() { }
 		public WindowAdd(JFrame parent) {
 			super(parent, "New");
 			setContentPane(createForm());
@@ -384,7 +382,6 @@ public final class PanelControllerTR extends AbstractSimpleControllerPanel {
 	
 	private final class WindowEdit extends WindowTR {
 		private static final long serialVersionUID = 1229903996266521378L;
-		public WindowEdit() { }
 		public WindowEdit(JFrame parent, int id, double dns, double flw, double spd, double rt) {
 			super(parent, "Edit");
 			l_id = id;

@@ -12,9 +12,9 @@ import aurora.util.SpringUtilities;
 /**
  * Panel for Proportional controller.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelQPI.java,v 1.1.2.1 2009/07/29 21:11:23 akurzhan Exp $
+ * @version $Id: PanelQPI.java,v 1.1.2.3 2009/10/21 22:00:22 gomes Exp $
  */
-public final class PanelQPI extends AbstractQControllerPanel {
+public final class PanelQPI extends AbstractPanelQController {
 	private static final long serialVersionUID = 622910022204435368L;
 	
 	private JSpinner kp;
@@ -32,13 +32,13 @@ public final class PanelQPI extends AbstractQControllerPanel {
 		pP.setBorder(BorderFactory.createTitledBorder("Parameters"));
 		JLabel l = new JLabel("Kp:", JLabel.TRAILING);
 		pP.add(l);
-		kp = new JSpinner(new SpinnerNumberModel(((QPI)qcontroller).kp, 0.0, 99.99, 0.01));
+		kp = new JSpinner(new SpinnerNumberModel(((QPI)qcontroller).Kp, 0.0, 99.99, 0.01));
 		kp.setEditor(new JSpinner.NumberEditor(kp, "#0.00"));
 		l.setLabelFor(kp);
 		pP.add(kp);
 		l = new JLabel("Ki:", JLabel.TRAILING);
 		pP.add(l);
-		ki = new JSpinner(new SpinnerNumberModel(((QPI)qcontroller).ki, 0.0, 99.99, 0.01));
+		ki = new JSpinner(new SpinnerNumberModel(((QPI)qcontroller).Ki, 0.0, 99.99, 0.01));
 		ki.setEditor(new JSpinner.NumberEditor(ki, "#0.00"));
 		l.setLabelFor(ki);
 		pP.add(ki);
@@ -54,8 +54,8 @@ public final class PanelQPI extends AbstractQControllerPanel {
 	 * Saves controller properties
 	 */
 	public synchronized void save() {
-		((QPI)qcontroller).kp = (Double)kp.getValue();
-		((QPI)qcontroller).ki = (Double)ki.getValue();
+		((QPI)qcontroller).Kp = (Double)kp.getValue();
+		((QPI)qcontroller).Ki = (Double)ki.getValue();
 		return;
 	}
 

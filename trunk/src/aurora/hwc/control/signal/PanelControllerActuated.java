@@ -11,10 +11,10 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 
 import aurora.hwc.MonitorControllerHWC;
-import aurora.hwc.control.AbstractControllerComplexPanel;
+import aurora.hwc.control.AbstractPanelControllerComplex;
 import aurora.hwc.control.signal.ControllerActuated.ASC_Parameters;
 
-public class PanelControllerActuated extends AbstractControllerComplexPanel {
+public class PanelControllerActuated extends AbstractPanelControllerComplex {
 	private static final long serialVersionUID = -4506383623896255722L;
 
 

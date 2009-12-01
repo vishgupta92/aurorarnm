@@ -16,9 +16,11 @@ import org.w3c.dom.*;
  *  monitors cannot see other monitors.
  * Monitors can be only seen by the network nodes, to which they belong.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractMonitor.java,v 1.1.2.2.2.6.2.3 2009/06/17 00:03:50 akurzhan Exp $
+ * @version $Id: AbstractMonitor.java,v 1.1.2.2.2.6.2.5 2009/09/30 23:49:48 akurzhan Exp $
  */
 public abstract class AbstractMonitor extends AbstractNetworkElement {
+	private static final long serialVersionUID = -4322333321756585702L;
+	
 	protected String description = "Monitor";
 	protected boolean enabled = true;
 	protected int counter = 0;
@@ -144,11 +146,13 @@ public abstract class AbstractMonitor extends AbstractNetworkElement {
 	}
 	
 	/**
-	 * Resets the simulation time step.
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
 	 */
-	public synchronized void resetTimeStep() {
-		super.resetTimeStep();
+	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
+		boolean res = super.initialize();
 		counter = 0;
-		return;
+		return res;
 	}
 }
