@@ -14,9 +14,9 @@ import aurora.hwc.*;
 /**
  * Implementation of proportional queue controller.
  * @author Alex Kurzhanskiy
- * @version $Id: QProportional.java,v 1.1.4.1.2.4.2.1 2009/07/29 20:47:45 akurzhan Exp $
+ * @version $Id: QProportional.java,v 1.1.4.1.2.4.2.3 2009/11/28 02:31:57 akurzhan Exp $
  */
-public final class QProportional implements QueueController, Serializable, Cloneable {
+public final class QProportional extends AbstractQueueController implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1907427195234602994L;
 
 	public double kp = 1.0;
@@ -33,7 +33,7 @@ public final class QProportional implements QueueController, Serializable, Clone
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
+		boolean res = super.initFromDOM(p);
 		if (p == null)
 			return !res;
 		try  {
@@ -63,9 +63,7 @@ public final class QProportional implements QueueController, Serializable, Clone
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		if (out == null)
-			out = System.out;
-		out.print("<qcontroller class=\"" + this.getClass().getName() + "\">");
+		super.xmlDump(out);
 		out.print("<parameter name=\"kp\" value=\"" + Double.toString(kp) + "\"/>");
 		out.print("</qcontroller>");
 		return;
@@ -79,22 +77,30 @@ public final class QProportional implements QueueController, Serializable, Clone
 	 * @return desired flow.  
 	 */
 	public Object computeInput(AbstractNodeHWC nd, AbstractLinkHWC lk) {
-		double flw;
-		if (lk.getPredecessors().size() == 0) {
-			double q = ((AuroraIntervalVector)lk.getQueue()).sum().getCenter();
-			if (q <= lk.getQueueMax())
-				flw = 0.0;
-			else
-				flw = ((AuroraIntervalVector)lk.getDemand()).sum().getCenter() + ((kp / nd.getMyNetwork().getTP()) * (q - lk.getQueueMax()));
+		double flw = 0.0;
+		if (usesensors) {
+			inOverride = queuesensor.Density() > lk.getCriticalDensity();
 		}
-		else
-			if ((((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) <= lk.getCriticalDensity())
-				flw = 0.0;
+		else {
+			if (lk.getPredecessors().size() == 0)
+				inOverride = ((AuroraIntervalVector)lk.getQueue()).sum().getCenter() > lk.getQueueMax();
+			else
+				inOverride = ((((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) * lk.getLength()) > lk.getQueueMax();
+		}
+		double qmax = lk.getQueueMax();
+		if (inOverride) {
+			if (lk.getPredecessors().size() == 0) {
+				double q = ((AuroraIntervalVector)lk.getQueue()).sum().getCenter();
+				flw = ((AuroraIntervalVector)lk.getDemandValue2()).sum().getCenter();
+				flw -= (q / lk.getMyNetwork().getTP());
+				flw += ((kp / lk.getMyNetwork().getTP()) * (q - qmax));
+			}
 			else {
-				double dq = ((((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) - lk.getCriticalDensity()) * lk.getLength();
+				double dq = (((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) * lk.getLength() - qmax;
 				double dm = ((AuroraIntervalVector)lk.getBeginNode().getOutputs().get(lk.getBeginNode().getSuccessors().indexOf(lk))).sum().getCenter();
 				flw = dm + ((kp / nd.getMyNetwork().getTP()) * dq);
 			}
+		}
 		return (Double)Math.max(flw, 0.0);
 	}
 	
@@ -111,7 +117,7 @@ public final class QProportional implements QueueController, Serializable, Clone
 	/**
 	 * Implementation of a "deep copy" of the object.
 	 */
-	public QueueController deepCopy() {
+	public AbstractQueueController deepCopy() {
 		QProportional qcCopy = null;
 		try {
 			qcCopy = (QProportional)clone();

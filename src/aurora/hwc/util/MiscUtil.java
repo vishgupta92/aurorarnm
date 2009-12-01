@@ -12,7 +12,7 @@ import aurora.hwc.*;
 /**
  * Miscellaneous routines to process Nodes and Links.
  * @author Alex Kurzhanskiy
- * @version $Id: MiscUtil.java,v 1.1.4.1.2.2 2008/12/03 02:15:42 akurzhan Exp $
+ * @version $Id: MiscUtil.java,v 1.1.4.1.2.2.2.1 2009/10/18 00:58:29 akurzhan Exp $
  */
 public final class MiscUtil {
 	private static double dx = 10.0;
@@ -131,7 +131,7 @@ public final class MiscUtil {
 				lanes += rmp.getLanes();
 				fmax += rmp.getMaxFlow();
 				qsize += rmp.getQueueMax();
-				knob += rmp.getDemandKnob();
+				knob += rmp.getDemandKnobs()[0];
 			}
 			knob = knob / (nor-1);
 			System.err.println("cell.ORlanes = " + lanes + ";");

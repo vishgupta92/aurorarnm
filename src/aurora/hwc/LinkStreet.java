@@ -15,7 +15,7 @@ import aurora.*;
  * @see NodeFreeway, NodeHWCNetwork
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: LinkStreet.java,v 1.12.2.1 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: LinkStreet.java,v 1.12.2.1.4.1 2009/09/11 23:33:54 akurzhan Exp $
  */
 public final class LinkStreet extends AbstractLinkHWC {
 	private static final long serialVersionUID = -2031395419474929817L;
@@ -31,6 +31,13 @@ public final class LinkStreet extends AbstractLinkHWC {
 	 */
 	public final int getType() {
 		return TypesHWC.LINK_STREET;
+	}
+	
+	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "Street";
 	}
 	
 	/**

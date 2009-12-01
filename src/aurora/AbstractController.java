@@ -13,13 +13,16 @@ import org.w3c.dom.Node;
 /**
  * Base class for controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractController.java,v 1.9.2.3.2.2.2.4 2009/08/25 20:49:13 akurzhan Exp $
+ * @version $Id: AbstractController.java,v 1.9.2.3.2.2.2.7 2009/10/02 01:39:17 akurzhan Exp $
  */
 public abstract class AbstractController implements AuroraConfigurable, Serializable, Cloneable {
+	private static final long serialVersionUID = -3651447094697919017L;
+	
 	protected double tp = 0.016666666666666666666666666666667; // time period
 	protected Vector<Object> limits = new Vector<Object>(); // input limits
 	protected int ts; // time step
-	protected boolean dependent = false; 
+	protected boolean dependent = false;
+	protected boolean initialized = false;
 	
 	
 	/**
@@ -35,13 +38,17 @@ public abstract class AbstractController implements AuroraConfigurable, Serializ
 		tp = Double.parseDouble(p.getAttributes().getNamedItem("tp").getNodeValue());
 		if (tp > 10) // invocation period in seconds
 			tp = tp/3600;
+		initialized = true;
 		return res;
 	}
 	
 	/**
 	 * Additional optional initialization steps.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration
 	 */
-	public boolean initialize() {
+	public boolean initialize() throws ExceptionConfiguration {
+		ts = 0;
 		return true;
 	}
 
@@ -140,14 +147,6 @@ public abstract class AbstractController implements AuroraConfigurable, Serializ
 			return false;
 		limits = x;
 		return true;
-	}
-	
-	/**
-	 * Resets the simulation time step.
-	 */
-	public void resetTimeStep() {
-		ts = 0;
-		return;
 	}
 	
 	/**

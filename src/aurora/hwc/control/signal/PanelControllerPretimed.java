@@ -29,14 +29,14 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.table.AbstractTableModel;
 
 import aurora.hwc.MonitorControllerHWC;
-import aurora.hwc.control.AbstractControllerComplexPanel;
+import aurora.hwc.control.AbstractPanelControllerComplex;
 import aurora.hwc.control.signal.ControllerPretimed;
 import aurora.hwc.control.signal.ControllerPretimedIntersectionPlan;
 import aurora.hwc.control.signal.ControllerPretimedPlan;
 import aurora.hwc.control.signal.ControllerPretimed.PRETIMEDdataRow;
 import aurora.util.Util;
 
-public class PanelControllerPretimed extends AbstractControllerComplexPanel {
+public class PanelControllerPretimed extends AbstractPanelControllerComplex {
 	private static final long serialVersionUID = 3149391884970185477L;
 
 
@@ -281,7 +281,6 @@ public class PanelControllerPretimed extends AbstractControllerComplexPanel {
 		private final static String cmdOK = "pressedOK";
 		private final static String cmdCancel = "pressedCancel";
 
-		public WindowPRErow() { }
 		public WindowPRErow(JFrame parent, String title) {
 			super(parent, title);
 			setSize(300, 180);
@@ -372,8 +371,6 @@ public class PanelControllerPretimed extends AbstractControllerComplexPanel {
 	
 	private final class WindowAdd extends WindowPRErow {
 		private static final long serialVersionUID = -2411923362676291860L;
-		
-		public WindowAdd() { }
 		public WindowAdd(JFrame parent) {
 			super(parent, "New");
 		}
@@ -381,8 +378,6 @@ public class PanelControllerPretimed extends AbstractControllerComplexPanel {
 	
 	private final class WindowEdit extends WindowPRErow {
 		private static final long serialVersionUID = -3418864048397054006L;
-
-		public WindowEdit() { }
 		public WindowEdit(JFrame parent,PRETIMEDdataRow x) {
 			super(parent, "Edit", x);
 		}

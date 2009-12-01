@@ -13,14 +13,14 @@ import aurora.util.Util;
 /**
  * Implementation of the displayed event table.
  * @author Alex Kurzhanskiy
- * @version $Id: EventTableModel.java,v 1.1.2.4 2007/04/28 03:59:20 akurzhan Exp $
+ * @version $Id: EventTableModel.java,v 1.1.2.4.6.3 2009/10/18 05:17:14 akurzhan Exp $
  */
 public final class EventTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = -6770730636520245114L;
 
 	private String[] columnNames = {"Time",
 									"Type",
-									"NE Id",
+									"Network Element",
 									"Description",
 									"Enabled"};
 	private Object[][] data = {
@@ -114,13 +114,19 @@ public final class EventTableModel extends AbstractTableModel {
     	data = new Object[m][columnNames.length];
     	for (int i = 0; i < m; i++) {
     		AbstractEvent evt = events.get(i);
+    		if (evt == null)
+    			continue;
     		data[i][0] = (String)Util.time2string(evt.getTime());
-    		data[i][1] = (String)evt.getClass().getSimpleName();
-    		data[i][2] = (Integer)evt.getNEID();
-    		if (evt != null)
-    			data[i][3] = (String)evt.getDescription();
+    		data[i][1] = evt.getTypeString();
+    		AbstractNetworkElement ne = evt.getNE();
+    		if (ne != null)
+    			data[i][2] = ne;
     		else
-    			data[i][3] = (String)"-";
+    			data[i][2] = (Integer)evt.getNEID();
+    		if (evt != null)
+    			data[i][3] = evt.getDescription();
+    		else
+    			data[i][3] = "-";
     		data[i][4] = new Boolean(evt.isEnabled());
     	}
     	fireTableDataChanged();
@@ -131,7 +137,7 @@ public final class EventTableModel extends AbstractTableModel {
      * Function called when an event is selected.
      * @param idx row index
      */
-    public void eventSelected(int idx, AbstractNodeComplex ntwk) {
+    public void eventSelected(int idx, AbstractNodeComplex ntwk, TreePane tree) {
     	AbstractEvent evt = myEventManager.getEvent(idx);
     	if (evt == null)
     		return;
@@ -144,12 +150,17 @@ public final class EventTableModel extends AbstractTableModel {
     		ne = ntwk.getLinkById(neid);
     	if (ne == null)
     		return;
-    	try {
-    		Class c = Class.forName("aurora.hwc.gui.Panel" + evt.getClass().getSimpleName());
-    		AbstractEventPanel ep = (AbstractEventPanel)c.newInstance();
-    		ep.initialize(ne, myEventManager, this, evt);
+    	if ((ne != null) && (tree != null)) {
+    		tree.actionSelected(ne, true);
     	}
-    	catch(Exception e) { }
+    	else {
+    		try {
+        		Class c = Class.forName("aurora.hwc.gui.Panel" + evt.getClass().getSimpleName());
+        		AbstractEventPanel ep = (AbstractEventPanel)c.newInstance();
+        		ep.initialize(ne, myEventManager, this, evt);
+        	}
+        	catch(Exception e) { }
+    	}
     	return;
     }
 

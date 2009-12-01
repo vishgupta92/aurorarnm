@@ -1,30 +1,14 @@
+/**
+ * @(#)GISImporterTypeWindoiw.java
+ */
+
 package aurora.hwc.config;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Vector;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
 import org.geotools.feature.AttributeType;
 import org.geotools.feature.Feature;
 import org.geotools.feature.FeatureCollection;
@@ -32,6 +16,11 @@ import org.geotools.feature.FeatureType;
 import org.geotools.feature.GeometryAttributeType;
 
 
+/**
+ * Implementation of type filter.
+ * @author Jaimyoung Kwon
+ * @version $Id: GISImporterTypeWindow.java,v 1.1.4.1.4.1 2009/10/01 00:13:12 akurzhan Exp $
+ */
 public class GISImporterTypeWindow extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
@@ -154,6 +143,7 @@ public class GISImporterTypeWindow extends JDialog implements ActionListener {
 	 * @param featureType
 	 * @param attribute
 	 */
+	@SuppressWarnings("unchecked")
 	private void fillValueList(FeatureType featureType, String attribute){
 		listModel.clear();
 		HashSet<String> tsv2 = new HashSet<String>();

@@ -11,9 +11,11 @@ import java.util.*;
  * Base class for all simple Nodes.<br>
  * These nodes must have input and output links.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeSimple.java,v 1.13.2.4.2.3.2.1 2009/08/22 01:10:15 akurzhan Exp $
+ * @version $Id: AbstractNodeSimple.java,v 1.13.2.4.2.3.2.3 2009/09/30 23:52:32 akurzhan Exp $
  */
 public abstract class AbstractNodeSimple extends AbstractNode {
+	private static final long serialVersionUID = -609572378486858243L;
+	
 	protected Vector<AbstractControllerSimple> controllers = new Vector<AbstractControllerSimple>();
 	protected AbstractControllerNode controller = null;
 	
@@ -138,7 +140,10 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 		controller = x;
 		if (controller != null) {
 			controller.setMyNode(this);
-			controller.initialize();
+			try {
+				controller.initialize();
+			}
+			catch (Exception e) { }
 		}
 		return true;
 	}
@@ -200,16 +205,18 @@ public abstract class AbstractNodeSimple extends AbstractNode {
 	}
 	
 	/**
-	 * Resets the simulation time step.
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
 	 */
-	public void resetTimeStep() {
-		super.resetTimeStep();
+	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
+		boolean res = super.initialize();
 		for (int i = 0; i < controllers.size(); i++) {
 			AbstractControllerSimple ctrl = controllers.get(i);
 			if (ctrl != null)
-				ctrl.resetTimeStep();
+				res &= ctrl.initialize();
 		}
-		return;
+		return res;
 	}
 	
 	/**

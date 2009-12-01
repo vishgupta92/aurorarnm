@@ -10,9 +10,11 @@ import java.util.*;
 /**
  * Base class for all Nodes - complex and simple.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNode.java,v 1.13.2.4.2.3 2008/12/29 05:29:32 akurzhan Exp $
+ * @version $Id: AbstractNode.java,v 1.13.2.4.2.3.2.1 2009/09/30 23:51:17 akurzhan Exp $
  */
 public abstract class AbstractNode extends AbstractNetworkElement {
+	private static final long serialVersionUID = 4318602879545730827L;
+	
 	protected String name;
 	protected String description;
 	protected PositionNode position = new PositionNode();

@@ -7,6 +7,7 @@ package aurora.hwc.gui;
 import java.awt.*;
 import java.awt.Point;
 import java.awt.event.*;
+import java.text.NumberFormat;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -26,15 +27,16 @@ import aurora.util.*;
 /**
  * Implementation of Node detail window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNode.java,v 1.1.2.8.2.7.2.5 2009/08/19 20:42:45 akurzhan Exp $
+ * @version $Id: WindowNode.java,v 1.1.2.8.2.7.2.12 2009/11/16 21:07:10 akurzhan Exp $
  */
-public class WindowNode extends JInternalFrame {
+public class WindowNode extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = -2651266581287806400L;
 	
 	private AbstractContainer mySystem;
 	private AbstractNodeHWC myNode;
 	private TreePane treePane;
 	protected JTabbedPane tabbedPane = new JTabbedPane();
+	protected JTabbedPane tabbedConfig = new JTabbedPane();
 	private int nIn;
 	private int nOut;
 	private String[] ctrlTypes;
@@ -48,9 +50,12 @@ public class WindowNode extends JInternalFrame {
 	// configuration tab
 	protected Box confPanel = Box.createVerticalBox();
 	private JComboBox listEvents;
+	private JComboBox vtList = new JComboBox();
+	private final static String nmVTList = "TypeList";
 	private JButton buttonEvents = new JButton("Generate");
-	private ctrlROTableModel ctrlTM = new ctrlROTableModel();
 	private srmROTableModel srmTM = new srmROTableModel();
+	private wfmROTableModel wfmTM = new wfmROTableModel();
+	private ctrlROTableModel ctrlTM = new ctrlROTableModel();
 	
 	
 	public WindowNode() { }
@@ -65,7 +70,7 @@ public class WindowNode extends JInternalFrame {
 		ctrlClasses = myNode.getSimpleControllerClasses();
 		//Dimension dims = treePane.getActionPane().getDesktopPane().getSize();
 		//setSize((int)Math.round(0.6*dims.getWidth()), (int)Math.round(0.6*dims.getHeight()));
-		setSize(300, 400);
+		setSize(320, 450);
 		int n = treePane.getInternalFrameCount();
 		setLocation(20*n, 20*n);
 		AdapterWindowNode listener = new AdapterWindowNode();
@@ -83,22 +88,31 @@ public class WindowNode extends JInternalFrame {
 	 * Updates simulation data.
 	 */
 	private void updateSimSeries() {
-		int i;
 		AuroraIntervalVector o = new AuroraIntervalVector();
 		Second cts = Util.time2second(myNode.getTS()*myNode.getTop().getTP());
 		try {
-			simDataSets[0].getSeries(0).add(cts, myNode.totalInput().sum().getCenter());
-			for (i = 1; i <= nIn; i++) {
-				o.copy((AuroraIntervalVector)myNode.getInputs().get(i - 1));
-				if (o != null)
-					simDataSets[0].getSeries(i).add(cts, o.sum().getCenter());
+			// input flows
+			for (int i = 1; i <= nIn; i++) {
+				AbstractLinkHWC il = (AbstractLinkHWC)myNode.getPredecessors().get(i-1);
+				AuroraIntervalVector iflw = il.getAverageOutFlow();
+				if (i == 1)
+					o.copy(iflw);
+				else
+					o.add(iflw);
+				simDataSets[0].getSeries(i).add(cts, iflw.sum().getCenter());
 			}
-			simDataSets[1].getSeries(0).add(cts, myNode.totalOutput().sum().getCenter());
-			for (i = 1; i <= nOut; i++) {
-				o.copy((AuroraIntervalVector)myNode.getOutputs().get(i - 1));
-				if (o != null)
-					simDataSets[1].getSeries(i).add(cts, o.sum().getCenter());
+			simDataSets[0].getSeries(0).add(cts, o.sum().getCenter());
+			// output flows
+			for (int i = 1; i <= nOut; i++) {
+				AbstractLinkHWC ol = (AbstractLinkHWC)myNode.getSuccessors().get(i-1);
+				AuroraIntervalVector oflw = ol.getAverageOutFlow();
+				if (i == 1)
+					o.copy(oflw);
+				else
+					o.add(oflw);
+				simDataSets[1].getSeries(i).add(cts, oflw.sum().getCenter());
 			}
+			simDataSets[1].getSeries(0).add(cts, o.sum().getCenter());
 		}
 		catch(SeriesException e) {}
 		return;
@@ -163,41 +177,23 @@ public class WindowNode extends JInternalFrame {
 		final Vector<AbstractControllerSimple> controllers = myNode.getSimpleControllers();
 		JPanel desc = new JPanel(new GridLayout(1, 0));
 		desc.setBorder(BorderFactory.createTitledBorder("Description"));
-		desc.add(new JLabel("<html><font color=\"blue\">" + myNode.getDescription() + "</font></html>"));
+		desc.add(new JScrollPane(new JLabel("<html><pre><font color=\"blue\">" + myNode.getDescription() + "</font></pre></html>")));
 		confPanel.add(desc);
-		
-		JPanel ctrl = new JPanel(new GridLayout(1, 0));
-		ctrl.setBorder(BorderFactory.createTitledBorder("Input Controllers"));
-		final JTable ctrltab = new JTable(ctrlTM);
-		ctrltab.setPreferredScrollableViewportSize(new Dimension(250, 70));
-		ctrl.add(new JScrollPane(ctrltab));
-		confPanel.add(ctrl);
-		ctrltab.addMouseListener(new MouseAdapter() { 
-	      	  public void mouseClicked(MouseEvent e) {
-	      		if (!mySystem.getMyStatus().isStopped())
-	      			return;
-	      	    if (e.getClickCount() == 2) {
-	      	    	int row = ctrltab.rowAtPoint(new Point(e.getX(), e.getY()));
-	      	    	if (controllers.get(row) == null)
-	      	    		return;
-	      	    	try {
-	    	    		Class c = Class.forName("aurora.hwc.control.Panel" + controllers.get(row).getClass().getSimpleName());
-	    	    		AbstractSimpleControllerPanel cp = (AbstractSimpleControllerPanel)c.newInstance();
-	    	    		cp.initialize((AbstractControllerHWC)controllers.get(row), null, -1, myNode);
-	    	    	}
-	    	    	catch(Exception xpt) { }
-	      	    }
-	      	    return;
-	      	  }
-	        });
-		setUpControllerColumn(ctrltab, ctrltab.getColumnModel().getColumn(1));
-		
-		JPanel srm = new JPanel(new GridLayout(1, 0));
-		srm.setBorder(BorderFactory.createTitledBorder("Split Ratio Matrix"));
+		Vector<String> vts = ((SimulationSettingsHWC)mySystem.getMySettings()).getVehicleTypes();
+		vtList.addItem("All vehicle types");
+		for (int i = 0; i < vts.size(); i++)
+			vtList.addItem(vts.get(i));
+		vtList.setSelectedIndex(0);
+		vtList.setActionCommand(nmVTList);
+		vtList.addActionListener(this);
+		// Split ratio matrix
+		//JPanel srm = new JPanel(new GridLayout(1, 0));
+		Box srm = Box.createVerticalBox();
+		srm.add(vtList);
 		final JTable srmtab = new JTable(srmTM);
 		srmtab.setPreferredScrollableViewportSize(new Dimension(250, 70));
 		srm.add(new JScrollPane(srmtab));
-		confPanel.add(srm);
+		tabbedConfig.add("Split Ratios", srm);
 		srmtab.addMouseListener(new MouseAdapter() { 
 	      	  public void mouseClicked(MouseEvent e) { 
 		      	    if (e.getClickCount() == 2) {
@@ -215,12 +211,62 @@ public class WindowNode extends JInternalFrame {
 		      	    return;
 		      	  }
 		        });
+		// Weaving
+		JPanel wfm = new JPanel(new GridLayout(1, 0));
+		final JTable wfmtab = new JTable(wfmTM);
+		wfmtab.setPreferredScrollableViewportSize(new Dimension(250, 70));
+		wfm.add(new JScrollPane(wfmtab));
+		tabbedConfig.add("Weaving", wfm);
+		wfmtab.addMouseListener(new MouseAdapter() { 
+	      	  public void mouseClicked(MouseEvent e) { 
+		      	    if (e.getClickCount() == 2) {
+		      	    	int row = wfmtab.rowAtPoint(new Point(e.getX(), e.getY()));
+		      	    	int clmn = wfmtab.columnAtPoint(new Point(e.getX(), e.getY()));
+		      	    	AbstractLinkHWC lnk = null;
+		      	    	if ((row > 0) && (clmn == 0))
+		      	    		lnk = (AbstractLinkHWC)myNode.getPredecessors().get(row-1);
+		      	    	else if ((clmn > 0) && (row == 0))
+		      	    		lnk = (AbstractLinkHWC)myNode.getSuccessors().get(clmn-1);
+		      	    	else
+		      	    		return;
+		      	    	treePane.actionSelected(lnk, true);
+		      	    }
+		      	    return;
+		      	  }
+		        });
+		// Control
+		JPanel ctrl = new JPanel(new GridLayout(1, 0));
+		final JTable ctrltab = new JTable(ctrlTM);
+		ctrltab.setPreferredScrollableViewportSize(new Dimension(250, 70));
+		ctrl.add(new JScrollPane(ctrltab));
+		tabbedConfig.add("Control", ctrl);
+		ctrltab.addMouseListener(new MouseAdapter() { 
+	      	  public void mouseClicked(MouseEvent e) {
+	      		if (!mySystem.getMyStatus().isStopped())
+	      			return;
+	      	    if (e.getClickCount() == 2) {
+	      	    	int row = ctrltab.rowAtPoint(new Point(e.getX(), e.getY()));
+	      	    	if (controllers.get(row) == null)
+	      	    		return;
+	      	    	try {
+	    	    		Class c = Class.forName("aurora.hwc.control.Panel" + controllers.get(row).getClass().getSimpleName());
+	    	    		AbstractPanelSimpleController cp = (AbstractPanelSimpleController)c.newInstance();
+	    	    		cp.initialize((AbstractControllerSimpleHWC)controllers.get(row), null, -1, myNode);
+	    	    	}
+	    	    	catch(Exception xpt) { }
+	      	    }
+	      	    return;
+	      	  }
+	        });
+		setUpControllerColumn(ctrltab, ctrltab.getColumnModel().getColumn(1));
+		confPanel.add(tabbedConfig);
 		JPanel events = new JPanel(new GridLayout(1, 0));
 		Box events1 = Box.createHorizontalBox();
 		events.setBorder(BorderFactory.createTitledBorder("Events"));
 		listEvents = new JComboBox();
-		listEvents.addItem("Controller");
 		listEvents.addItem("Split Ratio Matrix");
+		listEvents.addItem("Weaving Factors");
+		listEvents.addItem("Controller");
 		events1.add(listEvents);
 		buttonEvents.addActionListener(new ButtonEventsListener());
 		events1.add(buttonEvents);
@@ -273,6 +319,19 @@ public class WindowNode extends JInternalFrame {
 		return;
 	}
 	
+
+	/**
+	 * Reaction to button and combo box events.
+	 */
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if (nmVTList.equals(cmd)) {
+			srmTM.fireTableDataChanged();
+		}
+		return;
+	}
+
+	
 	
 	/**
 	 * Class needed for displaying table of controllers.
@@ -303,12 +362,12 @@ public class WindowNode extends JInternalFrame {
 				return null;
 			if (column == 0)
 				return (TypesHWC.typeString(myNode.getPredecessors().get(row).getType()) + " " + myNode.getPredecessors().get(row).toString());
-			AbstractControllerHWC ctrl = (AbstractControllerHWC)myNode.getSimpleControllers().get(row);
+			AbstractControllerSimpleHWC ctrl = (AbstractControllerSimpleHWC)myNode.getSimpleControllers().get(row);
 			if (ctrl == null)
 				return "None";
 			if (column == 1)
 				return ctrl.getDescription();
-			QueueController qc = ctrl.getQController();
+			AbstractQueueController qc = ctrl.getQController();
 			if (qc == null)
 				return "None";
 			return qc.getDescription();
@@ -334,7 +393,7 @@ public class WindowNode extends JInternalFrame {
 			else
 				try {
 					Class c = Class.forName(ctrlClasses[idx]);
-					myNode.setSimpleController((AbstractControllerHWC)c.newInstance(), row);
+					myNode.setSimpleController((AbstractControllerSimpleHWC)c.newInstance(), row);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "Cannot create Controller of type '" + ctrlClasses[idx] + "'.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -381,10 +440,18 @@ public class WindowNode extends JInternalFrame {
 			}
 			if ((row < 1) || (row > srm.length) || (column < 1) || (column > srm[0].length))
 				return null;
-			return srm[row - 1][column - 1].toString2();
+			int idx = vtList.getSelectedIndex() - 1;
+			String buf;
+			if (idx < 0)
+				buf = srm[row - 1][column - 1].toString2();
+			else
+				buf = srm[row - 1][column - 1].get(idx).toString2();
+			return buf;
 		}
 		
 		public boolean isCellEditable(int row, int column) {
+			if (vtList.getSelectedIndex() > 0)
+				return false;
 			if ((!mySystem.getMyStatus().isStopped()) || (row <= 0) || (column <= 0))
 				return false;
 			return true;
@@ -407,6 +474,76 @@ public class WindowNode extends JInternalFrame {
 	
 	
 	/**
+	 * Class needed for displaying weaving factor matrix in a table.
+	 */
+	private class wfmROTableModel extends AbstractTableModel {
+		private static final long serialVersionUID = -8187950364203691237L;
+
+		public String getColumnName(int col) {
+	        return " ";
+	    }
+		
+		public int getColumnCount() {
+			return (nOut + 1);
+		}
+
+		public int getRowCount() {
+			return (nIn + 1);
+		}
+
+		public Object getValueAt(int row, int column) {
+			double[][] wfm = myNode.getWeavingFactorMatrix();
+			if (row == 0) {
+				if ((column < 1) || (column > wfm[0].length))
+					return null;
+				AbstractNetworkElement ne = myNode.getSuccessors().get(column - 1);
+				return "To " + TypesHWC.typeString(ne.getType()) + " " + ne;
+			}
+			if (column == 0) {
+				if ((row < 1) || (row > wfm.length))
+					return null;
+				AbstractNetworkElement ne = myNode.getPredecessors().get(row - 1);
+				return "From " + TypesHWC.typeString(ne.getType()) + " " + ne;
+			}
+			if ((row < 1) || (row > wfm.length) || (column < 1) || (column > wfm[0].length))
+				return null;
+			NumberFormat form = NumberFormat.getInstance();
+			form.setMinimumFractionDigits(0);
+			form.setMaximumFractionDigits(2);
+			form.setGroupingUsed(false);
+			return form.format(wfm[row - 1][column - 1]);
+		}
+		
+		public boolean isCellEditable(int row, int column) {
+			if ((!mySystem.getMyStatus().isStopped()) || (row <= 0) || (column <= 0))
+				return false;
+			return true;
+		}
+		
+		public void setValueAt(Object value, int row, int column) {
+			double[][] wfm = myNode.getWeavingFactorMatrix();
+			String buf = (String)value;
+			int i = row - 1;
+			int j = column - 1;
+			if ((i < 0) || (i >= nIn) || (j < 0) || (j >= nOut))
+				return;
+			try {
+				wfm[i][j] = Double.parseDouble(buf);
+				if (wfm[i][j] > -1)
+					wfm[i][j] = Math.max(1.0, wfm[i][j]);
+			}
+			catch(Exception e) {
+				wfm[i][j] = 1;
+			}
+			if (myNode.setWeavingFactorMatrix(wfm))
+				fireTableRowsUpdated(row, row);
+			return;
+		}
+		
+	}
+	
+	
+	/**
 	 * This class is needed to react to "Generate" button pressed.
 	 */
 	private class ButtonEventsListener implements ActionListener {
@@ -415,8 +552,11 @@ public class WindowNode extends JInternalFrame {
 			EventTableModel etm = (EventTableModel)((TableSorter)treePane.getActionPane().getEventsTable().getModel()).getTableModel();
 			AbstractEventPanel ep;
 			switch(listEvents.getSelectedIndex()) {
-			case 1:
+			case 0:
 				ep = new PanelEventSRM();
+				break;
+			case 1:
+				ep = new PanelEventWFM();
 				break;
 			default:
 				ep = new PanelEventControllerSimple();
@@ -443,22 +583,18 @@ public class WindowNode extends JInternalFrame {
 		}
 		
 		public void componentHidden(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentMoved(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentResized(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 
 		public void componentShown(ComponentEvent e) {
-			// TODO Auto-generated method stub
 			return;
 		}
 		

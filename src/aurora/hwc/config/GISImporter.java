@@ -1,51 +1,17 @@
 package aurora.hwc.config;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.filechooser.*;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import aurora.AuroraConstants;
 import aurora.hwc.common.WindowAbout;
+import aurora.util.JFileFilter;
 import aurora.util.UtilGUI;
 
 
@@ -55,10 +21,9 @@ import aurora.util.UtilGUI;
  * - Filter by type
  * - Remove reduntant edges
  * - Export to aurora 
- * 
- * @author jkwon
- * Convert GIS shape file to Aurora configuration XML files
- *  
+ * Convert GIS shape file to Aurora configuration XML files.
+ * @author Jaimyoung Kwon
+ * @version $Id: GISImporter.java,v 1.1.4.1.2.3.2.4 2009/11/14 02:01:32 akurzhan Exp $
  */
 public class GISImporter extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -70,13 +35,23 @@ public class GISImporter extends JFrame implements ActionListener {
 	private JLabel statusBar = new JLabel(" ");
 	private JTextArea logText =null;
 	private GISObject gisObject;
+	
+	private File currentDir = new File(AuroraConstants.DEFAULT_HOME);
+	
+	private static String myTitle = "Aurora RNM GIS Importer";
 
 
 	/**
 	 * Constructor which takes care of most steps
 	 */
 	public GISImporter(String[] args) throws Exception{
-		super("Aurora GIS Importer");
+		super(myTitle);
+		try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) { }
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        JDialog.setDefaultLookAndFeelDecorated(true);
 		content = getContentPane();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setJMenuBar(createMenuBar());
@@ -85,10 +60,11 @@ public class GISImporter extends JFrame implements ActionListener {
 		JPanel logPanel = new JPanel();
 		logPanel.setBorder(BorderFactory.createTitledBorder("LOG"));
 		logText = new JTextArea();
+		logText.setFont(new Font("Helvetica", Font.PLAIN, 11));
 		JScrollPane scroller = new JScrollPane(logText);
 		scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		myLog("Log of Aurora GIS Importer\n");
+		myLog("Log of Aurora RNM GIS Importer\n");
 		logPanel.add(scroller, BorderLayout.CENTER);
 		scroller.setPreferredSize(new Dimension(780, 460));
 		content.add(logPanel, BorderLayout.CENTER);
@@ -114,36 +90,46 @@ public class GISImporter extends JFrame implements ActionListener {
 
 
 	public static void main(String[] args) throws Exception {
-		final GISImporter gisImporter = new GISImporter(args);
+		new GISImporter(args);
 	}
 
 	/**
 	 * read in the input shape file into native GIS feature collection
 	 */
 	private  void openFile(URL shape) {
+		setTitle(myTitle);
 		myLog(separator + "Opening file...");
-		try {
-			if( shape == null) {
-				oldFile = fileDialog(new FileNameExtensionFilter("Shape file", "shp", "SHP"));
-				shape = oldFile.toURI().toURL();
+		JFileFilter filter = new JFileFilter();
+		filter.addType("shp");
+		filter.setDescription("Shape files (*.shp)");
+		JFileChooser fc = new JFileChooser("Open File");
+		fc.setFileFilter(filter);
+		fc.setCurrentDirectory(currentDir);
+		if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			try {
+				if( shape == null) {
+					//oldFile = fileDialog(new FileNameExtensionFilter("Shape file", "shp", "SHP"));
+					oldFile = fc.getSelectedFile();
+					shape = oldFile.toURI().toURL();
+				}
+				if (shape == null) return;
+				gisObject.openShapefile(shape);
+			} catch (Exception e) {
+				currentDir = fc.getCurrentDirectory();
+				e.printStackTrace();
+				return;
 			}
-			if (shape == null) return;
-			gisObject.openShapefile(shape);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			return;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
+			setTitle(myTitle + " - " + oldFile);
+			gisObject.debug();
+			buttonOpen.setEnabled(true);
+			buttonFilterType.setEnabled(true);
+			buttonFilterName.setEnabled(true);
+			buttonFilterSimplify.setEnabled(true);
+			buttonSaveConfig.setEnabled(true);
+			timestamp();
 		}
-
-		gisObject.debug();
-		buttonOpen.setEnabled(true);
-		buttonFilterType.setEnabled(true);
-		buttonFilterName.setEnabled(true);
-		buttonFilterSimplify.setEnabled(true);
-		buttonSaveConfig.setEnabled(true);
-		timestamp();		
+		currentDir = fc.getCurrentDirectory();
+		return;
 	}
 
 
@@ -260,7 +246,7 @@ public class GISImporter extends JFrame implements ActionListener {
 
 
 	/**
-	 * Export to shapefile 
+	 * Export to shape file 
 	 * cf. http://osdir.com/ml/gis.geotools2.user/2006-07/msg00060.html
 	 */
 	private void exportToGIS() {
@@ -290,12 +276,11 @@ public class GISImporter extends JFrame implements ActionListener {
 	 * @param file2
 	 * @return
 	 */
-	private static File getNewXMLFile(File file2) {
+	private File getNewXMLFile(File file2) {
 		String path = file2.getAbsolutePath();
 		String newPath = path.substring(0,path.length()-4) + ".xml";
-
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle("Save XML file");
+		JFileChooser chooser = new JFileChooser("Save XML file");
+		chooser.setCurrentDirectory(currentDir);
 		chooser.setSelectedFile( new File( newPath ));		
 		chooser.setFileFilter( new FileFilter(){
 			public boolean accept( File f ) {
@@ -310,22 +295,23 @@ public class GISImporter extends JFrame implements ActionListener {
 			return null;
 		}
 		File newFile = chooser.getSelectedFile();
-
+		currentDir = chooser.getCurrentDirectory();
 		return newFile;
 	}
 
 
 
 	/**
-	 * This method will prompt the user for a shapefile.
+	 * This method will prompt the user for a shape file.
 	 * 
-	 * @return url to selected shapefile.
+	 * @return url to selected shape file.
 	 * @throws MalformedURLException
 	 */
 	
 	private  File fileDialog(FileNameExtensionFilter filter) throws MalformedURLException {
 		File file = null;
 		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setCurrentDirectory(currentDir);
 		if (filter != null ){
 			fileChooser.setFileFilter(filter);
 		}
@@ -335,20 +321,20 @@ public class GISImporter extends JFrame implements ActionListener {
 		int result = fileChooser.showOpenDialog(null);
 		if (result == JFileChooser.APPROVE_OPTION) {
 			file = fileChooser.getSelectedFile();
-		} else {
 		}
+		currentDir = fileChooser.getCurrentDirectory();
 		return file;
 	}
 
 
 	/**
-	 * This method prompts the user for a new GIS shapefile name
+	 * This method prompts the user for a new GIS shape file name
 	 * 
 	 * @param file
 	 * @param level
 	 * @return
 	 */
-	private static File getNewShapeFile(File file, Integer level) {
+	private File getNewShapeFile(File file, Integer level) {
 		String path = null;
 		String newPath = null;
 		if (file != null){
@@ -356,16 +342,15 @@ public class GISImporter extends JFrame implements ActionListener {
 //			String newPath = path.substring(0,path.length()-4) + "2.shp";
 			newPath = path.substring(0,path.length()-4) + level + ".shp";
 		}
-
-		JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle("Save shapefile");
+		JFileChooser chooser = new JFileChooser("Save shape file");
+		chooser.setCurrentDirectory(currentDir);
 		chooser.setSelectedFile( new File( newPath ));		
 		chooser.setFileFilter( new FileFilter(){
 			public boolean accept( File f ) {
 				return f.isDirectory() || f.getPath().endsWith("shp") || f.getPath().endsWith("SHP");
 			}
 			public String getDescription() {
-				return "Shapefiles";
+				return "Shape files";
 			}
 		});
 		int returnVal = chooser.showSaveDialog(null);
@@ -374,10 +359,12 @@ public class GISImporter extends JFrame implements ActionListener {
 			return null;
 		}
 		File newFile = chooser.getSelectedFile();
-		if( newFile.equals( file )){
-			System.out.println("Cannot replace "+file);
+		if (newFile.equals(file)) {
+			System.out.println("Cannot replace " + file);
 			return null;
 		}
+		setTitle(myTitle + " - " + newFile);
+		currentDir = chooser.getCurrentDirectory();
 		return newFile;
 	}
 
@@ -409,7 +396,7 @@ public class GISImporter extends JFrame implements ActionListener {
 	private final static String cmdFileExit = "FileExit";
 	private final static String cmdViewZoomIn = "ViewZoomIn";
 	private final static String cmdViewZoomOut = "ViewZoomOut";
-	private final static String cmdFilterGeo= "FilterGeo";
+	//private final static String cmdFilterGeo= "FilterGeo";
 	private final static String cmdFilterType= "FilterType";
 	private final static String cmdFilterName= "FilterName";
 	private final static String cmdFilterSimplify= "FilterSimplify";

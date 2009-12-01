@@ -19,7 +19,7 @@ import aurora.hwc.*;
  * Implementation of action pane split vertically into
  * a desktop and table panes.
  * @author Alex Kurzhanskiy
- * @version $Id: ActionPane.java,v 1.1.4.1 2008/10/16 04:27:06 akurzhan Exp $
+ * @version $Id: ActionPane.java,v 1.1.4.1.4.1 2009/10/09 00:48:38 akurzhan Exp $
  */
 public final class ActionPane extends JPanel {
 	private static final long serialVersionUID = -7827597418764664986L;
@@ -67,6 +67,7 @@ public final class ActionPane extends JPanel {
       	    return;
       	  }
         });
+        console.setFont(new Font("Helvetica", Font.PLAIN, 11));
         tablePane.addTab("Console", new JScrollPane(console));
         tablePane.addTab("Errors", new JScrollPane(ferrors));
         catchIO();

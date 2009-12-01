@@ -1,20 +1,20 @@
+/**
+ * @(#)GISImporterGetGraph.java
+ */
+
 package aurora.hwc.config;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Vector;
-
+import java.util.*;
 import org.geotools.feature.Feature;
 import org.geotools.feature.FeatureCollection;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
+
 /**
- * @author jkwon
- *
+ * Converter of shapes into graph.
+ * @author Jaimyoung Kwon
+ * @version $Id: GISImporterGetGraph.java,v 1.1.4.1.2.1.2.1 2009/10/01 00:13:12 akurzhan Exp $
  */
 public class GISImporterGetGraph {
 
@@ -198,8 +198,8 @@ public class GISImporterGetGraph {
 			link.setLength((Double) feature.getAttribute("LENGTH"));
 
 			String name = (String) feature.getAttribute("NM");
-			String fromName = (String) feature.getAttribute("FXNM");
-			String toName = (String) feature.getAttribute("TXNM");
+			//String fromName = (String) feature.getAttribute("FXNM");
+			//String toName = (String) feature.getAttribute("TXNM");
 
 //			Define fromNode
 			String fromNodeId = ""+feature.getAttribute("FNODE_");
@@ -370,6 +370,7 @@ public class GISImporterGetGraph {
 		return nodeWhitelist ;
 	}
 
+	@SuppressWarnings("unchecked")
 	public int processGraph(String targetGIS, boolean useInternal,
 			FeatureCollection featureCollection, ArrayList<Feature> features) {
 		Iterator <Feature> iterator;

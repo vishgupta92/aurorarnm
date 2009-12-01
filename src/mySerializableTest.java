@@ -12,7 +12,7 @@ import aurora.hwc.control.*;
 /**
  * Let's see how we can save our configuration.
  * @author Alex Kurzhanskiy
- * @version $Id: mySerializableTest.java,v 1.2.2.2.2.1 2008/12/02 04:07:32 akurzhan Exp $
+ * @version $Id: mySerializableTest.java,v 1.2.2.2.2.2.2.2 2009/10/18 00:58:29 akurzhan Exp $
  */
 public final class mySerializableTest {
 	static String DATAFILE = "c:\\tmp\\aurora_out.dat";
@@ -35,14 +35,14 @@ public final class mySerializableTest {
 		ctrl.setTP(1.0/12.0);
 		NodeFreeway nd = (NodeFreeway)myNetwork.getNodeById(12);
 		LinkOR lk = (LinkOR)myNetwork.getLinkById(11);
-		nd.setController(ctrl, lk);
+		nd.setSimpleController(ctrl, lk);
 		
 		EventManager emgr = new EventManager();
 		
 		emgr.addEvent(new EventQueueMax(8, 50, 7650));
-		emgr.addEvent(new EventDemand(3, 11000, 3760));
+		//emgr.addEvent(new EventDemand(3, 11000, 3760));
 		emgr.addEvent(new EventFD(7, 2200, 40, 160, 5400));
-		double[][] srm = {{0.1, 0.9}};
+		//double[][] srm = {{0.1, 0.9}};
 		//emgr.addEvent(new EventSRM(14, srm, 4324));
 		emgr.addEvent(new EventControllerSimple(21, ctrl, 20, 1004));
 		

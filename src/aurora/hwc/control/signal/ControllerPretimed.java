@@ -364,22 +364,23 @@ public class ControllerPretimed extends BaseSignalController {
 		}
 	}
 //	-------------------------------------------------------------------------
-	public synchronized void resetTimeStep() {
-		
-		super.resetTimeStep();
-		
-		cperiod= 0;
+	/**
+	 * Additional optional initialization steps.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration
+	 */
+	public boolean initialize() throws ExceptionConfiguration {
+		boolean res = super.initialize();
+		cperiod = 0;
 		cplan = getPlanInd(plansequence.get(0));
 
-
-		/*  GCG CHECK THIS
+		/* TODO: GCG CHECK THIS
 		if(asc!=null){
 			if(!asc.Initialize())
 				return false;
 		} */
 
-		
-		return;
+		return res;
 	}
 
 }

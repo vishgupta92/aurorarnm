@@ -16,11 +16,12 @@ import aurora.util.*;
  * Implementation of action pane split vertically into
  * a desktop and table panes.
  * @author Alex Kurzhanskiy
- * @version $Id: ActionPane.java,v 1.1.2.11 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: ActionPane.java,v 1.1.2.11.4.2 2009/10/18 05:17:14 akurzhan Exp $
  */
 public final class ActionPane extends JPanel {
 	private static final long serialVersionUID = -2436965790211986294L;
-	private ContainerHWC mySystem;
+	private ContainerHWC mySystem = null;
+	private TreePane tree = null;
 	private JDesktopPane desktopPane = new JDesktopPane();
     private JTabbedPane tablePane = new JTabbedPane();
     private JTable fevents;
@@ -30,9 +31,10 @@ public final class ActionPane extends JPanel {
    
     
     public ActionPane() { }
-    public ActionPane(ContainerHWC ctnr) {
+    public ActionPane(ContainerHWC ctnr, TreePane tr) {
         super(new GridLayout(1,0));
         mySystem = ctnr;
+        tree = tr;
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setTopComponent(desktopPane);
         splitPane.setBottomComponent(tablePane);
@@ -49,11 +51,14 @@ public final class ActionPane extends JPanel {
         fevents.addMouseListener(new MouseAdapter() { 
       	  public void mouseClicked(MouseEvent e) { 
       	    if (e.getClickCount() == 2) {
+      	    	TreePane tr = null;
       	    	int row = fevents.rowAtPoint(new Point(e.getX(), e.getY()));
+      	    	if (fevents.columnAtPoint(new Point(e.getX(), e.getY())) == 2)
+      	    		tr = tree;
       	    	mySystem.getMyStatus().setStopped(true);
       	    	try {
       	    		TableSorter ts = (TableSorter)fevents.getModel();
-      	    		((EventTableModel)ts.getTableModel()).eventSelected(ts.modelIndex(row), mySystem.getMyNetwork());
+      	    		((EventTableModel)ts.getTableModel()).eventSelected(ts.modelIndex(row), mySystem.getMyNetwork(), tr);
       	    	}
       	    	catch(Exception excpt) { }
       	    }
@@ -61,6 +66,7 @@ public final class ActionPane extends JPanel {
       	  }
         });
         tablePane.addTab("Events", new JScrollPane(fevents));
+        console.setFont(new Font("Helvetica", Font.PLAIN, 11));
         tablePane.addTab("Console", new JScrollPane(console));
         catchIO();
         splitPane.setDividerLocation((int)Math.round(0.75*mySystem.getMySettings().getWindowSize().getHeight()));

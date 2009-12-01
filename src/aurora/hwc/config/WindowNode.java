@@ -7,6 +7,7 @@ package aurora.hwc.config;
 import java.awt.*;
 import java.awt.Point;
 import java.awt.event.*;
+import java.text.NumberFormat;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -20,7 +21,7 @@ import aurora.util.*;
 /**
  * Implementation of Node Editor.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNode.java,v 1.1.4.1.2.4.2.5 2009/08/26 02:25:21 akurzhan Exp $
+ * @version $Id: WindowNode.java,v 1.1.4.1.2.4.2.8 2009/11/15 04:39:58 akurzhan Exp $
  */
 public final class WindowNode extends JInternalFrame implements ActionListener, ChangeListener, DocumentListener {
 	private static final long serialVersionUID = -2721130730581469904L;
@@ -34,8 +35,10 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 	private int nIn = 0;
 	private int nOut = 0;
 	private AuroraIntervalVector[][] srm = null;
-	private ctrlRWTableModel ctrlTM = new ctrlRWTableModel();
+	private double[][] wfm = null;
 	private srmRWTableModel srmTM = new srmRWTableModel();
+	private wfmRWTableModel wfmTM = new wfmRWTableModel();
+	private ctrlRWTableModel ctrlTM = new ctrlRWTableModel();
 	private JComboBox typeList = new JComboBox();
 	private JSpinner idSpinner;
 	private JTextField nameTxt = new JTextField();
@@ -47,6 +50,7 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 	private JPanel pDesc = new JPanel(new BorderLayout());
 	private JPanel pCtrl = new JPanel(new BorderLayout());
 	private JPanel pSRM = new JPanel(new BorderLayout());
+	private JPanel pWFM = new JPanel(new BorderLayout());
 	private JPanel pT = new JPanel(new FlowLayout());
 	private JPanel pSRP = new JPanel(new BorderLayout());
 	private JSpinner hh;
@@ -61,11 +65,12 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 	private boolean descModified = false;
 	private boolean ctrlModified = false;
 	private boolean srmModified = false;
+	private boolean wfmModified = false;
 	private boolean tpModified = false;
 	private boolean srpModified = false;
 	
 	private int[] nodeTypes;
-	private AbstractControllerHWC[] controllers;
+	private AbstractControllerSimpleHWC[] controllers;
 	private String[] ctrlTypes;
 	private String[] ctrlClasses;
 	private boolean[] controllersModified;
@@ -83,13 +88,13 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 		myNode = (AbstractNodeHWC)nodeList.firstElement();
 		nIn = myNode.getPredecessors().size();
 		nOut = myNode.getSuccessors().size();
-		controllers = new AbstractControllerHWC[nIn];
+		controllers = new AbstractControllerSimpleHWC[nIn];
 		controllersModified = new boolean[nIn];
 		ctrlTypes = myNode.getSimpleControllerTypes();
 		ctrlClasses = myNode.getSimpleControllerClasses();
 		Vector<AbstractControllerSimple> ctrls = myNode.getSimpleControllers();
 		for (int i = 0; i < nIn; i++) {
-			controllers[i] = (AbstractControllerHWC)ctrls.get(i);
+			controllers[i] = (AbstractControllerSimpleHWC)ctrls.get(i);
 			controllersModified[i] = false;
 		}
 		setSize(400, 450);
@@ -103,8 +108,9 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.add("Nodes", fillTabNodes());
 		tabbedPane.add("General", fillTabGeneral());
-		tabbedPane.add("In / Out", fillTabInOut());
-		tabbedPane.add("Split Ratios", fillTabSRProfile());
+		tabbedPane.add("Split Ratios", fillTabSplitRatios());
+		tabbedPane.add("Weaving", fillTabWeaving());
+		tabbedPane.add("Control", fillTabControl());
 		// OK, Cancel buttons
 		JPanel bp = new JPanel(new FlowLayout());
 		JButton bOK = new JButton("    OK    ");
@@ -194,36 +200,11 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 	}
 	
 	/**
-	 * Creates in / out tab.
+	 * Creates split ratio profile tab.
 	 */
-	private JPanel fillTabInOut() {
+	private JPanel fillTabSplitRatios() {
 		JPanel panel = new JPanel(new BorderLayout());
-		Box ioPanel = Box.createVerticalBox();
-		// Control
-		pCtrl.setBorder(BorderFactory.createTitledBorder("Input Controllers"));
-		final JTable ctrltab = new JTable(ctrlTM);
-		ctrltab.addMouseListener(new MouseAdapter() { 
-	      	  public void mouseClicked(MouseEvent e) { 
-	      	    if (e.getClickCount() == 2) {
-	      	    	int row = ctrltab.rowAtPoint(new Point(e.getX(), e.getY()));
-	      	    	if (controllers[row] == null)
-	      	    		return;
-	      	    	try {
-	    	    		Class c = Class.forName("aurora.hwc.control.Panel" + controllers[row].getClass().getSimpleName());
-	    	    		AbstractSimpleControllerPanel cp = (AbstractSimpleControllerPanel)c.newInstance();
-	    	    		cp.initialize((AbstractControllerHWC)controllers[row], controllersModified, row, myNode);
-	    	    		if (controllersModified[row])
-	    	    			ctrlModified = true;
-	    	    	}
-	    	    	catch(Exception xpt) { }
-	      	    }
-	      	    return;
-	      	  }
-	        });
-		setUpControllerColumn(ctrltab, ctrltab.getColumnModel().getColumn(1));
-		ctrltab.setPreferredScrollableViewportSize(new Dimension(300, 150));
-		pCtrl.add(new JScrollPane(ctrltab));
-		ioPanel.add(pCtrl);
+		Box srpPanel = Box.createVerticalBox();
 		// Split Ratio Matrix
 		pSRM.setBorder(BorderFactory.createTitledBorder("Split Ratio Matrix"));
 		srm = myNode.getSplitRatioMatrix();
@@ -251,33 +232,22 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 		      	  }
 		        });
 		pSRM.add(new JScrollPane(srmtab));
-		ioPanel.add(pSRM);
-		panel.add(ioPanel);
-		return panel;
-	}
-	
-	/**
-	 * Creates split ratio profile tab.
-	 */
-	private JPanel fillTabSRProfile() {
-		AbstractNodeHWC nd = (AbstractNodeHWC)nodeList.firstElement();
-		JPanel panel = new JPanel(new BorderLayout());
-		Box srpPanel = Box.createVerticalBox();
+		srpPanel.add(pSRM);
 		// Sampling Period
 		pT.setBorder(BorderFactory.createTitledBorder("Sampling Period"));
-		hh = new JSpinner(new SpinnerNumberModel(Util.getHours(nd.getSplitRatioTP()), 0, 99, 1));
+		hh = new JSpinner(new SpinnerNumberModel(Util.getHours(myNode.getSplitRatioTP()), 0, 99, 1));
 		hh.setEditor(new JSpinner.NumberEditor(hh, "00"));
 		hh.setName(nmTP);
 		hh.addChangeListener(this);
 		pT.add(hh);
 		pT.add(new JLabel("h "));
-		mm = new JSpinner(new SpinnerNumberModel(Util.getMinutes(nd.getSplitRatioTP()), 0, 59, 1));
+		mm = new JSpinner(new SpinnerNumberModel(Util.getMinutes(myNode.getSplitRatioTP()), 0, 59, 1));
 		mm.setEditor(new JSpinner.NumberEditor(mm, "00"));
 		mm.setName(nmTP);
 		mm.addChangeListener(this);
 		pT.add(mm);
 		pT.add(new JLabel("m "));
-		ss = new JSpinner(new SpinnerNumberModel(Util.getSeconds(nd.getSplitRatioTP()), 0, 59.99, 1));
+		ss = new JSpinner(new SpinnerNumberModel(Util.getSeconds(myNode.getSplitRatioTP()), 0, 59.99, 1));
 		ss.setEditor(new JSpinner.NumberEditor(ss, "00.##"));
 		ss.setName(nmTP);
 		ss.addChangeListener(this);
@@ -286,11 +256,85 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 		srpPanel.add((pT));
 		// Split Ratio Profile
 		pSRP.setBorder(BorderFactory.createTitledBorder("Split Ratio Profile"));
-		srProfile.setText(nd.getSplitRatioProfileAsText());
+		srProfile.setText(myNode.getSplitRatioProfileAsText());
 		srProfile.getStyledDocument().addDocumentListener(this);
 		pSRP.add(new JScrollPane(srProfile));
+		pSRP.setPreferredSize(new Dimension(300, 200));
 		srpPanel.add(pSRP);
 		panel.add(srpPanel);
+		return panel;
+	}
+	
+	/**
+	 * Creates split ratio profile tab.
+	 */
+	private JPanel fillTabWeaving() {
+		JPanel panel = new JPanel(new BorderLayout());
+		Box wfmPanel = Box.createVerticalBox();
+		// Weaving Factor Matrix
+		pWFM.setBorder(BorderFactory.createTitledBorder("Weaving Factors"));
+		wfm = myNode.getWeavingFactorMatrix();
+		final JTable wfmtab = new JTable(wfmTM);
+		wfmtab.setPreferredScrollableViewportSize(new Dimension(300, 150));
+		wfmtab.addMouseListener(new MouseAdapter() { 
+	      	  public void mouseClicked(MouseEvent e) {
+	      		    if (nodeList.size() > 1)
+	      		    	return;
+		      	    if (e.getClickCount() == 2) {
+		      	    	int row = wfmtab.rowAtPoint(new Point(e.getX(), e.getY()));
+		      	    	int clmn = wfmtab.columnAtPoint(new Point(e.getX(), e.getY()));
+		      	    	AbstractLinkHWC lnk = null;
+		      	    	if ((row > 0) && (clmn == 0))
+		      	    		lnk = (AbstractLinkHWC)myNode.getPredecessors().get(row-1);
+		      	    	else if ((clmn > 0) && (row == 0))
+		      	    		lnk = (AbstractLinkHWC)myNode.getSuccessors().get(clmn-1);
+		      	    	else
+		      	    		return;
+		      	    	Vector<AbstractNetworkElement> nelist = new Vector<AbstractNetworkElement>();
+						nelist.add(lnk);
+		      	    	treePane.actionSelected(nelist, true, false);
+		      	    }
+		      	    return;
+		      	  }
+		        });
+		pWFM.add(new JScrollPane(wfmtab));
+		wfmPanel.add(pWFM);
+		panel.add(wfmPanel);
+		return panel;
+	}
+	
+	/**
+	 * Creates control tab.
+	 */
+	private JPanel fillTabControl() {
+		JPanel panel = new JPanel(new BorderLayout());
+		Box ioPanel = Box.createVerticalBox();
+		// Control
+		pCtrl.setBorder(BorderFactory.createTitledBorder("Input Controllers"));
+		final JTable ctrltab = new JTable(ctrlTM);
+		ctrltab.addMouseListener(new MouseAdapter() { 
+	      	  public void mouseClicked(MouseEvent e) { 
+	      	    if (e.getClickCount() == 2) {
+	      	    	int row = ctrltab.rowAtPoint(new Point(e.getX(), e.getY()));
+	      	    	if (controllers[row] == null)
+	      	    		return;
+	      	    	try {
+	    	    		Class c = Class.forName("aurora.hwc.control.Panel" + controllers[row].getClass().getSimpleName());
+	    	    		AbstractPanelSimpleController cp = (AbstractPanelSimpleController)c.newInstance();
+	    	    		cp.initialize((AbstractControllerSimpleHWC)controllers[row], controllersModified, row, myNode);
+	    	    		if (controllersModified[row])
+	    	    			ctrlModified = true;
+	    	    	}
+	    	    	catch(Exception xpt) { }
+	      	    }
+	      	    return;
+	      	  }
+	        });
+		setUpControllerColumn(ctrltab, ctrltab.getColumnModel().getColumn(1));
+		ctrltab.setPreferredScrollableViewportSize(new Dimension(300, 150));
+		pCtrl.add(new JScrollPane(ctrltab));
+		ioPanel.add(pCtrl);
+		panel.add(ioPanel);
 		return panel;
 	}
 	
@@ -346,6 +390,11 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 					continue;
 				nd.setSplitRatioMatrix(srm);
 			}
+			if (wfmModified) {
+				if ((nd.getPredecessors().size() != nIn) || (nd.getSuccessors().size() != nOut))
+					continue;
+				nd.setWeavingFactorMatrix(wfm);
+			}
 			if (typeModified) {
 				AbstractNodeHWC newnd = null;
 				try {
@@ -377,7 +426,7 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		if (cmdOK.equals(cmd)) {
-			if (typeModified || idModified || nameModified || descModified || ctrlModified || srmModified || tpModified || srpModified) {
+			if (typeModified || idModified || nameModified || descModified || ctrlModified || srmModified || wfmModified || tpModified || srpModified) {
 				provisionNodeData();
 				mySystem.getMyStatus().setSaved(false);
 			}
@@ -509,12 +558,12 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 				else
 					return (prfx + TypesHWC.typeString(myNode.getPredecessors().get(row).getType()) + " " + myNode.getPredecessors().get(row).toString());
 			}
-			AbstractControllerHWC ctrl = controllers[row];
+			AbstractControllerSimpleHWC ctrl = controllers[row];
 			if (ctrl == null)
 				return "None";
 			if (column == 1)
 				return ctrl.getDescription();
-			QueueController qc = ctrl.getQController();
+			AbstractQueueController qc = ctrl.getQController();
 			if (qc == null)
 				return "None";
 			return qc.getDescription();
@@ -532,7 +581,7 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 			else
 				try {
 					Class c = Class.forName(ctrlClasses[idx]);
-					controllers[row] = (AbstractControllerHWC)c.newInstance();
+					controllers[row] = (AbstractControllerSimpleHWC)c.newInstance();
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "Cannot create Controller of type '" + ctrlClasses[idx] + "'.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -604,6 +653,79 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 			fireTableRowsUpdated(row, row);
 			srmModified = true;
 			pSRM.setBorder(BorderFactory.createTitledBorder("*Split Ratio Matrix"));
+			return;
+		}
+		
+	}
+	
+	
+	/**
+	 * Class needed for displaying weaving factor matrix in a table.
+	 */
+	private class wfmRWTableModel extends AbstractTableModel {
+		private static final long serialVersionUID = -9095419984863085811L;
+
+		public String getColumnName(int col) {
+	        return " ";
+	    }
+		
+		public int getColumnCount() {
+			return (nOut + 1);
+		}
+
+		public int getRowCount() {
+			return (nIn + 1);
+		}
+		
+		public boolean isCellEditable(int row, int column) {
+			if ((row > 0) && (column > 0))
+				return true;
+			return false;
+		}
+
+		public Object getValueAt(int row, int column) {
+			if (row == 0) {
+				if ((column < 1) || (column > wfm[0].length))
+					return null;
+				if (nodeList.size() > 1)
+					return "To Out-Link " + column;
+				AbstractNetworkElement ne = myNode.getSuccessors().get(column - 1);
+				return "To " + TypesHWC.typeString(ne.getType()) + " " + ne;
+			}
+			if (column == 0) {
+				if ((row < 1) || (row > wfm.length))
+					return null;
+				if (nodeList.size() > 1)
+					return "From In-Link " + row;
+				AbstractNetworkElement ne = myNode.getPredecessors().get(row - 1);
+				return "From " + TypesHWC.typeString(ne.getType()) + " " + ne;
+			}
+			if ((row < 1) || (row > wfm.length) || (column < 1) || (column > wfm[0].length))
+				return null;
+			NumberFormat form = NumberFormat.getInstance();
+			form.setMinimumFractionDigits(0);
+			form.setMaximumFractionDigits(2);
+			form.setGroupingUsed(false);
+			return form.format(wfm[row - 1][column - 1]);
+		}
+		
+		public void setValueAt(Object value, int row, int column) {
+			String buf = (String)value;
+			int i = row - 1;
+			int j = column - 1;
+			if ((i < 0) || (i >= nIn) || (j < 0) || (j >= nOut))
+				return;
+			try {
+				wfm[i][j] = Double.parseDouble(buf);
+				if (wfm[i][j] > -1)
+					wfm[i][j] = Math.max(1.0, wfm[i][j]);
+			}
+			catch(Exception e) {
+				wfm[i][j] = 1;
+			}
+			fireTableRowsUpdated(row, row);
+			wfmModified = true;
+			pWFM.setBorder(BorderFactory.createTitledBorder("*Weaving Factors"));
 			return;
 		}
 		

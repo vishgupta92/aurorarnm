@@ -22,7 +22,7 @@ import aurora.util.*;
  * @see LinkStreet, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy, Gabriel Gomes
- * @version $Id: NodeUJSignal.java,v 1.9.2.2.2.1.2.2 2009/06/19 21:09:28 gomes Exp $
+ * @version $Id: NodeUJSignal.java,v 1.9.2.2.2.1.2.5 2009/10/09 04:18:09 gomes Exp $
  */
 public final class NodeUJSignal extends AbstractNodeHWC {
 	private static final long serialVersionUID = 8638143194434976281L;
@@ -110,10 +110,7 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 														while (st.hasMoreTokens()) {
 															AbstractLinkHWC L = (AbstractLinkHWC) myNetwork.getLinkById(Integer.parseInt(st.nextToken()));
 															sigman.Phase(nemaind).assignLink(L);	// assign link to phase
-															if(!sigman.attachSimpleController(this,L)){	// create a simple controller
-																res = false;
-																continue;
-															}
+
 														}	
 													}
 												}
@@ -239,10 +236,22 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 	}
 	
 
-	@Override
-	public void resetTimeStep() {
-		super.resetTimeStep();
-		sigman.resetTimeStep();
+	/**
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
+	 * @throws ExceptionDatabase 
+	 */
+	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
+		boolean res = super.initialize();
+		sigman.initialize();
+/*		int i;
+		for(i=0;i<8;i++){
+			if(sigman.Phase(i).link!=null){
+				sigman.attachSimpleController( this , sigman.Phase(i).link);	
+			}
+		}*/
+		return res;
 	}
 	
 	
@@ -276,6 +285,13 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 	 */
 	public final int getType() {
 		return TypesHWC.NODE_SIGNAL;
+	}
+	
+	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "Signal Intersection";
 	}
 	
 	/**

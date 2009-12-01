@@ -12,18 +12,18 @@ import javax.swing.*;
 /**
  * Implementation of Controller Editor window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowControllerEditor.java,v 1.1.4.1.4.2 2009/08/19 22:35:49 akurzhan Exp $
+ * @version $Id: WindowControllerEditor.java,v 1.1.4.1.4.3 2009/10/01 05:49:01 akurzhan Exp $
  */
 public final class WindowControllerEditor extends JDialog {
 	private static final long serialVersionUID = -4237759832291252238L;
 	
-	private AbstractControllerPanel myCP;
+	private AbstractPanelController myCP;
 	private final static String cmdOK = "pressedOK";
 	private final static String cmdCancel = "pressedCancel";
 	
 	
 	public WindowControllerEditor() { }
-	public WindowControllerEditor(AbstractControllerPanel cp, JFrame parent) {
+	public WindowControllerEditor(AbstractPanelController cp, JFrame parent) {
 		super(parent, "Controller: " + cp.getHeader());
 		myCP = cp;
 		setSize(600, 600);

@@ -5,20 +5,21 @@
 package aurora;
 
 import java.io.*;
-
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
 /**
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractEvent.java,v 1.3.2.5.2.2 2009/06/14 01:10:24 akurzhan Exp $
+ * @version $Id: AbstractEvent.java,v 1.3.2.5.2.2.2.3 2009/10/18 02:58:34 akurzhan Exp $
  */
 public abstract class AbstractEvent implements AuroraConfigurable, Serializable {
+	private static final long serialVersionUID = 4334310994251406284L;
+	
 	protected String description = null;
 	protected double tstamp = 0.0; // timestamp
 	protected int neid; // network element id
+	protected AbstractNetworkElement myNE = null; // network element
 	protected boolean enabled = true; // to fire or not
 	
 	protected EventManager myManager = null;
@@ -47,6 +48,13 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 							description = desc;
 					}
 				}
+			}
+			if ((myManager != null) && (myManager.getContainer() != null) && (myManager.getContainer().getMyNetwork() != null)) {
+				myNE = myManager.getContainer().getMyNetwork().getMonitorById(neid);
+		    	if (myNE == null)
+		    		myNE = myManager.getContainer().getMyNetwork().getNodeById(neid);
+		    	if (myNE == null)
+		    		myNE = myManager.getContainer().getMyNetwork().getLinkById(neid);
 			}
 		}
 		catch(Exception e) {
@@ -126,6 +134,18 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 	}
 	
 	/**
+	 * Returns NE on which the event is to happen.
+	 */
+	public final AbstractNetworkElement getNE() {
+		return myNE;
+	}
+	
+	/**
+	 * Returns type description. 
+	 */
+	public abstract String getTypeString();
+	
+	/**
 	 * Returns event manager.
 	 */
 	public final EventManager getEventManager() {
@@ -186,6 +206,15 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 		if (x == null)
 			return false;
 		myManager = x;
+		if ((neid >= 0) || (neid < 0)) {
+			if ((myManager.getContainer() != null) && (myManager.getContainer().getMyNetwork() != null)) {
+				myNE = myManager.getContainer().getMyNetwork().getMonitorById(neid);
+		    	if (myNE == null)
+		    		myNE = myManager.getContainer().getMyNetwork().getNodeById(neid);
+		    	if (myNE == null)
+		    		myNE = myManager.getContainer().getMyNetwork().getLinkById(neid);
+			}
+		}
 		return true;
 	}
 	

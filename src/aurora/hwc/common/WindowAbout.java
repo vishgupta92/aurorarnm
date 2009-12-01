@@ -16,7 +16,7 @@ import aurora.util.*;
 /**
  * Window displaying the 'about' info.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowAbout.java,v 1.1.2.1 2008/11/25 00:36:58 akurzhan Exp $
+ * @version $Id: WindowAbout.java,v 1.1.2.1.2.1 2009/11/28 02:47:29 akurzhan Exp $
  */
 public final class WindowAbout extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 4945102996643747877L;
@@ -84,7 +84,7 @@ public final class WindowAbout extends JDialog implements ActionListener {
 		p = new JPanel(new FlowLayout());
 		p.add(new JLabel("Please, visit us at "));
 		try {
-			url = new URL("http://path.berkeley.edu/topl");
+			url = new URL(AuroraConstants.CONTACT_WWW);
 		}
 		catch(Exception e) { url = null; }
 		p.add(new HyperlinkLabel(url.toString(), url));

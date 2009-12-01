@@ -12,9 +12,9 @@ import aurora.util.SpringUtilities;
 /**
  * Panel for Proportional controller.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelQProportional.java,v 1.1.4.1 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: PanelQProportional.java,v 1.1.4.1.4.1 2009/10/01 05:49:01 akurzhan Exp $
  */
-public final class PanelQProportional extends AbstractQControllerPanel {
+public final class PanelQProportional extends AbstractPanelQController {
 	private static final long serialVersionUID = 6672021053676871289L;
 	
 	private JSpinner kp;

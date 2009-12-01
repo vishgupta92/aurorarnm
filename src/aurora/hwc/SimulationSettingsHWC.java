@@ -6,7 +6,6 @@ package aurora.hwc;
 
 import java.io.*;
 import java.util.*;
-import java.text.*;
 import org.w3c.dom.*;
 import aurora.*;
 
@@ -14,7 +13,7 @@ import aurora.*;
 /**
  * HWC specific simulation settings.
  * @author Alex Kurzhanskiy
- * @version $Id: SimulationSettingsHWC.java,v 1.1.2.5.2.2 2009/08/26 04:04:12 akurzhan Exp $
+ * @version $Id: SimulationSettingsHWC.java,v 1.1.2.5.2.6 2009/11/11 00:49:26 akurzhan Exp $
  */
 public class SimulationSettingsHWC extends SimulationSettings {
 	private static final long serialVersionUID = 6276880264620748221L;
@@ -114,21 +113,16 @@ public class SimulationSettingsHWC extends SimulationSettings {
 		boolean res = super.createDataHeader();
 		if (!res)
 			return res;
-		String ht = "";
-		String tw = "";
 		String vf = "";
+		tmpDataOutput.println("Vehicle Type, Weight");
 		for (int i = 0; i < vtypes.size(); i++) {
-			if (i > 0) {
-				ht += ", ";
-				tw += ", ";
+			if (i > 0)
 				vf += ":";
-			}
-			ht += vtypes.get(i);
-			tw += Double.toString(weights.get(i));
+			tmpDataOutput.println(vtypes.get(i) + ", " + weights.get(i));
 			vf += vtypes.get(i);
 		}
-		tmpDataOutput.print(ht + "\n" + tw + "\n\n");
-		tmpDataOutput.print("Entry Format, Value Format, FD Format\nDensity_Value;In-Flow_Value;Out-Flow_Value;FD, " + vf + ", Capacity:Critical_Density:Jam_Density\n");
+		tmpDataOutput.print("\nEntry Format, Value Format, FD Format\nDensity_Value;In-Flow_Value;Out-Flow_Value;FD;Queue_Limit;Weaving_Factor, "
+				+ vf + ", Capacity:Critical_Density:Jam_Density\n");
 		
 		return true;
 	}

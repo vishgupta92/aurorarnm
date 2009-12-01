@@ -15,7 +15,7 @@ import aurora.*;
  * @see AbstractNodeHWC, NodeFreeway, NodeHihway, NodeHWCNetwork
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: LinkOR.java,v 1.12.2.2 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: LinkOR.java,v 1.12.2.2.4.1 2009/09/11 23:33:54 akurzhan Exp $
  */
 public final class LinkOR extends AbstractLinkHWC {
 	private static final long serialVersionUID = -8797694520720989699L;
@@ -31,6 +31,13 @@ public final class LinkOR extends AbstractLinkHWC {
 	 */
 	public final int getType() {
 		return TypesHWC.LINK_ONRAMP;
+	}
+	
+	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "On-Ramp";
 	}
 	
 	/**

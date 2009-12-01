@@ -18,7 +18,7 @@ import aurora.hwc.control.*;
 /**
  * Window for Control Monitor display in the Simulator.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowMonitorController.java,v 1.1.2.3 2009/08/21 01:11:55 akurzhan Exp $
+ * @version $Id: WindowMonitorController.java,v 1.1.2.4 2009/10/01 05:49:01 akurzhan Exp $
  */
 public final class WindowMonitorController extends JInternalFrame implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = -4670962979656887216L;
@@ -138,7 +138,10 @@ public final class WindowMonitorController extends JInternalFrame implements Act
 			else {
 				try {
 					Class cl = Class.forName(ctrlClasses[i]);
-					listCControllers.addItem((AbstractControllerComplex)cl.newInstance());
+					AbstractControllerComplex cc = (AbstractControllerComplex)cl.newInstance();
+					cc.setMyMonitor(myMonitor);
+					cc.initialize();
+					listCControllers.addItem(cc);
 				}
 				catch(Exception e) { }
 			}
@@ -169,7 +172,7 @@ public final class WindowMonitorController extends JInternalFrame implements Act
 		if (cmdCtrlProp.equals(cmd)) {
 			try {
 	    		Class c = Class.forName("aurora.hwc.control.Panel" + myController.getClass().getSimpleName());
-	    		AbstractControllerPanel cp = (AbstractControllerPanel)c.newInstance();
+	    		AbstractPanelController cp = (AbstractPanelController)c.newInstance();
 	    		cp.initialize(myController, null);
 	    	}
 	    	catch(Exception ex) { }

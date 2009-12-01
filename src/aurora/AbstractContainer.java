@@ -13,14 +13,17 @@ import org.w3c.dom.*;
  * Base class for the top object that contains pointers
  * to all the Aurora system configuration.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractContainer.java,v 1.3.2.10.2.6 2008/12/12 19:32:58 akurzhan Exp $
+ * @version $Id: AbstractContainer.java,v 1.3.2.10.2.6.2.3 2009/09/30 23:44:20 akurzhan Exp $
  */
 public abstract class AbstractContainer implements AuroraConfigurable, Serializable {
+	private static final long serialVersionUID = 5225922999390390092L;
+	
 	protected AbstractNodeComplex myNetwork = null;
 	protected EventManager myEventManager = null;
 	protected SimulationSettings mySettings = null;
 	protected SimulationStatus myStatus = new SimulationStatus();
 	protected boolean isSim = true;
+	protected boolean isBatch = false;
 
 	
 	
@@ -112,7 +115,7 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
 	 * @throws ExceptionDatabase, ExceptionEvent
 	 */
-	public abstract boolean dataReset() throws ExceptionDatabase, ExceptionEvent;
+	public abstract boolean initialize() throws ExceptionConfiguration, ExceptionDatabase, ExceptionEvent;
 
 	/**
 	 * Bogus function that always returns <code>true</code>.
@@ -135,6 +138,13 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 */
 	public final boolean isSimulation() {
 		return isSim;
+	}
+	
+	/**
+	 * Returns <code>true</code> if current application runs in batch mode, <code>false</code> - otherwise.
+	 */
+	public final boolean isBatch() {
+		return isBatch;
 	}
 	
 	/**
@@ -186,6 +196,14 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 */
 	public synchronized void applicationConfiguration() {
 		isSim = false;
+		return;
+	}
+	
+	/**
+	 * Set batch mode.
+	 */
+	public synchronized void batchMode() {
+		isBatch = true;
 		return;
 	}
 	

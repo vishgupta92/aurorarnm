@@ -6,6 +6,7 @@ package aurora.hwc.control;
 
 import java.io.*;
 import java.text.NumberFormat;
+
 import org.w3c.dom.*;
 import aurora.*;
 import aurora.hwc.*;
@@ -15,20 +16,25 @@ import aurora.util.Util;
 /**
  * Implementation of ALINEA controller.
  * @author Alex Kurzhanskiy
- * @version $Id: ControllerALINEA.java,v 1.1.4.1.2.5.2.1 2009/08/16 19:16:40 akurzhan Exp $
+ * @version $Id: ControllerALINEA.java,v 1.1.4.1.2.5.2.5 2009/11/22 01:28:33 akurzhan Exp $
  */
-public final class ControllerALINEA extends AbstractControllerHWC {
+public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 	private static final long serialVersionUID = 4440581708032401841L;
 	
 	public boolean upstream = false;
 	public double gain = 50.0;
-
 	
+	private AbstractLinkHWC MLlink;
+	private SensorLoopDetector MLsensor;
+
+	// CONSTRUCTORS ========================================================================
 	public ControllerALINEA() { super(); }
-	public ControllerALINEA(QueueController qc) {
+	
+	public ControllerALINEA(AbstractQueueController qc) {
 		super();
 		myQController = qc;
 	}
+	
 	public ControllerALINEA(double cMin, double cMax) {
 		super();
 		if (cMin < cMax) {
@@ -37,7 +43,8 @@ public final class ControllerALINEA extends AbstractControllerHWC {
 		}
 		myQController = null;
 	}
-	public ControllerALINEA(double cMin, double cMax, QueueController qc) {
+	
+	public ControllerALINEA(double cMin, double cMax, AbstractQueueController qc) {
 		super();
 		if (cMin < cMax) {
 			limits.set(0, (Double)cMin);
@@ -46,7 +53,9 @@ public final class ControllerALINEA extends AbstractControllerHWC {
 		myQController = qc;
 	}
 	
-	
+
+	// XMLREAD, VALIDATE, INITIALIZE, XMLDUMP ==============================================
+
 	/**
 	 * Initializes the ALINEA controller from given DOM structure.
 	 * @param p DOM node.
@@ -80,6 +89,24 @@ public final class ControllerALINEA extends AbstractControllerHWC {
 	}
 	
 	/**
+	 * Additional initialization.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration
+	 */
+	public boolean initialize() throws ExceptionConfiguration {
+		AbstractNodeHWC x = (AbstractNodeHWC) myLink.getEndNode();
+		if (upstream)
+			MLlink = getUpML(x);
+		else 
+			MLlink = getDnML(x);
+		if(usesensors)
+			MLsensor = (SensorLoopDetector) MLlink.getMyNetwork().getSensorByLinkId(MLlink.getId());
+		else
+			MLsensor = null;
+		return super.initialize();
+	}
+
+	/**
 	 * Generates XML description of the ALINEA controller.<br>
 	 * If the print stream is specified, then XML buffer is written to the stream.
 	 * @param out print stream.
@@ -93,55 +120,37 @@ public final class ControllerALINEA extends AbstractControllerHWC {
 		return;
 	}
 	
+	// MAIN FUNCTION =======================================================================
+
 	/**
 	 * Computes desired input flow for given Node.
 	 * @param xx given Node.
 	 * @return input flow.
 	 */
 	public synchronized Object computeInput(AbstractNodeSimple xx) {
-		AbstractNodeHWC x = (AbstractNodeHWC)xx;
-		Double flw = (Double)super.computeInput(x);
+		Double flw = (Double)super.computeInput(xx);
 		if (flw != null)
 			return flw;
-		int idx = x.getSimpleControllers().indexOf(this);
-		AbstractLinkHWC lnk = (AbstractLinkHWC)x.getPredecessors().get(idx);
-		if (input == null)
+		if ((input == null) || (((Double)input) < 0))
 			input = (Double)limits.get(1);
-		int ii = 0;
-		AbstractLinkHWC tlk;
-		if (upstream) { // ATTENTION: not entirely clear how to choose in-link
-			for (int i = 0; i < x.getPredecessors().size(); i++)
-				if ((x.getPredecessors().get(i).getType() == TypesHWC.LINK_FREEWAY) ||
-					(x.getPredecessors().get(i).getType() == TypesHWC.LINK_HIGHWAY)) {
-					ii = i;
-					break;
-				}
-			tlk = (AbstractLinkHWC)x.getPredecessors().get(ii);
-		}
-		else {
-			double sr = 0.0;
-			for (int i = 0; i < x.getOutputs().size(); i++) {
-				double val = 0.0;
-				if (x.getOutputs().get(i) != null)
-					val = ((AuroraIntervalVector)x.getOutputs().get(i)).sum().getUpperBound();
-				if (val > sr) {
-					ii = i;
-					sr = val;
-				}
-			}
-			tlk = (AbstractLinkHWC)x.getSuccessors().get(ii);
-		}
-		double occ_des = tlk.getCriticalDensity();// / tlk.getJamDensity();
-		double occ_act = ((AuroraIntervalVector)tlk.getDensity()).sum().getCenter();//tlk.getOccupancy();
-		flw = ((Double)input)  +  gain * (occ_des - occ_act);
-		if ((((NodeHWCNetwork)xx.getMyNetwork()).hasQControl()) && (myQController != null)) 
-			flw = Math.max(flw, (Double)myQController.computeInput(x, lnk));
-		flw = Math.min((Double)limits.get(1), Math.max(flw, (Double)limits.get(0)));
-		input = (Double)Math.max(flw, 0.0);
-		allowInputSet = true;
+		if ((actualInput == null) || (((Double)actualInput) < 0))
+			actualInput = (Double)limits.get(1);
+		double occ_des,occ_act,AlineaRate;
+		occ_des = MLlink.getCriticalDensity();
+		if(usesensors)
+			occ_act = MLsensor.Density();
+		else
+			occ_act = MLlink.getDensity().sum().getCenter();
+		AlineaRate = ((Double)actualInput)  +  gain * (occ_des - occ_act);
+		flw = ApplyURMS(AlineaRate);
+		flw = ApplyQueueControl(flw);
+		input = ApplyLimits(flw);
+		allowActualInputSet = true;
 		return input;
 	}
 	
+	// GUI =================================================================================
+
 	/**
 	 * Returns controller description.
 	 */

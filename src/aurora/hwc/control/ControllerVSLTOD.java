@@ -1,5 +1,5 @@
 /**
- * @(#)ControllerTOD.java 
+ * @(#)ControllerVSLTOD.java 
  */
 
 package aurora.hwc.control;
@@ -14,17 +14,16 @@ import aurora.hwc.*;
 
 /**
  * TOD controller implementation.
- * @author Gabriel Gomes
- * @version $Id: ControllerTOD.java,v 1.1.4.1.2.4.2.4 2009/11/14 00:32:47 akurzhan Exp $
+ * @author Alex Kurzhanskiy
+ * @version $Id: ControllerVSLTOD.java,v 1.1.2.4 2009/11/30 00:56:18 akurzhan Exp $
  */
-public class ControllerTOD extends AbstractControllerSimpleHWC {
-	private static final long serialVersionUID = 4741791843202408263L;
-
+public class ControllerVSLTOD extends AbstractControllerSimpleHWC {
+	private static final long serialVersionUID = -7251723277193008260L;
+	
 	private Vector<TODdataRow> todTable = new Vector<TODdataRow>();
 
-	// XMLREAD, VALIDATE, INITIALIZE, XMLDUMP ==============================================
 	/**
-	 * Initializes the TOD controller from given DOM structure.
+	 * Initializes the VSL TOD controller from given DOM structure.
 	 * @param p DOM node.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionConfiguration
@@ -37,19 +36,19 @@ public class ControllerTOD extends AbstractControllerSimpleHWC {
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
-					if (pp.item(i).getNodeName().equals("todrate")) {
+					if (pp.item(i).getNodeName().equals("todspeed")) {
 						double time = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("time").getNodeValue());
-						double rate = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("rate").getNodeValue());
+						double speed = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("speed").getNodeValue());
 						boolean done = false;
 						for (int j = 0; j < todTable.size(); j++){
 							if(todTable.get(j).getTime() > time){
-								todTable.insertElementAt(new TODdataRow(time, rate), j);
+								todTable.insertElementAt(new TODdataRow(time, speed), j);
 								done = true;
 								break;
 							}	
 						}
 						if(!done)
-							todTable.add(new TODdataRow(time, rate));
+							todTable.add(new TODdataRow(time, speed));
 					}
 				}
 			}
@@ -64,7 +63,7 @@ public class ControllerTOD extends AbstractControllerSimpleHWC {
 	}
 
 	/**
-	 * Generates XML description of the TOD controller.<br>
+	 * Generates XML description of the VSL TOD controller.<br>
 	 * If the print stream is specified, then XML buffer is written to the stream.
 	 * @param out print stream.
 	 * @throws IOException
@@ -72,43 +71,45 @@ public class ControllerTOD extends AbstractControllerSimpleHWC {
 	public void xmlDump(PrintStream out) throws IOException {
 		super.xmlDump(out);
 		for (int i = 0; i < todTable.size(); i++)
-			out.print("<todrate time=\"" + todTable.get(i).getTime() + "\" rate=\"" + todTable.get(i).getRate() + "\"/>");
+			out.print("<todspeed time=\"" + todTable.get(i).getTime() + "\" speed=\"" + todTable.get(i).getSpeed() + "\"/>");
 		out.print("</controller>");
 		return;
 	}
 
-	// MAIN FUNCTION =======================================================================
 	/**
 	 * Computes desired input flow for given Node.
 	 * @param xx given Node.
 	 * @return input flow.
 	 */
 	public synchronized Object computeInput(AbstractNodeSimple xx) {
-		Double flw = (Double)super.computeInput(xx);		// flw - controlled inflow to the signal node 
-		if (flw != null)
-			return flw;		
 		AbstractNodeHWC x = (AbstractNodeHWC)xx;
+		double density = ((AbstractLinkHWC)myLink).getDensity().sum().getCenter();
+		double F = ((AbstractLinkHWC)myLink).getMaxFlow();
 		double time = x.getMyNetwork().getSimTime();
-		Double TODrate = 0.0;
-		if ((todTable.isEmpty()) || (time < todTable.get(0).getTime()))
-			TODrate = (Double)limits.get(1);
+		Double flw = (Double)0.0;
+		if ((todTable.isEmpty()) || (time < todTable.get(0).getTime()) || (density < 0.0000001))
+			flw = (Double)limits.get(1);
 		else
 			for (int i = 0; i < todTable.size(); i++)
-				if (time >= todTable.get(i).getTime())
-					TODrate = todTable.get(i).getRate();
-		
-		flw = ApplyURMS(TODrate);
+				if (time >= todTable.get(i).getTime()) {
+					double speed = todTable.get(i).getSpeed();
+					flw = density * speed;
+					double rj = ((AbstractLinkHWC)myLink).getJamDensity();
+					double w = ((AbstractLinkHWC)myLink).getW();
+					F = speed * ((w * rj) / (speed + w));
+				}
+		//flw = Math.min(flw, F);  // reduce link capacity
+		flw = ApplyURMS(flw);
 		flw = ApplyQueueControl(flw);
 		input = ApplyLimits(flw);
 		return input;
 	}
 
-	// GUI =================================================================================	
 	/**
 	 * Returns controller description.
 	 */
 	public String getDescription() {
-		return "TOD (" + todTable.size() + " entries)";
+		return "VSL TOD (" + todTable.size() + " entries)";
 	}
 	
 	/**
@@ -130,7 +131,7 @@ public class ControllerTOD extends AbstractControllerSimpleHWC {
 	 * @return string that describes the Controller.
 	 */
 	public String toString() {
-		return "TOD";
+		return "VSL TOD";
 	}	
 	
 	/**
@@ -148,17 +149,17 @@ public class ControllerTOD extends AbstractControllerSimpleHWC {
 	 */
 	public class TODdataRow {
 		private double time;
-		private double rate;
+		private double speed;
 		
-		public TODdataRow(){ time = 0; rate = 0; }
-		public TODdataRow(double t, double r) { time = t; rate = r; }
+		public TODdataRow(){ time = 0; speed = 60; }
+		public TODdataRow(double t, double s) { time = t; speed = s; }
 		
 		public double getTime() {
 			return time;
 		}
 		
-		public double getRate() {
-			return rate;
+		public double getSpeed() {
+			return speed;
 		}
 		
 		public void setTime(int h, int m, double s){
@@ -173,9 +174,9 @@ public class ControllerTOD extends AbstractControllerSimpleHWC {
 			return;
 		}
 		
-		public void setRate(double x){
+		public void setSpeed(double x){
 			if (x >= 0.0)
-				rate = x;
+				speed = x;
 			return; 
 		}
 	}

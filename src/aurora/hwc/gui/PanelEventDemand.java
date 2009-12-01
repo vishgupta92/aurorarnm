@@ -13,12 +13,13 @@ import aurora.util.*;
 /**
  * Form for demand knob change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventDemand.java,v 1.1.2.5 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: PanelEventDemand.java,v 1.1.2.5.4.1 2009/10/18 00:58:29 akurzhan Exp $
  */
 public final class PanelEventDemand extends AbstractEventPanel {
 	private static final long serialVersionUID = 1106771938653639149L;
 	
-	private JSpinner spinKnob;
+	//private JSpinner spinKnob;
+	private JTextField dcTF;
 	
 	
 	/**
@@ -30,7 +31,7 @@ public final class PanelEventDemand extends AbstractEventPanel {
 	public synchronized void initialize(AbstractNetworkElement ne, EventManager em, EventTableModel etm) {
 		eventTable = etm;
 		myEvent = new EventDemand();
-		((EventDemand)myEvent).setDemandKnob((Double)((AbstractLinkHWC)ne).getDemandKnob());
+		((EventDemand)myEvent).setDemandKnobs(((AbstractLinkHWC)ne).getDemandKnobs());
 		initialize(ne, em);
 		return;
 	}
@@ -56,14 +57,11 @@ public final class PanelEventDemand extends AbstractEventPanel {
 	 * Fills the panel with event specific fields.
 	 */
 	protected void fillPanel() {
-		//Box kp = Box.createVerticalBox();
 		JPanel pKnob = new JPanel(new SpringLayout());
 		pKnob.setBorder(BorderFactory.createTitledBorder("Demand Coefficient"));
-		spinKnob = new JSpinner(new SpinnerNumberModel(((EventDemand)myEvent).getDemandKnob(), 0, 9999, 0.01));
-		spinKnob.setEditor(new JSpinner.NumberEditor(spinKnob, "###0.00"));
-		pKnob.add(spinKnob);
+		dcTF = new JTextField(((EventDemand)myEvent).getDemandKnobsAsString());
+		pKnob.add(dcTF);
 		SpringUtilities.makeCompactGrid(pKnob, 1, 1, 2, 2, 2, 2);
-		//kp.add(pKnob);
 		add(pKnob);
 		return;
 	}
@@ -79,7 +77,7 @@ public final class PanelEventDemand extends AbstractEventPanel {
 	 * Saves event.
 	 */
 	public synchronized void save() {
-		((EventDemand)myEvent).setDemandKnob((Double)spinKnob.getValue());
+		((EventDemand)myEvent).setDemandKnobs(dcTF.getText());
 		super.save();
 		return;
 	}

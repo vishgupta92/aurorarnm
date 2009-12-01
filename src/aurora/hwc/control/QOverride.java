@@ -14,26 +14,24 @@ import aurora.hwc.*;
 /**
  * Implementation of Queue Override queue controller.
  * @author Alex Kurzhanskiy
- * @version $Id: QOverride.java,v 1.1.4.1.2.3 2009/06/08 00:13:12 akurzhan Exp $
+ * @version $Id: QOverride.java,v 1.1.4.1.2.3.2.4 2009/11/28 02:31:57 akurzhan Exp $
  */
-public final class QOverride implements QueueController, Serializable, Cloneable {
+public final class QOverride extends AbstractQueueController implements Serializable, Cloneable {
 	private static final long serialVersionUID = -5580684114768655078L;
 
 	public double delta = 120.00;
 	
-	
 	public QOverride() { }
 	public QOverride(double delta) { this.delta = delta; }
 	
-	
 	/**
-	 * Initializes the queue override controller from given DOM structure.
+	 * Initializes the Queue Override controller from given DOM structure.
 	 * @param p DOM node.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
+		boolean res = super.initFromDOM(p);
 		if (p == null)
 			return !res;
 		try  {
@@ -62,9 +60,7 @@ public final class QOverride implements QueueController, Serializable, Cloneable
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		if (out == null)
-			out = System.out;
-		out.print("<qcontroller class=\"" + this.getClass().getName() + "\">");
+		super.xmlDump(out);
 		out.print("<parameter name=\"delta\" value=\"" + Double.toString(delta) + "\"/>");
 		out.print("</qcontroller>");
 		return;
@@ -78,32 +74,23 @@ public final class QOverride implements QueueController, Serializable, Cloneable
 	 * @return desired flow.  
 	 */
 	public Object computeInput(AbstractNodeHWC nd, AbstractLinkHWC lk) {
-		double flw;
-		if (lk.getPredecessors().size() == 0) // origin link
-			if (((AuroraIntervalVector)lk.getQueue()).sum().getCenter() <= lk.getQueueMax())
-				flw = 0.0;
-			else {
-				int idx = nd.getPredecessors().indexOf(lk);
-				if (idx < 0)
-					flw = 0.0;
-				else
-					flw = ((AuroraIntervalVector)nd.getInputs().get(idx)).sum().getCenter() + (delta * lk.getLanes());
-			}
-		else // link has begin node
-			if ((((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) <= lk.getCriticalDensity())
-				flw = 0.0;
-			else {
-				int idx = nd.getPredecessors().indexOf(lk);
-				if (idx < 0)
-					flw = 0.0;
-				else
-					flw = ((AuroraIntervalVector)nd.getInputs().get(idx)).sum().getCenter() + (delta * lk.getLanes());
-			}
+		double flw = 0.0;
+		if (usesensors) {
+			inOverride = queuesensor.Density() > lk.getCriticalDensity();
+		}
+		else {
+			if (lk.getPredecessors().size() == 0)
+				inOverride = ((AuroraIntervalVector)lk.getQueue()).sum().getCenter() > lk.getQueueMax();
+			else
+				inOverride = ((((AuroraIntervalVector)lk.getDensity()).sum().getCenter()) * lk.getLength()) > lk.getQueueMax();
+		}
+		if (inOverride)
+			flw = lk.getActualFlow().sum().getCenter() + (delta * lk.getLanes());
 		return (Double)flw;
 	}
 	
 	/**
-	 * Returns controller description.
+	 * Returns Queue Override controller description.
 	 */
 	public String getDescription() {
 		NumberFormat form = NumberFormat.getInstance();
@@ -115,7 +102,7 @@ public final class QOverride implements QueueController, Serializable, Cloneable
 	/**
 	 * Implementation of a "deep copy" of the object.
 	 */
-	public QueueController deepCopy() {
+	public AbstractQueueController deepCopy() {
 		QOverride qcCopy = null;
 		try {
 			qcCopy = (QOverride)clone();

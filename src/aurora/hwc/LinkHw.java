@@ -15,7 +15,7 @@ import aurora.*;
  * @see NodeHighway, NodeHWCNetwork
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: LinkHw.java,v 1.12.2.1 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id: LinkHw.java,v 1.12.2.1.4.1 2009/09/11 23:33:54 akurzhan Exp $
  */
 public final class LinkHw extends AbstractLinkHWC {
 	private static final long serialVersionUID = -2360723731084436658L;
@@ -31,6 +31,13 @@ public final class LinkHw extends AbstractLinkHWC {
 	 */
 	public final int getType() {
 		return TypesHWC.LINK_HIGHWAY;
+	}
+	
+	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "Highway";
 	}
 	
 	/**

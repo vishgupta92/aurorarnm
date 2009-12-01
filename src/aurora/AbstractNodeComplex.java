@@ -15,9 +15,11 @@ import org.w3c.dom.*;
 /**
  * Base class for Network Nodes.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeComplex.java,v 1.18.2.12.2.12.2.8 2009/08/26 03:09:49 akurzhan Exp $
+ * @version $Id: AbstractNodeComplex.java,v 1.18.2.12.2.12.2.18 2009/11/22 22:34:30 akurzhan Exp $
  */
 public abstract class AbstractNodeComplex extends AbstractNode {
+	private static final long serialVersionUID = -6880500889959625206L;
+	
 	protected double tp;  // sampling time
 	//protected Vector<Double> timeH = new Vector<Double>();
 	protected int simNo = 0; // simulation number
@@ -26,6 +28,8 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	protected boolean controlled = true;
 	protected DataStorage database = null;
 	protected boolean verbose = false;
+	
+	protected int tsV = 0;
 
 	protected Vector<AbstractSensor> sensors = new Vector<AbstractSensor>();
 	protected Vector<AbstractMonitor> monitors = new Vector<AbstractMonitor>();
@@ -332,8 +336,19 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			res &= database.saveNodeData(this);
 		if (!res)
 			return false;
-		res = super.dataUpdate(ts);
-		PrintStream os = container.getMySettings().getTmpDataOutput();
+		if (ts < 1)
+			throw new ExceptionSimulation(this, "Nonpositive time step (" + Integer.toString(ts) + ").");
+		int period = (int)Math.round((double)(myNetwork.getTP()/getTop().getTP()));
+		if (period == 0)
+			period = 1;
+		if ((this.ts > 0) && ((ts - this.ts) < period))
+			res = false;
+		this.ts = ts;
+		PrintStream os = null;
+		if ((ts == 1) || (((ts - tsV) * getTop().getTP()) >= container.getMySettings().getDisplayTP())) {
+			os = container.getMySettings().getTmpDataOutput();
+			tsV = ts;
+		}
 		if (os != null) {
 			if (top)
 				os.print("\n" + (ts-1));
@@ -451,7 +466,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 * Returns simulation time.
 	 */
 	public final double getSimTime() {
-		return ts * getTop().getTP();
+		return getTop().getTS() * getTop().getTP();
 	}
 	
 	/**
@@ -544,6 +559,9 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		for (int i = 0; i < links.size(); i++)
 			if (links.get(i).getBeginNode() == null)
 				sources.add(links.get(i));
+		for (int i = 0; i < nodes.size(); i++)
+			if (!nodes.get(i).isSimple())
+				sources.addAll(((AbstractNodeComplex)nodes.get(i)).getSourceLinks());
 		return sources;
 	}
 	
@@ -555,7 +573,37 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		for (int i = 0; i < links.size(); i++)
 			if (links.get(i).getEndNode() == null)
 				destinations.add(links.get(i));
+		for (int i = 0; i < nodes.size(); i++)
+			if (!nodes.get(i).isSimple())
+				destinations.addAll(((AbstractNodeComplex)nodes.get(i)).getDestinationLinks());
 		return destinations;
+	}
+	
+	/**
+	 * Returns vector of Links to be saved.
+	 */
+	public final Vector<AbstractLink> getLinksToBeSaved() {
+		Vector<AbstractLink> tobesaved = new Vector<AbstractLink>();
+		for (int i = 0; i < links.size(); i++)
+			if (links.get(i).toSave())
+				tobesaved.add(links.get(i));
+		for (int i = 0; i < nodes.size(); i++)
+			if (!nodes.get(i).isSimple())
+				tobesaved.addAll(((AbstractNodeComplex)nodes.get(i)).getLinksToBeSaved());
+		return tobesaved;
+	}
+	
+	/**
+	 * Returns vector of Links to be saved.
+	 */
+	public final Vector<Path> getPaths() {
+		Vector<Path> paths = new Vector<Path>();
+		for (int i = 0; i < odList.size(); i++)
+			paths.addAll(odList.get(i).getPathList());
+		for (int i = 0; i < nodes.size(); i++)
+			if (!nodes.get(i).isSimple())
+				paths.addAll(((AbstractNodeComplex)nodes.get(i)).getPaths());
+		return paths;
 	}
 	
 	/**
@@ -586,6 +634,26 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		for (i = 0; i < nodes.size(); i++) {
 			if (!nodes.get(i).isSimple())
 				sen = ((AbstractNodeComplex)nodes.get(i)).getSensorById(id);
+			if (sen != null)
+				return sen;
+		}
+		return sen;
+	}
+	
+	/**
+	 * Finds and returns Sensor specified by the identifier of its current link.
+	 * @param id Sensor identifier.
+	 * @return Sensor, <code>null</code> if Sensor was not found.
+	 */
+	public final AbstractSensor getSensorByLinkId(int id) {
+		int i;
+		for (i = 0; i < sensors.size(); i++)
+			if (id == sensors.get(i).getLink().getId())
+				return sensors.get(i);
+		AbstractSensor sen = null;
+		for (i = 0; i < nodes.size(); i++) {
+			if (!nodes.get(i).isSimple())
+				sen = ((AbstractNodeComplex)nodes.get(i)).getSensorByLinkId(id);
 			if (sen != null)
 				return sen;
 		}
@@ -716,46 +784,78 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	}
 	
 	/**
-	 * Sets simulation number.<br>
-	 * @param x simulation number.
+	 * Additional initialization.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 * @throws ExceptionConfiguration, ExceptionDatabase
 	 */
-	public synchronized boolean setSimNo(int x) {
-		if ((x < 1) || (x == simNo))
-			return false;
-		resetTimeStep();
-		simNo = x;
+	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
+		boolean res = super.initialize();
+		simNo++;
+		tsV = 0;
 		if (!top) {
 			maxTimeStep = (int)Math.floor((getTop().getTP()*getTop().getMaxTimeStep())/tp);
 		}
 		if (top) {
 			PrintStream os = container.getMySettings().getTmpDataOutput();
 			if (os != null) {
+				Vector<AbstractLink> tobesaved = getLinksToBeSaved();
+				Vector<Path> pathlist = getPaths();
 				os.print("\nSampling Period, Time Units\n" + tp + ", hours\n" + tp*60 + ", minutes\n" + tp*3600 + ", seconds\n\n");
-				os.print("Description\n" + description + "\n\n\nTime Step");
+				os.print("Description\n" + description + "\n\n\nRoutes");
+				for (int i = 0; i < pathlist.size(); i++) {
+					Vector<AbstractLink> pll = pathlist.get(i).getLinkVector();
+					os.print("\n" + pathlist.get(i).getName());
+					for (int j = 0; j < pll.size(); j++)
+						os.print(", " + pll.get(j).getId());
+				}
+				os.print("\n\n\n");
+				String buf_id = "Link ID";
+				String buf_name = "Link Name";
+				String buf_type = "Link Type";
+				String buf_length = "Link Length";
+				String buf_width = "Link Width";
+				String buf_src = "Source";
+				for (int i = 0; i < tobesaved.size(); i++) {
+					buf_id += ", " + tobesaved.get(i).getId();
+					buf_name += ", " + tobesaved.get(i);
+					buf_type += ", " + tobesaved.get(i).getTypeString();
+					buf_length += ", " + tobesaved.get(i).getLength();
+					buf_width += ", " + tobesaved.get(i).getWidth();
+					buf_src += ", ";
+					if (tobesaved.get(i).getBeginNode() == null)
+						buf_src += "Yes";
+					else
+						buf_src += "No";
+				}
+				os.println(buf_id);
+				os.println(buf_name);
+				os.println(buf_type);
+				os.println(buf_length);
+				os.println(buf_width);
+				os.println(buf_src);
+				os.print("Time Step");
 			}
 		}
-		boolean res = true;
 		for (int i = 0; i < sensors.size(); i++)
-			sensors.get(i).resetTimeStep();
+			res &= sensors.get(i).initialize();
 		for (int i = 0; i < monitors.size(); i++)
-			monitors.get(i).resetTimeStep();
+			res &= monitors.get(i).initialize();
 		nodesToSave = 0;
 		linksToSave = 0;
 		for (int i = 0; i < nodes.size(); i++)
 			if (!nodes.get(i).isSimple()) {
 				AbstractNodeComplex nd = (AbstractNodeComplex)nodes.get(i);
-				res &= nd.setSimNo(x);
+				res &= nd.initialize();
 				nodesToSave += nd.totalNodesToSave();
 				linksToSave += nd.totalLinksToSave();
 			}
 			else {
-				nodes.get(i).resetTimeStep();
+				res &= nodes.get(i).initialize();
 				if (nodes.get(i).toSave())
 					nodesToSave++;
 			}
 		for (int i = 0; i < links.size(); i++) {
-			links.get(i).resetTimeStep();
+			res &= links.get(i).initialize();
 			if (links.get(i).toSave())
 				linksToSave++;
 		}

@@ -1,5 +1,5 @@
 /**
- * @(#)EventSRM.java 
+ * @(#)EventWFM.java 
  */
 
 package aurora.hwc;
@@ -12,36 +12,34 @@ import aurora.util.Util;
 
 
 /**
- * Event that changes split ratio matrix at given simple Node.
+ * Event that changes weaving factor matrix at given simple Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventSRM.java,v 1.4.2.4.2.3.2.2 2009/10/18 21:35:42 akurzhan Exp $
+ * @version $Id: EventWFM.java,v 1.1.2.1 2009/11/07 21:08:10 akurzhan Exp $
  */
-public final class EventSRM extends AbstractEvent {
-	private static final long serialVersionUID = -8952099927246173708L;
+public final class EventWFM extends AbstractEvent {
+	private static final long serialVersionUID = -8770931794877717089L;
 	
-	protected AuroraIntervalVector[][] splitRatioMatrix = null;
+	protected double[][] weavingFactorMatrix = null;
 	
 	
-	public EventSRM() { description = "Split Ratio Matrix change at Node"; }
-	public EventSRM(int neid) {
+	public EventWFM() { description = "Weaving factor change at Node"; }
+	public EventWFM(int neid) {
 		this();
 		this.neid = neid;
 	}
-	public EventSRM(int neid, AuroraIntervalVector[][] srm) {
+	public EventWFM(int neid, double[][] wfm) {
 		this(neid);
-		if (srm != null) {
-			int m = srm.length;
-			int n = srm[0].length;
-			splitRatioMatrix = new AuroraIntervalVector[m][n];
+		if (wfm != null) {
+			int m = wfm.length;
+			int n = wfm[0].length;
+			weavingFactorMatrix = new double[m][n];
 			for (int i = 0; i < m; i++)
-				for (int j = 0; j < n; j++) {
-					splitRatioMatrix[i][j] = new AuroraIntervalVector();
-					splitRatioMatrix[i][j].copy(srm[i][j]);
-				}
+				for (int j = 0; j < n; j++)
+					weavingFactorMatrix[i][j] = wfm[i][j];
 		}
 	}
-	public EventSRM(int neid, AuroraIntervalVector[][] srm, double tstamp) {
-		this(neid, srm);
+	public EventWFM(int neid, double[][] wfm, double tstamp) {
+		this(neid, wfm);
 		if (tstamp >= 0.0)
 			this.tstamp = tstamp;
 	}
@@ -61,32 +59,35 @@ public final class EventSRM extends AbstractEvent {
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
-					if (pp.item(i).getNodeName().equals("srm")) {
+					if (pp.item(i).getNodeName().equals("wfm")) {
 						if (pp.item(i).hasChildNodes()) {
 							NodeList pp2 = pp.item(i).getChildNodes();
 							int m = 0;
 							int n = 0;
 							for (int j = 0; j < pp2.getLength(); j++)
-								if (pp2.item(j).getNodeName().equals("splitratios")) {
+								if (pp2.item(j).getNodeName().equals("weavingfactors")) {
 									StringTokenizer st = new StringTokenizer(pp2.item(j).getTextContent(), ", \t");
 									if (st.countTokens() > n)
 										n = st.countTokens();
 									m++;
 								}
-							splitRatioMatrix = new AuroraIntervalVector[m][n];
-							int sz = ((SimulationSettingsHWC)getEventManager().getContainer().getMySettings()).countVehicleTypes();
+							weavingFactorMatrix = new double[m][n];
 							m = 0;
 							for (int j = 0; j < pp2.getLength(); j++)
-								if (pp2.item(j).getNodeName().equals("splitratios")) {
+								if (pp2.item(j).getNodeName().equals("weavingfactors")) {
 									StringTokenizer st = new StringTokenizer(pp2.item(j).getTextContent(), ", \t");
 									int mm = 0;
 									while (st.hasMoreTokens()) {
-										splitRatioMatrix[m][mm] = new AuroraIntervalVector(sz);
-										splitRatioMatrix[m][mm].setIntervalVectorFromString(st.nextToken());
+										try {
+											weavingFactorMatrix[m][mm] = Math.max(1, Double.parseDouble(st.nextToken()));
+										}
+										catch(Exception e) {
+											weavingFactorMatrix[m][mm] = 1;
+										}
 										mm++;
 									}
 									while (mm < n) {
-										splitRatioMatrix[m][mm] = new AuroraIntervalVector(sz);
+										weavingFactorMatrix[m][mm] = 1;
 										mm++;
 									}
 									m++;
@@ -108,29 +109,29 @@ public final class EventSRM extends AbstractEvent {
 	}
 
 	/**
-	 * Generates XML description of the split ratio matrix Event.<br>
+	 * Generates XML description of the weaving factor matrix Event.<br>
 	 * If the print stream is specified, then XML buffer is written to the stream.
 	 * @param out print stream.
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
 		super.xmlDump(out);
-		out.print("<srm>");
-		for (int i = 0; i < splitRatioMatrix.length; i++) {
+		out.print("<wfm>");
+		for (int i = 0; i < weavingFactorMatrix.length; i++) {
 			String buf = "";
-			for (int j = 0; j < splitRatioMatrix[0].length; j++) {
+			for (int j = 0; j < weavingFactorMatrix[0].length; j++) {
 				if (j > 0)
 					buf += ", ";
-				buf += splitRatioMatrix[i][j].toString();
+				buf += Double.toString(weavingFactorMatrix[i][j]);
 			}
-			out.print("<splitratios>" + buf + "</splitratios>");
+			out.print("<weavingfactors>" + buf + "</weavingfactors>");
 		}
-		out.print("</srm></event>");
+		out.print("</wfm></event>");
 		return;
 	}
 	
 	/**
-	 * Changes split ratio matrix for the assigned simple Node.
+	 * Changes weaving factor matrix for the assigned simple Node.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionEvent
 	 */
@@ -146,23 +147,9 @@ public final class EventSRM extends AbstractEvent {
 		if (!nd.isSimple())
 			throw new ExceptionEvent(nd, "Wrong type.");
 		System.out.println("Event! Time " + Util.time2string(tstamp) + ": " + description);
-		AuroraIntervalVector[][] srm = ((AbstractNodeHWC)nd).getSplitRatioMatrix0();
-		boolean isNull = true;
-		if (splitRatioMatrix != null) {
-			int nIn = splitRatioMatrix.length;
-			int nOut = splitRatioMatrix[0].length;
-			for (int i = 0; i < nIn; i++)
-				for (int j = 0; j < nOut; j++)
-					if ((splitRatioMatrix[i][j].get(splitRatioMatrix[i][j].maxCenter()).getCenter() != 0) ||
-						(splitRatioMatrix[i][j].get(splitRatioMatrix[i][j].minCenter()).getCenter() != 0))
-						isNull = false;
-		}
-		boolean res;
-		if (isNull)
-			res = ((AbstractNodeHWC)nd).setSplitRatioMatrix0(null);
-		else
-			res = ((AbstractNodeHWC)nd).setSplitRatioMatrix0(splitRatioMatrix);
-		splitRatioMatrix = srm;
+		double[][] wfm = ((AbstractNodeHWC)nd).getWeavingFactorMatrix();
+		boolean res = ((AbstractNodeHWC)nd).setWeavingFactorMatrix(weavingFactorMatrix);
+		weavingFactorMatrix = wfm;
 		return res;
 	}
 	
@@ -182,9 +169,9 @@ public final class EventSRM extends AbstractEvent {
 		if (!nd.isSimple())
 			throw new ExceptionEvent(nd, "Wrong type.");
 		System.out.println("Event rollback! Time " + Util.time2string(tstamp) + ": " + description);
-		AuroraIntervalVector[][] srm = ((AbstractNodeHWC)nd).getSplitRatioMatrix0();
-		boolean res = ((AbstractNodeHWC)nd).setSplitRatioMatrix0(splitRatioMatrix);
-		splitRatioMatrix = srm;
+		double[][] wfm = ((AbstractNodeHWC)nd).getWeavingFactorMatrix();
+		boolean res = ((AbstractNodeHWC)nd).setWeavingFactorMatrix(weavingFactorMatrix);
+		weavingFactorMatrix = wfm;
 		return res;
 	}
 	
@@ -192,42 +179,38 @@ public final class EventSRM extends AbstractEvent {
 	 * Returns type description. 
 	 */
 	public final String getTypeString() {
-		return "Split Ratio Matrix";
+		return "Weaving Factors";
 	}
 	
 	/**
-	 * Returns split ratio matrix.
+	 * Returns weaving factor matrix.
 	 */
-	public AuroraIntervalVector[][] getSplitRatioMatrix() {
-		if (splitRatioMatrix == null)
+	public double[][] getWeavingFactorMatrix() {
+		if (weavingFactorMatrix == null)
 			return null;
-		int m = splitRatioMatrix.length;
-		int n = splitRatioMatrix[0].length;
-		AuroraIntervalVector[][] srm = new AuroraIntervalVector[m][n];
+		int m = weavingFactorMatrix.length;
+		int n = weavingFactorMatrix[0].length;
+		double[][] wfm = new double[m][n];
 		for (int i = 0; i < m; i++)
-			for (int j = 0; j < n; j++) {
-				srm[i][j] = new AuroraIntervalVector();
-				srm[i][j].copy(splitRatioMatrix[i][j]);
-			}
-		return srm;
+			for (int j = 0; j < n; j++)
+				wfm[i][j] = weavingFactorMatrix[i][j];
+		return wfm;
 	}
 
 	/**
-	 * Sets split ratio matrix.<br>
-	 * @param x split ratio matrix.
+	 * Sets weaving factor matrix.<br>
+	 * @param x weaving factor matrix.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setSplitRatioMatrix(AuroraIntervalVector[][] x) {
+	public synchronized boolean setWeavingFactorMatrix(double[][] x) {
 		if (x == null)
 			return false;
 		int m = x.length;
 		int n = x[0].length;
-		splitRatioMatrix = new AuroraIntervalVector[m][n];
+		weavingFactorMatrix = new double[m][n];
 		for (int i = 0; i < m; i++)
-			for (int j = 0; j < n; j++) {
-				splitRatioMatrix[i][j] = new AuroraIntervalVector();
-				splitRatioMatrix[i][j].copy(x[i][j]);
-			}
+			for (int j = 0; j < n; j++)
+				weavingFactorMatrix[i][j] = Math.max(1, x[i][j]);
 		return true;
 	}
 	

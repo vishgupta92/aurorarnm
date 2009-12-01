@@ -10,7 +10,7 @@ import aurora.*;
 /**
  * Implements Zipper Monitor for road networks.
  * @author Alex Kurzhanskiy
- * @version $Id: MonitorZipperHWC.java,v 1.1.2.3.2.1 2009/06/15 17:20:36 akurzhan Exp $
+ * @version $Id: MonitorZipperHWC.java,v 1.1.2.3.2.2 2009/09/11 23:33:54 akurzhan Exp $
  */
 public final class MonitorZipperHWC extends AbstractMonitorZipper {
 	private static final long serialVersionUID = -4854911548364714781L;
@@ -47,6 +47,13 @@ public final class MonitorZipperHWC extends AbstractMonitorZipper {
 	 */
 	public int getType() {
 		return TypesHWC.MASK_MONITOR_ZIPPER;
+	}
+	
+	/**
+	 * Returns type description.
+	 */
+	public final String getTypeString() {
+		return "Zipper Monitor";
 	}
 
 }

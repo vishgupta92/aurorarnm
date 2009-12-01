@@ -5,10 +5,7 @@
 package aurora.hwc.control;
 
 import java.awt.*;
-import java.util.Vector;
-
 import javax.swing.*;
-
 import aurora.*;
 import aurora.util.*;
 
@@ -16,16 +13,16 @@ import aurora.util.*;
 /**
  * Base class for complex controller editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerPanel.java,v 1.1.4.1.2.1.2.8 2009/08/25 20:50:24 akurzhan Exp $
+ * @version $Id: AbstractPanelController.java,v 1.1.2.1 2009/10/01 05:49:01 akurzhan Exp $
  */
-public abstract class AbstractControllerPanel extends JPanel {
+public abstract class AbstractPanelController extends JPanel {
+	private static final long serialVersionUID = -2623126512498240411L;
+	
 	protected AbstractController controller = null;
 	boolean[] modified = null;
 
 	protected WindowControllerEditor winCE;
 	
-	protected JSpinner lmin;
-	protected JSpinner lmax;
 	protected JSpinner hh;
 	protected JSpinner mm;
 	protected JSpinner ss;
@@ -54,34 +51,6 @@ public abstract class AbstractControllerPanel extends JPanel {
 		modified = flag;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		fillPanel();
-		JPanel pLim = new JPanel(new SpringLayout());
-		pLim.setBorder(BorderFactory.createTitledBorder("Rate Limits (vph)"));
-		double mn;
-		double mx;
-		Vector<Object> lims = controller.getLimits();
-		if ((lims != null) && (lims.size() == 2)) {
-			mn = (Double)controller.getLimits().get(0);
-			mx = (Double)controller.getLimits().get(1);
-		}
-		else {
-			mn = 0.0;
-			mx = 99999.99;
-		}
-		JLabel l;
-		l = new JLabel("Min:", JLabel.TRAILING);
-		pLim.add(l);
-		lmin = new JSpinner(new SpinnerNumberModel(mn, 0.0, 99999.99, 1.0));
-		lmin.setEditor(new JSpinner.NumberEditor(lmin, "####0.00"));
-		l.setLabelFor(lmin);
-		pLim.add(lmin);
-		l = new JLabel("  Max:", JLabel.TRAILING);
-		pLim.add(l);
-		lmax = new JSpinner(new SpinnerNumberModel(mx, 0.0, 99999.99, 1.0));
-		lmax.setEditor(new JSpinner.NumberEditor(lmax, "####0.00"));
-		l.setLabelFor(lmax);
-		pLim.add(lmax);
-		SpringUtilities.makeCompactGrid(pLim, 2, 2, 2, 2, 2, 2);
-		add(pLim);
 		JPanel pT = new JPanel(new FlowLayout());
 		pT.setBorder(BorderFactory.createTitledBorder("Time Period"));
 		hh = new JSpinner(new SpinnerNumberModel(Util.getHours(controller.getTP()), 0, 99, 1));
@@ -107,18 +76,6 @@ public abstract class AbstractControllerPanel extends JPanel {
 	 * Saves controller properties.
 	 */
 	public synchronized void save() {
-		double mn = (Double)lmin.getValue();
-		double mx = (Double)lmax.getValue();
-		Vector<Object> lims = new Vector<Object>();
-		if (mn <= mx) {
-			lims.add(lmin.getValue());
-			lims.add(lmax.getValue());
-		}
-		else {
-			lims.add(lmax.getValue());
-			lims.add(lmin.getValue());
-		}
-		controller.setLimits(lims);
 		int h = (Integer)hh.getValue();
 		int m = (Integer)mm.getValue();
 		double s = (Double)ss.getValue();
