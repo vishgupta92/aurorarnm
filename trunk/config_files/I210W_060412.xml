@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AuroraRNM>
    <network class="aurora.hwc.NodeHWCNetwork" id="1" name="I210-West (14 miles)" top="true" controlled="true" tp="0.0027777777">
-	   <description>14 mile stretch of I210-West starting at Vernon.
-The demand values are taken from PeMS database for April 12, 2006.
-	   </description>
-
-      <ObserverList>
-      </ObserverList>
+	   <description>I210-West starting at Vernon Ave (postmile 39)
+and ending at the junction with I-710 (postmile 25.5).
+No controllers are assigned.
+April 12, 2006 is modeled.
+Events simulate a 15-minute accident near Baldwin Ave,
+demand increase from the interconnect with I-605,
+and split ratio change at San Gabriel Blvd.
+The configuration file is created manually.</description>
 
       <NodeList>
          <node class="aurora.hwc.NodeFreeway" id="2" name="Vernon">

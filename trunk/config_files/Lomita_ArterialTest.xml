@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AuroraRNM>
    <network class="aurora.hwc.NodeHWCNetwork" id="1" name="Lomita Small Network" top="true" controlled="true" tp="0.001388888888888889">
-      <description>Hwy 1 East From Airport Drive to Walnut St.</description>
+	   <description>Hwy 1 East From Airport Drive to Walnut St.
+Signaled intersections are modeled
+with simple signal controllers.</description>
 
       <position>
          <point x="0.0" y="0.0" z="0.0" />

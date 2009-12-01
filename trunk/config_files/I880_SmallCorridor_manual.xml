@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AuroraRNM>
    <network class="aurora.hwc.NodeHWCNetwork" id="1488001" name="880 corridor" top="true" controlled="true" tp="0.0027777777">
-      <description>880 corridor between 237 and 238 interconnects together with arterials.</description>
+	   <description>I-880 corridor between Milpitas (postmile 8)
+and Hayward (postmile 31) - freeway and arterials.
+Demand data is bogus.
+The configuration file is created manually.</description>
 
       <position>
          <point x="0.0" y="0.0" z="0.0" />

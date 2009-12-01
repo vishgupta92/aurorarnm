@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AuroraRNM>
    <network class="aurora.hwc.NodeHWCNetwork" id="0" name="210E" top="true" controlled="true" tp="0.0011111">
-      <description>210E freeway from masterscript.</description>
+	   <description>I-210 East starting from Lake Ave (postmile 26.5)
+and ending at Baseline Road (postmile 52.2).
+No controllers are assigned.
+Average day is modeled.
+The configuration file is automatically generated
+by Masterscript.</description>
 
       <position>
          <point x="0.0" y="0.0" z="0.0" />

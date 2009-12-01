@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AuroraRNM>
    <network class="aurora.hwc.NodeHWCNetwork" id="1488001" name="880 North" top="true" controlled="true" tp="0.00138888">
-      <description>880 North freeway</description>
+	   <description>I-880 North starting from Milpitas (postmile 8)
+ending in Oakland (postmile 45).
+ALINEA local controllers are set.
+Average day is modeled
+Events modify demands at 42nd and 29th Ave
+and simulate severe accident near Whipple Road.
+The configuration file is created manually.</description>
 
       <position>
          <point x="0.0" y="0.0" z="0.0" />
