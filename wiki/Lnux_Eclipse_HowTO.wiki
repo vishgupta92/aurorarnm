@@ -1,7 +1,0 @@
-#summary How to set up eclipse on linux.
-
-= Introduction =
-
-The subclipse plugin needs this fix to work on linux:
-
-http://subclipse.tigris.org/ds/viewMessage.do?dsForumId=1046&dsMessageId=2416158&orderBy=createDate&orderType=desc
