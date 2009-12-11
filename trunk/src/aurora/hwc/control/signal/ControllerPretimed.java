@@ -108,7 +108,7 @@ public class ControllerPretimed extends BaseSignalController {
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
 
 		if(!super.dataUpdate(ts))
-			return false;
+			; //FIXME return false;
 		
 		float simtime = (float) (3600.0*myMonitor.getMyNetwork().getSimTime());
 
