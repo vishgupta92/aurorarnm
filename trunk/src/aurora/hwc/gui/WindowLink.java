@@ -41,8 +41,6 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 	private TreePane treePane;
 	private JTabbedPane tabbedPane = new JTabbedPane();
 	
-	private double initTime = 0.0;
-	
 	// simulation tab
 	private Box simPanel = Box.createVerticalBox();
 	private TimeSeriesCollection[] simDataSets = new TimeSeriesCollection[4];
@@ -82,7 +80,6 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 	public WindowLink(AbstractContainer ctnr, AbstractLinkHWC lk, TreePane tp) {
 		super("Link " + lk.toString(), true, true, true, true);
 		mySystem = ctnr;
-		initTime = mySystem.getMyNetwork().getSimTime();
 		myLink = lk;
 		treePane = tp;
 		if (lk.getBeginNode() == null)
@@ -152,7 +149,8 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 			fos.println("\"Time\", \"Flow (vph)\", \"Capacity (vph)\", \"Density (vpm)\", \"Crit. Density (vpm)\", \"Speed (mph)\", \"Max. Speed (mph)\", \"Travel Time (min)\", \"Min. Tavel Time (min)\", \"VMT\", \"Max. VMT\", \"VHT\", \"Crit. VHT\", \"Delay (vh)\", \"Prod. Loss (lmh)\"");
 		int numSteps = perfDataSets[0].getSeries(0).getItemCount();
 		for (int i = 0; i < numSteps; i++) {
-			double tm = initTime + i*mySystem.getMySettings().getDisplayTP();
+			Second cts = (Second)simDataSets[0].getSeries(0).getTimePeriod(i);
+			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			fos.print(tm + ", " + simDataSets[0].getSeries(0).getValue(i)); //time, flow
 			fos.print(", " + simDataSets[0].getSeries(1).getValue(i));  //capacity
 			fos.print(", " + simDataSets[1].getSeries(0).getValue(i)); //queue or density
@@ -619,7 +617,6 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 	 */
 	public void resetView() {
 		cmd2item.get(cmdFileSave).setEnabled(false);
-		initTime = mySystem.getMyNetwork().getSimTime();
 		resetSimSeries();
 		resetPerfSeries();
 		updateFDSeries();
