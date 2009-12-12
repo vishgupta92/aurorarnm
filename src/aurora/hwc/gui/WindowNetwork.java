@@ -79,7 +79,6 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 	private ToolbarListener toolbarListener = new ToolbarListener();
 	
 	private boolean showSpeeds = false;
-	private double initTime = 0.0;
 	
 	private HashMap<String, JMenuItem> cmd2item = new HashMap<String, JMenuItem>();
 	private final static String cmdFileSave = "FileSave";
@@ -94,7 +93,6 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 	public WindowNetwork(AbstractContainer ctnr, AbstractNodeComplex ne, TreePane tpane) {
 		super("Network " + ne.toString(), true, true, true, true);
 		mySystem = ctnr;
-		initTime = mySystem.getMyNetwork().getSimTime();
 		myNetwork = ne;
 		treePane = tpane;
 		//Dimension dims = treePane.getActionPane().getDesktopPane().getSize();
@@ -191,7 +189,8 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 		fos.println("\"Time\", \"Delay (vh)\"");
 		int numSteps = perfDataSets[0].getSeries(0).getItemCount();
 		for (int i = 0; i < numSteps; i++) {
-			double tm = initTime + i*mySystem.getMySettings().getDisplayTP();
+			Second cts = (Second)perfDataSets[0].getSeries(0).getTimePeriod(i);
+			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			fos.println(tm + ", " + perfDataSets[0].getSeries(0).getValue(i));
 		}
 		fos.close();
@@ -348,7 +347,6 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 	 */
 	public synchronized void resetView() {
 		cmd2item.get(cmdFileSave).setEnabled(false);
-		initTime = mySystem.getMyNetwork().getSimTime();
 		visViewer.repaint();
 		updateConfLabels();
 		resetPerfSeries();
