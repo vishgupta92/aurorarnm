@@ -209,7 +209,8 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		String speedBuf = "\r\n\"Speed Contour\"\r\n" + pthHdr;
 		int numSteps = tStep-initStep;
 		for (i = 0; i < numSteps; i++) {
-			double tm = (initStep + i) * mySystem.getMySettings().getDisplayTP();
+			Second cts = (Second)perfDataSets[0].getSeries(0).getTimePeriod(i);
+			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			aggrBuf += tm;
 			aggrBuf += ", " + perfDataSets[0].getSeries(0).getValue(i);
 			aggrBuf += ", " + perfDataSets[0].getSeries(1).getValue(i);
@@ -223,7 +224,8 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			aggrBuf = "";
 		}
 		for (i = 0; i < numSteps; i++) {
-			double tm = (initStep + i) * mySystem.getMySettings().getDisplayTP();
+			Second cts = (Second)perfDataSets[0].getSeries(0).getTimePeriod(i);
+			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			flowBuf += tm;
 			for (j = 0; j < linkCount; j++)
 				flowBuf += ", " + flowData[2][linkCount*(initStep+i) + j];
@@ -231,7 +233,8 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			flowBuf = "";
 		}
 		for (i = 0; i < numSteps; i++) {
-			double tm = (initStep + i) * mySystem.getMySettings().getDisplayTP();
+			Second cts = (Second)perfDataSets[0].getSeries(0).getTimePeriod(i);
+			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			denBuf += tm;
 			for (j = 0; j < linkCount; j++)
 				denBuf += ", " + densityData[2][linkCount*(initStep+i) + j];
@@ -239,7 +242,8 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			denBuf = "";
 		}
 		for (i = 0; i < numSteps; i++) {
-			double tm = (initStep + i) * mySystem.getMySettings().getDisplayTP();
+			Second cts = (Second)perfDataSets[0].getSeries(0).getTimePeriod(i);
+			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			speedBuf += tm;
 			for (j = 0; j < linkCount; j++)
 				speedBuf += ", " + speedData[2][linkCount*(initStep+i) + j];
