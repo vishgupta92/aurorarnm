@@ -1,13 +1,14 @@
 package aurora.hwc.control.signal;
 
+import java.io.Serializable;
 import java.util.Vector;
-
 import aurora.hwc.AbstractLinkHWC;
 import aurora.hwc.NodeUJSignal;
 
-public class SignalPhase {
+public class SignalPhase implements Serializable {
 
-
+	private static final long serialVersionUID = -2241871335828027166L;
+	
 //	 ========================================================================
 //	 FIELDS =================================================================
 //	 ========================================================================

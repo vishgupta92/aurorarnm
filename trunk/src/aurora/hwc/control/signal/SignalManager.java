@@ -1,7 +1,7 @@
 package aurora.hwc.control.signal;
 
+import java.io.*;
 import java.util.Vector;
-
 import aurora.AbstractControllerComplex;
 import aurora.AbstractControllerSimple;
 import aurora.AbstractLink;
@@ -10,8 +10,9 @@ import aurora.ExceptionConfiguration;
 import aurora.hwc.AbstractLinkHWC;
 import aurora.hwc.NodeUJSignal;
 
-public class SignalManager {
-
+public class SignalManager implements Serializable {
+	private static final long serialVersionUID = 7451857824163518318L;
+	
 //	 ========================================================================
 //	 FIELDS =================================================================
 //	 ========================================================================

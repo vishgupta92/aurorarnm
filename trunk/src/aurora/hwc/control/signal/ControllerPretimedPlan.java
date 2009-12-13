@@ -1,17 +1,16 @@
 package aurora.hwc.control.signal;
 
+import java.io.Serializable;
 import java.util.Vector;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import aurora.ExceptionConfiguration;
 import aurora.hwc.NodeUJSignal;
 
-public class ControllerPretimedPlan {
+public class ControllerPretimedPlan implements Serializable {
+	private static final long serialVersionUID = -5877782995977921568L;
 	
-
-//	 ========================================================================
+	//	 ========================================================================
 //	 FIELDS =================================================================
 //	 ========================================================================
 	public ControllerPretimed myController;
