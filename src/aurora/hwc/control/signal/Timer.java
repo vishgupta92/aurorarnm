@@ -1,9 +1,12 @@
 package aurora.hwc.control.signal;
 
+import java.io.Serializable;
+
 import aurora.AbstractNode;
 
-public class Timer {
-
+public class Timer implements Serializable {
+	private static final long serialVersionUID = -5807450773286309355L;
+	
 //	 ========================================================================
 //	 FIELDS =================================================================
 //	 ========================================================================

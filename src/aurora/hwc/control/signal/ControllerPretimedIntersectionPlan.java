@@ -1,5 +1,6 @@
 package aurora.hwc.control.signal;
 
+import java.io.Serializable;
 import java.util.Vector;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -7,8 +8,9 @@ import org.w3c.dom.NodeList;
 import aurora.ErrorConfiguration;
 import aurora.ExceptionConfiguration;
 
-public class ControllerPretimedIntersectionPlan {
-
+public class ControllerPretimedIntersectionPlan implements Serializable {
+	private static final long serialVersionUID = 272304770315813080L;
+	
 //	 ========================================================================
 //	 FIELDS =================================================================
 //	 ========================================================================
