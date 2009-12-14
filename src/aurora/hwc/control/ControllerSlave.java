@@ -45,8 +45,9 @@ public class ControllerSlave extends AbstractControllerSimpleHWC {
 	public synchronized Object computeInput(AbstractNodeSimple xx) {
 		AbstractNodeHWC x = (AbstractNodeHWC)xx;
 		Double flw = (Double)super.computeInput(x);
+		/* no need for the slave controller to keep track of the invocation period
 		if (flw != null)
-			return flw;
+			return flw; */
 		Double c = (Double)myComplexController.getControlInput(this);
 		flw = ApplyURMS(c);
 		flw = ApplyQueueControl(flw);
