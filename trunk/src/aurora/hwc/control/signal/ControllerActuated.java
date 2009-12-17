@@ -54,7 +54,7 @@ public class ControllerActuated extends BaseSignalController {
 //	 ========================================================================
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		if(!super.dataUpdate(ts))
-			return false;
+			; //FIXME return false;
 		
 		boolean doneA, doneB;
 		int barrA=-1;
