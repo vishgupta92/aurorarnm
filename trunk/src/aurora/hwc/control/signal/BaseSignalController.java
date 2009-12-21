@@ -79,27 +79,9 @@ public class BaseSignalController extends AbstractControllerComplexHWC {
 		boolean res = super.validate();
 		if(!res)
 			return res;
-
-		int index;
-		for(index=0;index<numintersections;index++){
-			
-			NodeUJSignal node = intersection.get(index);
-			
+		for (int i = 0; i < numintersections; i++) {
+			NodeUJSignal node = intersection.get(i);
 			SignalManager s = node.getSigMan();
-			s.myController = this;
-			
-/*	    	for(i=0;i<node.getSimpleControllers().size();i++){
-	    		ControllerSlave c = (ControllerSlave) node.getSimpleControllers().get(i);
-	    		if(c==null)
-	    			continue;
-	    		c.setMyComplexController(this);
-	    		AbstractLink L = (AbstractLink) node.getPredecessors().get(i);
-	    		SignalPhase p = node.getSigMan().FindPhaseByLink(L);
-	    		if(p==null)
-	    			continue;
-	    		addDependentController(c, new Double(0));
-	    		p.myControlIndex = dependentControllers.indexOf(c);
-	    	}*/
 			s.validate();
 		}
 		return true;
@@ -113,10 +95,8 @@ public class BaseSignalController extends AbstractControllerComplexHWC {
 	@Override
 	public boolean initialize() throws ExceptionConfiguration {
 		boolean res = super.initialize();
-		
-		int i;
 		Vector<AbstractNetworkElement> nes = myMonitor.getSuccessors();
-		for (i = 0; i < nes.size(); i++) {
+		for (int i = 0; i < nes.size(); i++) {
 			if ((nes.get(i).getType() & TypesHWC.MASK_LINK) == 0)
 				continue;
 			AbstractLink lnk = (AbstractLink)nes.get(i);
@@ -133,10 +113,12 @@ public class BaseSignalController extends AbstractControllerComplexHWC {
 			ctrl.setMyLink(lnk);
 			ctrl.setMyComplexController(this);
 			addDependentController(ctrl, new Double(0));
-			
-			
 		}
-		
+		for (int i = 0; i < numintersections; i++) {
+			NodeUJSignal node = intersection.get(i);
+			SignalManager s = node.getSigMan();
+			s.myController = this;
+		}
 		return res;
 	}
 
