@@ -1136,14 +1136,14 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				v.setRawIntervalVectorFromString(st.nextToken());
 			v.affineTransform(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights(), 0);
 			v.constraintLB(0);
-			/*// Redistribute demand
-			double[] rv = {0.7, 0.3};
-			v.redistribute(rv);*/
+			/*// FIXME: Redistribute demand
+			double[] rv = {0.78, 0.22};
+			v.redistribute(rv);//*/
 			/*// Generate uncertainty in demands
 			for (int i = 0; i < v.size(); i++) {
 				double sz = v.get(i).getCenter() * 0.1;
 				v.get(i).setCenter(v.get(i).getCenter(), sz);
-			}*/
+			}//*/
 			demand.add(v);
 			AuroraIntervalVector v2 = new AuroraIntervalVector();
 			v2.copy(v);
