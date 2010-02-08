@@ -118,12 +118,12 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 	}
 	
 	/**
-	 * Returns type of a NE
+	 * Returns type of a NE.
 	 */
 	public abstract int getType();
 	
 	/**
-	 * Returns type description of a NE
+	 * Returns type description of a NE.
 	 */
 	public abstract String getTypeString();
 	
