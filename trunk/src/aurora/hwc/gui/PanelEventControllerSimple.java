@@ -17,7 +17,7 @@ import aurora.util.*;
 /**
  * Form for simple controller change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventControllerSimple.java,v 1.1.2.6.2.2.2.3 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelEventControllerSimple extends AbstractEventPanel implements ActionListener {
 	private static final long serialVersionUID = 2103920304528351836L;

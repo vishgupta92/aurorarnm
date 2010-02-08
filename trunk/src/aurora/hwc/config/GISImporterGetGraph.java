@@ -14,7 +14,7 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * Converter of shapes into graph.
  * @author Jaimyoung Kwon
- * @version $Id: GISImporterGetGraph.java,v 1.1.4.1.2.1.2.1 2009/10/01 00:13:12 akurzhan Exp $
+ * @version $Id$
  */
 public class GISImporterGetGraph {
 

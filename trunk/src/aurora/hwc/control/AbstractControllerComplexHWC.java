@@ -12,7 +12,7 @@ import aurora.*;
 /**
  * Base class for road network complex controllers.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: AbstractControllerComplexHWC.java,v 1.1.2.2 2009/10/02 04:39:08 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractControllerComplexHWC extends AbstractControllerComplex {
 	private static final long serialVersionUID = 5002253704711958957L;

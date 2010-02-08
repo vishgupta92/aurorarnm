@@ -6,7 +6,7 @@ package aurora;
 /**
  * Base class for configuration summary objects.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractConfigurationSummary.java,v 1.1.4.1 2008/10/16 04:27:07 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractConfigurationSummary {
 	protected int numMonitors = 0;

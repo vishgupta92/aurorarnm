@@ -20,7 +20,7 @@ import aurora.*;
 /**
  * Implementation of HWC Layout.
  * @author Alex Kurzhansky
- * @version $Id: LayoutHWC.java,v 1.1.4.1.4.1 2009/06/14 06:45:28 akurzhan Exp $
+ * @version $Id$
  */
 public class LayoutHWC extends AbstractLayout {
 	private static final Object HWC_KEY  = "HWC_Visualization_Key";

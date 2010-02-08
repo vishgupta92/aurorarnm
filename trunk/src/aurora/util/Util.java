@@ -15,7 +15,7 @@ import org.jfree.data.time.Second;
 /**
  * Some useful utilities.
  * @author Alex Kurzhanskiy
- * @version $Id: Util.java,v 1.1.2.6.2.5.2.2 2009/11/01 00:58:30 akurzhan Exp $
+ * @version $Id$
  */
 public class Util {
 	public final static double EPSILON = Math.pow(10, -7);

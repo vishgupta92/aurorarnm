@@ -16,7 +16,7 @@ import aurora.util.*;
  * Implementation of action pane split vertically into
  * a desktop and table panes.
  * @author Alex Kurzhanskiy
- * @version $Id: ActionPane.java,v 1.1.2.11.4.2 2009/10/18 05:17:14 akurzhan Exp $
+ * @version $Id$
  */
 public final class ActionPane extends JPanel {
 	private static final long serialVersionUID = -2436965790211986294L;

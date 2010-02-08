@@ -17,7 +17,7 @@ import aurora.util.*;
 /**
  * New Node form to be displayed during the Node creation.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelNewNode.java,v 1.1.4.1.2.2 2009/01/15 05:05:44 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelNewNode extends AbstractNewNetworkElementPanel implements ActionListener {
 	private static final long serialVersionUID = -4528657558983743245L;

@@ -15,7 +15,7 @@ import org.w3c.dom.*;
  * @see AbstractNode, AbstractLink, AbstractMonitor.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNetworkElement.java,v 1.24.2.5.2.2.2.5 2009/11/22 22:19:35 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractNetworkElement implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = -1658852405459300241L;

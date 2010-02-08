@@ -15,7 +15,7 @@ import javax.swing.table.*;
 /**
  * Panel for editing traffic responsive controller properties.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelControllerTR.java,v 1.1.2.4 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelControllerTR extends AbstractPanelSimpleController {
 	private static final long serialVersionUID = 3757750722401395160L;

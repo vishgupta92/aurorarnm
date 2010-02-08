@@ -15,7 +15,7 @@ import aurora.*;
  * @see LinkHw, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy
- * @version $Id: NodeHighway.java,v 1.9.2.3.2.1.2.3 2009/11/12 02:33:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class NodeHighway extends AbstractNodeHWC {
 	private static final long serialVersionUID = -8167340117759326547L;

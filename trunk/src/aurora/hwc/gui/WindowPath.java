@@ -42,7 +42,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of path internal frame.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowPath.java,v 1.1.2.11.2.8.2.2 2009/10/22 02:58:13 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowPath extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = -2799899518843864326L;

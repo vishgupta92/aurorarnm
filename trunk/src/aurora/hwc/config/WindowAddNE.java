@@ -15,7 +15,7 @@ import aurora.*;
 /**
  * Window for adding Network Elements to Control Monitor.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowAddNE.java,v 1.1.2.2 2009/08/16 20:10:27 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowAddNE extends JDialog implements ActionListener {
 	private static final long serialVersionUID = -2547337843477632230L;

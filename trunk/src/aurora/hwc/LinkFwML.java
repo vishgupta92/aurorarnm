@@ -15,7 +15,7 @@ import aurora.*;
  * @see NodeFreeway, NodeHWCNetwork
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: LinkFwML.java,v 1.12.2.2.4.1 2009/09/11 23:33:54 akurzhan Exp $
+ * @version $Id$
  */
 public final class LinkFwML extends AbstractLinkHWC {
 	private static final long serialVersionUID = -4510519067401787436L;

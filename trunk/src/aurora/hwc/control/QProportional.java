@@ -14,7 +14,7 @@ import aurora.hwc.*;
 /**
  * Implementation of proportional queue controller.
  * @author Alex Kurzhanskiy
- * @version $Id: QProportional.java,v 1.1.4.1.2.4.2.3 2009/11/28 02:31:57 akurzhan Exp $
+ * @version $Id$
  */
 public final class QProportional extends AbstractQueueController implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1907427195234602994L;

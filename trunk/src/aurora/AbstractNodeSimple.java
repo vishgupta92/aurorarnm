@@ -11,7 +11,7 @@ import java.util.*;
  * Base class for all simple Nodes.<br>
  * These nodes must have input and output links.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeSimple.java,v 1.13.2.4.2.3.2.3 2009/09/30 23:52:32 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractNodeSimple extends AbstractNode {
 	private static final long serialVersionUID = -609572378486858243L;

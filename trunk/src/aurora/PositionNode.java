@@ -11,7 +11,7 @@ import org.w3c.dom.*;
 /**
  * Implementation of Node position.
  * @author Alex Kurzhanskiy
- * @version $Id: PositionNode.java,v 1.1.2.3 2008/10/16 04:27:07 akurzhan Exp $
+ * @version $Id$
  */
 public class PositionNode implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = -8636945405668106591L;

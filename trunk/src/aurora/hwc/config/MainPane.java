@@ -22,7 +22,7 @@ import aurora.util.*;
 /**
  * Main window of Aurora Configuration Utility.
  * @author Alex Kurzhanskiy
- * @version $Id: MainPane.java,v 1.1.4.1.2.6.2.4 2009/11/22 01:05:27 akurzhan Exp $
+ * @version $Id$
  */
 public final class MainPane extends JFrame implements ActionListener, ItemListener {
 	private static final long serialVersionUID = 3515636962372050014L;

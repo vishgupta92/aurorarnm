@@ -15,7 +15,7 @@ import aurora.hwc.*;
 /**
  * Form for control settings change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventNetworkControl.java,v 1.1.2.2 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelEventNetworkControl extends AbstractEventPanel implements ItemListener {
 	private static final long serialVersionUID = -7281591587053819591L;

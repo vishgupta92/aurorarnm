@@ -10,7 +10,7 @@ import aurora.*;
 /**
  * HWC specific Path class.
  * @author Alex Kurzhanskiy
- * @version $Id: PathHWC.java,v 1.1.2.3.4.5.2.1 2009/10/22 02:58:13 akurzhan Exp $
+ * @version $Id$
  */
 public class PathHWC extends Path {
 	private static final long serialVersionUID = 7614255724050230035L;

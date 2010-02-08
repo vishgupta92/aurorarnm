@@ -12,7 +12,7 @@ import aurora.hwc.*;
 /**
  * Implementation of the Slave controller whose output is assigned by the superior Complex Controller.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: ControllerSlave.java,v 1.1.4.13 2009/11/22 01:17:16 akurzhan Exp $
+ * @version $Id$
  */
 public class ControllerSlave extends AbstractControllerSimpleHWC {
 	private static final long serialVersionUID = -4982384498258794450L;

@@ -14,7 +14,7 @@ import aurora.util.*;
 /**
  * Base class for event editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractEventPanel.java,v 1.1.2.6.4.1 2009/09/30 23:40:22 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractEventPanel extends JPanel {
 	private static final long serialVersionUID = 6647543272805258031L;

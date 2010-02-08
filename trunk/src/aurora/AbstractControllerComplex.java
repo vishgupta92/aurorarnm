@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * This class is a base for Sytem Wide Controllers.
  * @author Alex Kurzhanskiy, Gabriel Gomes
- * @version $Id: AbstractControllerComplex.java,v 1.1.2.2.4.1.2.9 2009/11/22 22:19:35 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractControllerComplex extends AbstractController {
 	private static final long serialVersionUID = 6181398228416347756L;

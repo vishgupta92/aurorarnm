@@ -15,7 +15,7 @@ import aurora.util.*;
 /**
  * Base class for settings windows.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowSettings.java,v 1.1.2.3 2008/11/29 01:54:04 akurzhan Exp $
+ * @version $Id$
  */
 public class WindowSettings extends JDialog implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 6936519653061073792L;

@@ -12,7 +12,7 @@ import javax.swing.*;
 /**
  * Implementation of Event Editor window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowEventEditor.java,v 1.1.2.2 2007/05/02 16:06:12 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowEventEditor extends JDialog {
 	private static final long serialVersionUID = -5783609920269884443L;

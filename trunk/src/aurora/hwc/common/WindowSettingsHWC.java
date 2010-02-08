@@ -17,7 +17,7 @@ import aurora.common.*;
 /**
  * HWC settings window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowSettingsHWC.java,v 1.1.2.2 2008/11/29 02:04:54 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowSettingsHWC extends WindowSettings {
 	private static final long serialVersionUID = -3435014467278491221L;

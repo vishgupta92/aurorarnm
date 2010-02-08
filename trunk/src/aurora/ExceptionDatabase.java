@@ -11,7 +11,7 @@ import java.lang.Exception;
  * Exception thrown if database error occurs.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: ExceptionDatabase.java,v 1.2 2007/02/10 23:26:56 akurzhan Exp $
+ * @version $Id$
  */
 public class ExceptionDatabase extends Exception {
 	private static final long serialVersionUID = -6689163546920029634L;

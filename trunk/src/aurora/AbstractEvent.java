@@ -11,7 +11,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractEvent.java,v 1.3.2.5.2.2.2.3 2009/10/18 02:58:34 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractEvent implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = 4334310994251406284L;

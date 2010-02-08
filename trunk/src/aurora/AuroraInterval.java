@@ -13,7 +13,7 @@ import java.util.*;
  * Implementation of an interval with basic arithmetic.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AuroraInterval.java,v 1.1.2.11.2.3 2009/08/29 21:08:50 akurzhan Exp $
+ * @version $Id$
  */
 public class AuroraInterval implements Serializable {
 	private static final long serialVersionUID = -7691830786246016694L;

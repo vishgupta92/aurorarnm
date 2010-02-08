@@ -22,7 +22,7 @@ import aurora.util.*;
  * @see LinkStreet, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy, Gabriel Gomes
- * @version $Id: NodeUJSignal.java,v 1.9.2.2.2.1.2.5 2009/10/09 04:18:09 gomes Exp $
+ * @version $Id$
  */
 public final class NodeUJSignal extends AbstractNodeHWC {
 	private static final long serialVersionUID = 8638143194434976281L;

@@ -12,7 +12,7 @@ import aurora.hwc.*;
 /**
  * Miscellaneous routines to process Nodes and Links.
  * @author Alex Kurzhanskiy
- * @version $Id: MiscUtil.java,v 1.1.4.1.2.2.2.1 2009/10/18 00:58:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class MiscUtil {
 	private static double dx = 10.0;

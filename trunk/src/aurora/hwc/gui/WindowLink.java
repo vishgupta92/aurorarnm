@@ -30,7 +30,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of Link detail window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowLink.java,v 1.1.2.16.2.7.2.5 2009/10/23 20:02:59 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowLink extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = -4659414889018345624L;

@@ -16,7 +16,7 @@ import aurora.hwc.control.ControllerVSLTOD.TODdataRow;
 /**
  * Panel for editing VSL TOD controller properties.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelControllerVSLTOD.java,v 1.1.2.1 2009/11/12 02:36:57 akurzhan Exp $
+ * @version $Id$
  */
 public class PanelControllerVSLTOD extends AbstractPanelSimpleController {
 	private static final long serialVersionUID = 2067612590605300660L;

@@ -12,7 +12,7 @@ import javax.swing.*;
 /**
  * Implementation of Queue Controller Editor window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowQControllerEditor.java,v 1.1.4.1.4.1 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowQControllerEditor extends JDialog {
 	private static final long serialVersionUID = -5564887467060912284L;

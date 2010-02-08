@@ -7,7 +7,7 @@ package aurora;
 /**
  * Basic type constants used by Aurora.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractTypes.java,v 1.1.2.1.4.1.2.1 2009/06/14 05:58:17 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractTypes {
 	public final static int MASK_NETWORK = 1073741824;

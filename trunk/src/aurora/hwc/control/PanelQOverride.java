@@ -12,7 +12,7 @@ import aurora.util.SpringUtilities;
 /**
  * Panel for Queue Override controller.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelQOverride.java,v 1.1.4.1.4.1 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelQOverride extends AbstractPanelQController {
 	private static final long serialVersionUID = -7314364725453530074L;

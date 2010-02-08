@@ -14,7 +14,7 @@ import aurora.hwc.*;
 /**
  * Base class for queue controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractQueueController.java,v 1.1.2.1 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractQueueController {
 

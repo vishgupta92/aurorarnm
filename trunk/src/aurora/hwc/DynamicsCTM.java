@@ -11,7 +11,7 @@ import aurora.*;
 /**
  * Implementation of Cell Transmission Model (CTM).
  * @author Alex Kurzhanskiy
- * @version $Id: DynamicsCTM.java,v 1.4.2.5.2.11.2.5 2009/11/15 04:39:58 akurzhan Exp $
+ * @version $Id$
  */
 public class DynamicsCTM implements DynamicsHWC, Serializable {
 	private static final long serialVersionUID = 1295134323359426734L;

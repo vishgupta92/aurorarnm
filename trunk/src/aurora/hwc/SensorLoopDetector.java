@@ -12,7 +12,7 @@ import aurora.*;
 /**
  * Implementation of loop detector.
  * @author Gabriel Gomes
- * $Id: SensorLoopDetector.java,v 1.1.4.3 2009/09/11 23:33:54 akurzhan Exp $
+ * $Id$
  */
 public final class SensorLoopDetector extends AbstractSensor {
 	private static final long serialVersionUID = 5743495158840080833L;

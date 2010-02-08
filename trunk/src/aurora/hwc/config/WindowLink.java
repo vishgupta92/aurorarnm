@@ -21,7 +21,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of Link Editor.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowLink.java,v 1.1.4.1.2.6.2.4 2009/10/18 00:58:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowLink extends JInternalFrame implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = -55251513483090686L;

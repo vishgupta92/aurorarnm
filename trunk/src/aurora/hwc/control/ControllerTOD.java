@@ -15,7 +15,7 @@ import aurora.hwc.*;
 /**
  * TOD controller implementation.
  * @author Gabriel Gomes
- * @version $Id: ControllerTOD.java,v 1.1.4.1.2.4.2.4 2009/11/14 00:32:47 akurzhan Exp $
+ * @version $Id$
  */
 public class ControllerTOD extends AbstractControllerSimpleHWC {
 	private static final long serialVersionUID = 4741791843202408263L;

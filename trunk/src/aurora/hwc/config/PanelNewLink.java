@@ -14,7 +14,7 @@ import aurora.util.*;
 /**
  * New Link form to be displayed during the Link creation.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelNewLink.java,v 1.1.4.1 2008/10/16 04:27:06 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelNewLink extends AbstractNewNetworkElementPanel {
 	private static final long serialVersionUID = 5360520680716578067L;

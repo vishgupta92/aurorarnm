@@ -12,7 +12,7 @@ import aurora.hwc.control.*;
 /**
  * Let's see how we can save our configuration.
  * @author Alex Kurzhanskiy
- * @version $Id: mySerializableTest.java,v 1.2.2.2.2.2.2.2 2009/10/18 00:58:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class mySerializableTest {
 	static String DATAFILE = "c:\\tmp\\aurora_out.dat";

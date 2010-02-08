@@ -13,7 +13,7 @@ import aurora.util.*;
 /**
  * Form for demand knob change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventDemand.java,v 1.1.2.5.4.1 2009/10/18 00:58:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelEventDemand extends AbstractEventPanel {
 	private static final long serialVersionUID = 1106771938653639149L;

@@ -11,7 +11,7 @@ import aurora.*;
 /**
  * Implementation of Vertex for JUNG graph.
  * @author Alex Kurzhanskiy
- * @version $Id: VertexNodeHWC.java,v 1.1.4.1 2008/10/16 04:27:09 akurzhan Exp $
+ * @version $Id$
  */
 public class VertexNodeHWC extends DirectedSparseVertex {
 	AbstractNode node = null;

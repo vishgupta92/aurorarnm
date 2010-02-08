@@ -18,7 +18,7 @@ import aurora.hwc.*;
 /**
  * Base class for simple Node controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerHWC.java,v 1.1.4.1.2.1.2.2 2009/10/01 05:53:41 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractControllerHWC extends AbstractControllerSimple {
 	private static final long serialVersionUID = -241436581476989974L;

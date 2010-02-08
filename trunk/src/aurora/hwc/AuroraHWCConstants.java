@@ -10,7 +10,7 @@ import aurora.AuroraConstants;
 /**
  * HWC specific constants.
  * @author Alex Kurzhanskiy
- * @version $Id: AuroraHWCConstants.java,v 1.1.4.1.4.1 2009/11/28 02:43:56 akurzhan Exp $
+ * @version $Id$
  */
 public class AuroraHWCConstants extends AuroraConstants {
 	

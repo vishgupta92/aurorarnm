@@ -16,7 +16,7 @@ import aurora.util.*;
 /**
  * Window displaying the 'about' info.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowAbout.java,v 1.1.2.1.2.1 2009/11/28 02:47:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowAbout extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 4945102996643747877L;

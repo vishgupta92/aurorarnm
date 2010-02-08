@@ -15,7 +15,7 @@ import aurora.hwc.*;
 /**
  * Window for Zipper display in the Simulator.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowMonitorZipper.java,v 1.1.2.4 2009/01/06 00:03:52 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowMonitorZipper extends JInternalFrame implements ChangeListener {
 	private static final long serialVersionUID = -3264811695543765319L;

@@ -16,7 +16,7 @@ import aurora.hwc.control.ControllerTOD.TODdataRow;
 /**
  * Panel for editing TOD controller properties.
  * @author Gabriel Gomes
- * @version $Id: PanelControllerTOD.java,v 1.1.4.1.2.4.2.4 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public class PanelControllerTOD extends AbstractPanelSimpleController {
 	private static final long serialVersionUID = -648570173796184722L;

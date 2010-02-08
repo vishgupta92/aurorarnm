@@ -7,7 +7,7 @@ package aurora;
 /**
  * Base class for simple controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerSimple.java,v 1.3.2.3.2.3.2.8 2009/11/22 22:19:35 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractControllerSimple extends AbstractController {
 	private static final long serialVersionUID = 677340356984323986L;

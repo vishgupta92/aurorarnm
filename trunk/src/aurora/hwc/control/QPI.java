@@ -14,7 +14,7 @@ import aurora.hwc.*;
 /**
  * Implementation of PI queue controller.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: QPI.java,v 1.1.2.4 2009/11/28 02:31:57 akurzhan Exp $
+ * @version $Id$
  */
 public final class QPI extends AbstractQueueController implements Serializable, Cloneable {
 	private static final long serialVersionUID = -2675153457120198296L;

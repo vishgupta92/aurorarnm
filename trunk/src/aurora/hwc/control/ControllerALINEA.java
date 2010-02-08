@@ -16,7 +16,7 @@ import aurora.util.Util;
 /**
  * Implementation of ALINEA controller.
  * @author Alex Kurzhanskiy
- * @version $Id: ControllerALINEA.java,v 1.1.4.1.2.5.2.5 2009/11/22 01:28:33 akurzhan Exp $
+ * @version $Id$
  */
 public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 	private static final long serialVersionUID = 4440581708032401841L;
