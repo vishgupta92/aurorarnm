@@ -13,7 +13,7 @@ import aurora.util.*;
 /**
  * Base class for complex controller editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractPanelController.java,v 1.1.2.1 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractPanelController extends JPanel {
 	private static final long serialVersionUID = -2623126512498240411L;

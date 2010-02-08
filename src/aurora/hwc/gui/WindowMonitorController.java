@@ -18,7 +18,7 @@ import aurora.hwc.control.*;
 /**
  * Window for Control Monitor display in the Simulator.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowMonitorController.java,v 1.1.2.4 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowMonitorController extends JInternalFrame implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = -4670962979656887216L;

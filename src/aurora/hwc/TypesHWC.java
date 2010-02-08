@@ -10,7 +10,7 @@ import aurora.AbstractTypes;
 /**
  * Type constants used by Aurora HWC.
  * @author Alex Kurzhanskiy
- * @version $Id: TypesHWC.java,v 1.1.2.2.2.2.2.2 2009/08/10 19:53:30 akurzhan Exp $
+ * @version $Id$
  */
 public final class TypesHWC extends AbstractTypes {
 	// Complex Nodes

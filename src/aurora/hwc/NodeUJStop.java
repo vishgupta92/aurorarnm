@@ -15,7 +15,7 @@ import aurora.*;
  * @see LinkStreet, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy
- * @version $Id: NodeUJStop.java,v 1.9.2.2.2.1.2.1 2009/09/11 23:33:54 akurzhan Exp $
+ * @version $Id$
  */
 public final class NodeUJStop extends AbstractNodeHWC {
 	private static final long serialVersionUID = 9117817878298665727L;

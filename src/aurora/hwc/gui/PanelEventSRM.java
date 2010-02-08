@@ -14,7 +14,7 @@ import aurora.hwc.*;
 /**
  * Form for split ratio matrix change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventSRM.java,v 1.1.2.3.2.1 2008/12/03 02:15:42 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelEventSRM extends AbstractEventPanel {
 	private static final long serialVersionUID = 3362186089540442355L;

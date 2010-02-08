@@ -21,7 +21,7 @@ import aurora.util.*;
 /**
  * Implementation of Node Editor.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNode.java,v 1.1.4.1.2.4.2.8 2009/11/15 04:39:58 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowNode extends JInternalFrame implements ActionListener, ChangeListener, DocumentListener {
 	private static final long serialVersionUID = -2721130730581469904L;

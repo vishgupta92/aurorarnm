@@ -17,7 +17,7 @@ import aurora.util.*;
 /**
  * Tree view of the Aurora network.
  * @author Alex Kurzhanskiy
- * @version $Id: TreePane.java,v 1.1.4.1.2.4.2.3 2009/08/26 01:15:33 akurzhan Exp $
+ * @version $Id$
  */
 public class TreePane extends JPanel {
 	private static final long serialVersionUID = 3976137906223422920L;

@@ -13,7 +13,7 @@ import aurora.*;
 /**
  * Derby specific implementation of database interface. 
  * @author Alex Kurzhanskiy
- * @version $Id: DBDerby.java,v 1.4.2.1.4.5.2.1 2009/09/22 21:11:02 akurzhan Exp $
+ * @version $Id$
  */
 public final class DBDerby implements DataStorage, Serializable {
 	private static final long serialVersionUID = -714746697588917594L;

@@ -10,7 +10,7 @@ package aurora.hwc;
  * @see DynamicsCTM
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: DynamicsHWC.java,v 1.4 2007/01/28 03:57:17 akurzhan Exp $
+ * @version $Id$
  */
 public interface DynamicsHWC {
 	public Object computeFlow(AbstractLinkHWC x);

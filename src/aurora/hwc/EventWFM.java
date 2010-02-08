@@ -14,7 +14,7 @@ import aurora.util.Util;
 /**
  * Event that changes weaving factor matrix at given simple Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventWFM.java,v 1.1.2.1 2009/11/07 21:08:10 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventWFM extends AbstractEvent {
 	private static final long serialVersionUID = -8770931794877717089L;

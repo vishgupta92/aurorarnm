@@ -14,7 +14,7 @@ import aurora.hwc.*;
 /**
  * Testing XML parsing.
  * @author Alex Kurzhanskiy
- * @version $Id: xmlParseTest.java,v 1.1.2.1 2007/04/16 15:03:51 akurzhan Exp $
+ * @version $Id$
  */
 public class xmlParseTest {
 	static DataStorage db;

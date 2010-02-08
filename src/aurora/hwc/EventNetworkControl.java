@@ -13,7 +13,7 @@ import aurora.util.Util;
 /**
  * Event that changes mainline and queue control modes on a given complex Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventNetworkControl.java,v 1.1.2.2.2.1.2.1 2009/10/18 01:23:16 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventNetworkControl extends AbstractEvent {
 	private static final long serialVersionUID = -8985021937408207013L;

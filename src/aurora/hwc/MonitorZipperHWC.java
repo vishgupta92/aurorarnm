@@ -10,7 +10,7 @@ import aurora.*;
 /**
  * Implements Zipper Monitor for road networks.
  * @author Alex Kurzhanskiy
- * @version $Id: MonitorZipperHWC.java,v 1.1.2.3.2.2 2009/09/11 23:33:54 akurzhan Exp $
+ * @version $Id$
  */
 public final class MonitorZipperHWC extends AbstractMonitorZipper {
 	private static final long serialVersionUID = -4854911548364714781L;

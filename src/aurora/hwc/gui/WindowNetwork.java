@@ -43,7 +43,7 @@ import aurora.hwc.util.*;
 /**
  * Implementation of network internal frame.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNetwork.java,v 1.1.2.29.2.10.2.3 2009/10/22 02:58:13 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowNetwork extends JInternalFrame implements ActionListener {
 	private static final long serialVersionUID = 6582260090722618374L;

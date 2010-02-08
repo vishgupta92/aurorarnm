@@ -8,7 +8,7 @@ import org.w3c.dom.Node;
 /**
  * Base class for sensor objects.
  * @author Gabriel Gomes
- * $Id: AbstractSensor.java,v 1.1.4.4 2009/09/30 23:52:32 akurzhan Exp $
+ * $Id$
  */
 public abstract class AbstractSensor extends AbstractNetworkElement {
 	private static final long serialVersionUID = -3489585106242370041L;

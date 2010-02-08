@@ -17,7 +17,7 @@ import org.w3c.dom.*;
  * and maintains the list of possible paths
  * from the Origin to the Destination.
  * @author Alex Kurzhanskiy
- * @version $Id: OD.java,v 1.1.2.5.2.1 2008/10/20 20:50:02 akurzhan Exp $
+ * @version $Id$
  */
 public class OD implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = 127827305723133212L;

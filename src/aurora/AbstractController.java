@@ -13,7 +13,7 @@ import org.w3c.dom.Node;
 /**
  * Base class for controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractController.java,v 1.9.2.3.2.2.2.7 2009/10/02 01:39:17 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractController implements AuroraConfigurable, Serializable, Cloneable {
 	private static final long serialVersionUID = -3651447094697919017L;

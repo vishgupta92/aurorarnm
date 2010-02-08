@@ -7,7 +7,7 @@ package aurora;
 /**
  * Constants used by Aurora applications.
  * @author Alex Kurzhanskiy
- * @version $Id: AuroraConstants.java,v 1.1.4.1.4.1 2009/08/30 03:44:21 akurzhan Exp $
+ * @version $Id$
  */
 public class AuroraConstants {
 	

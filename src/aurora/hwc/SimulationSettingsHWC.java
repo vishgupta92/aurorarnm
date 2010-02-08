@@ -13,7 +13,7 @@ import aurora.*;
 /**
  * HWC specific simulation settings.
  * @author Alex Kurzhanskiy
- * @version $Id: SimulationSettingsHWC.java,v 1.1.2.5.2.6 2009/11/11 00:49:26 akurzhan Exp $
+ * @version $Id$
  */
 public class SimulationSettingsHWC extends SimulationSettings {
 	private static final long serialVersionUID = 6276880264620748221L;

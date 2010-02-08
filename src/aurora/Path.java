@@ -12,7 +12,7 @@ import org.w3c.dom.Node;
 /**
  * Implementation of Path as sequence of Links.
  * @author Alex Kurzhanskiy
- * @version $Id: Path.java,v 1.1.2.7.2.1.2.4 2009/11/19 19:47:01 akurzhan Exp $
+ * @version $Id$
  */
 public class Path implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = 368831207374115827L;

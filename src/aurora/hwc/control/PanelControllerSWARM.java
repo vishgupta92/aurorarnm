@@ -19,7 +19,7 @@ import aurora.hwc.control.ControllerSWARM.Zone;
 /**
  * Implementation of SWARM editor.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: PanelControllerSWARM.java,v 1.1.4.9 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public class PanelControllerSWARM extends AbstractPanelController implements ActionListener {
 	private static final long serialVersionUID = 4029100437243156023L;

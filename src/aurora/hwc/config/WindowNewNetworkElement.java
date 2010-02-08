@@ -13,7 +13,7 @@ import javax.swing.*;
  * Implementation of a dialog window that pops up during the creation
  * of the new Network Element.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowNewNetworkElement.java,v 1.1.4.1.2.1 2009/01/14 19:47:15 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowNewNetworkElement extends JDialog {
 	private static final long serialVersionUID = 7653734936189912624L;

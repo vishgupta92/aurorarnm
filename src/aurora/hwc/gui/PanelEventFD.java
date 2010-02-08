@@ -20,7 +20,7 @@ import aurora.hwc.util.*;
 /**
  * Form for fundamental diagram change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventFD.java,v 1.1.2.3.2.1 2009/06/09 20:58:49 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelEventFD extends AbstractEventPanel implements ChangeListener {
 	private static final long serialVersionUID = 364874061040182049L;

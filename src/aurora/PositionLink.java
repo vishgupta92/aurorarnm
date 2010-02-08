@@ -12,7 +12,7 @@ import org.w3c.dom.*;
 /**
  * Implementation of link position.
  * @author Alex Kurzhanskiy, Ram Rajagopal
- * @version $Id: PositionLink.java,v 1.5.2.2 2008/10/16 04:27:07 akurzhan Exp $
+ * @version $Id$
  */
 public class PositionLink implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = 5237536980592254921L;

@@ -16,7 +16,7 @@ import aurora.hwc.*;
 /**
  * Form for weaving factor matrix change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventWFM.java,v 1.1.2.1 2009/11/07 21:19:16 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelEventWFM extends AbstractEventPanel {
 	private static final long serialVersionUID = 1366583867517745447L;

@@ -16,7 +16,7 @@ import aurora.hwc.*;
  * Implementation of simple timed signal controller.
  * @author Andy Chow
  * @author Alex Kurzhanskiy
- * @version $Id: ControllerSimpleSignal.java,v 1.1.4.1.2.3.2.1 2009/09/22 21:11:03 akurzhan Exp $
+ * @version $Id$
  */
 public final class ControllerSimpleSignal extends AbstractControllerHWC {
 	private static final long serialVersionUID = 4744505125393458926L;

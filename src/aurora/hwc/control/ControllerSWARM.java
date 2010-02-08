@@ -16,7 +16,7 @@ import aurora.hwc.*;
 /**
  * Implementation of SWARM controller. 
  * @author Gabriel Gomes
- * @version $Id: ControllerSWARM.java,v 1.1.4.14 2009/10/09 23:05:21 akurzhan Exp $
+ * @version $Id$
  */
 public class ControllerSWARM extends AbstractControllerComplexHWC {
 

@@ -10,7 +10,7 @@ import org.jfree.data.xy.*;
 /**
  * This class is needed to allow setting data items.
  * @author Alex Kurzhanskiy
- * @version $Id: MyXYSeries.java,v 1.1.4.1 2008/10/16 04:27:09 akurzhan Exp $
+ * @version $Id$
  */
 public class MyXYSeries extends XYSeries {
 	private static final long serialVersionUID = -1267563111409694460L;

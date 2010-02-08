@@ -15,7 +15,7 @@ import aurora.*;
  * @see AbstractNodeHWC, NodeFreeway, NodeHihway, NodeHWCNetwork
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: LinkOR.java,v 1.12.2.2.4.1 2009/09/11 23:33:54 akurzhan Exp $
+ * @version $Id$
  */
 public final class LinkOR extends AbstractLinkHWC {
 	private static final long serialVersionUID = -8797694520720989699L;

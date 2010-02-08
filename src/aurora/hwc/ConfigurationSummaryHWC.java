@@ -9,7 +9,7 @@ import aurora.*;
 /**
  * Implementation of HWC configuration summary data structure.
  * @author Alex Kurzhanskiy
- * @version $Id: ConfigurationSummaryHWC.java,v 1.1.4.1 2008/10/16 04:27:08 akurzhan Exp $
+ * @version $Id$
  */
 public final class ConfigurationSummaryHWC extends AbstractConfigurationSummary {
 	protected AbstractLinkHWC fLink = null;

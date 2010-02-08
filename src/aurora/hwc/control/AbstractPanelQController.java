@@ -10,7 +10,7 @@ import javax.swing.*;
 /**
  * Base class for queue controller editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractPanelQController.java,v 1.1.2.1 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractPanelQController extends JPanel {
 	private static final long serialVersionUID = 1048949988339374993L;

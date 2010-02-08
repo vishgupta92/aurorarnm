@@ -8,7 +8,7 @@ package aurora;
 /**
  * Interface for saving simulation data.
  * @author Alex Kurzhanskiy
- * @version $Id: DataStorage.java,v 1.4.2.1 2007/04/18 23:32:21 akurzhan Exp $
+ * @version $Id$
  */
 public interface DataStorage {
 	

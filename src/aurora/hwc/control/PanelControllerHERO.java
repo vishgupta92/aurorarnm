@@ -14,7 +14,7 @@ import aurora.hwc.control.ControllerHERO.HERORampInfo;
 /**
  * Editor for HERO controller.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelControllerHERO.java,v 1.1.2.3 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public class PanelControllerHERO extends AbstractPanelController {
 	private static final long serialVersionUID = 4241655930420665436L;

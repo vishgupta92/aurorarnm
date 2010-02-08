@@ -14,7 +14,7 @@ import aurora.util.Util;
  * Event that changes the fundamental diagram parameters
  * on the given Link.
  * @author Alex Kurzhanskiy
- * @version $Id: EventFD.java,v 1.4.2.5.2.3.2.4 2009/10/18 01:23:16 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventFD extends AbstractEvent {
 	private static final long serialVersionUID = 2419264559064698446L;

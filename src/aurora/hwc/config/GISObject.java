@@ -33,7 +33,7 @@ import com.vividsolutions.jts.io.WKTReader;
 /**
  * The core of GIS Importer.
  * @author Jaimyoung Kwon
- * @version $Id: GISObject.java,v 1.1.4.1.2.1.2.1 2009/10/01 00:13:12 akurzhan Exp $
+ * @version $Id$
  */
 public class GISObject {
 	private FeatureCollection featureCollection;

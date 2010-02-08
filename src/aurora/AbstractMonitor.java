@@ -16,7 +16,7 @@ import org.w3c.dom.*;
  *  monitors cannot see other monitors.
  * Monitors can be only seen by the network nodes, to which they belong.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractMonitor.java,v 1.1.2.2.2.6.2.5 2009/09/30 23:49:48 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractMonitor extends AbstractNetworkElement {
 	private static final long serialVersionUID = -4322333321756585702L;

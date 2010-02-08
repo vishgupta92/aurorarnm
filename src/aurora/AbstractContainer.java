@@ -13,7 +13,7 @@ import org.w3c.dom.*;
  * Base class for the top object that contains pointers
  * to all the Aurora system configuration.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractContainer.java,v 1.3.2.10.2.6.2.3 2009/09/30 23:44:20 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractContainer implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = 5225922999390390092L;

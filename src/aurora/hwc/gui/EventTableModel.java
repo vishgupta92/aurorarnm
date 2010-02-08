@@ -13,7 +13,7 @@ import aurora.util.Util;
 /**
  * Implementation of the displayed event table.
  * @author Alex Kurzhanskiy
- * @version $Id: EventTableModel.java,v 1.1.2.4.6.3 2009/10/18 05:17:14 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = -6770730636520245114L;

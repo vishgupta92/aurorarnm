@@ -15,7 +15,7 @@ import aurora.util.*;
 /**
  * Window displaying the road network summary.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowConfigurationSummary.java,v 1.1.4.1 2008/10/16 04:27:06 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowConfigurationSummary extends JDialog implements ActionListener {
 	private static final long serialVersionUID = -6238778669235911294L;

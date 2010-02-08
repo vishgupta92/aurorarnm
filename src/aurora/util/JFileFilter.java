@@ -12,7 +12,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Simple <code>FileFilter</code> class that works by filename extension. 
  * @author Alex Kurzhanskiy
- * @version $Id: JFileFilter.java,v 1.1 2007/03/26 02:06:13 akurzhan Exp $
+ * @version $Id$
  */
 public class JFileFilter extends FileFilter {
 	protected String description;

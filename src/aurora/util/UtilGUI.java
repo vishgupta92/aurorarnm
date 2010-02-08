@@ -13,7 +13,7 @@ import aurora.*;
 /**
  * Utilities for GUI work.
  * @author Alex Kurzhanskiy
- * @version $Id: UtilGUI.java,v 1.1.2.4 2007/05/18 04:39:42 akurzhan Exp $
+ * @version $Id$
  */
 public class UtilGUI {
 	

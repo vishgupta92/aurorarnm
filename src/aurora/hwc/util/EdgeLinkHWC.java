@@ -12,7 +12,7 @@ import aurora.hwc.*;
 /**
  * Implementation of edge for JUNG graph. 
  * @author Alex Kurzhanskiy
- * @version $Id: EdgeLinkHWC.java,v 1.1.4.1.4.1 2009/06/14 06:45:28 akurzhan Exp $
+ * @version $Id$
  */
 public class EdgeLinkHWC extends DirectedSparseEdge {
 	protected AbstractLinkHWC link;

@@ -10,7 +10,7 @@ import java.io.*;
 /**
  * Implementation of a point in R^3.
  * @author Alex Kurzhanskiy, Gabriel Gomes
- * @version $Id: Point.java,v 1.2.2.3.4.2 2009/06/14 20:04:54 akurzhan Exp $
+ * @version $Id$
  */
 public class Point implements Serializable {
 	private static final long serialVersionUID = -3330701858833084352L;

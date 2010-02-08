@@ -11,7 +11,7 @@ import java.lang.Exception;
 * Exception thrown if an error in configuration found.
 * 
 * @author Alex Kurzhanskiy
-* @version $Id: ExceptionConfiguration.java,v 1.2 2007/02/10 23:26:56 akurzhan Exp $
+* @version $Id$
 */
 public class ExceptionConfiguration extends Exception {
 	private static final long serialVersionUID = 4432213481848132765L;

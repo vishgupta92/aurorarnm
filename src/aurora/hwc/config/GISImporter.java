@@ -23,7 +23,7 @@ import aurora.util.UtilGUI;
  * - Export to aurora 
  * Convert GIS shape file to Aurora configuration XML files.
  * @author Jaimyoung Kwon
- * @version $Id: GISImporter.java,v 1.1.4.1.2.3.2.4 2009/11/14 02:01:32 akurzhan Exp $
+ * @version $Id$
  */
 public class GISImporter extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;

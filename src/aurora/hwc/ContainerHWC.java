@@ -17,7 +17,7 @@ import aurora.*;
  * Top object that contains pointers
  * to all the Aurora system configuration.
  * @author Alex Kurzhanskiy
- * @version $Id: ContainerHWC.java,v 1.3.2.14.2.6.2.4 2009/10/18 00:58:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class ContainerHWC extends AbstractContainer {
 	private static final long serialVersionUID = 2277054116304494673L;

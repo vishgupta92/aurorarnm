@@ -14,7 +14,7 @@ import aurora.util.*;
 /**
  * New Monitor form to be displayed during the Monitor creation.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelNewMonitor.java,v 1.1.2.1 2009/01/11 19:46:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelNewMonitor extends AbstractNewNetworkElementPanel {
 	private static final long serialVersionUID = -8991762453694679366L;

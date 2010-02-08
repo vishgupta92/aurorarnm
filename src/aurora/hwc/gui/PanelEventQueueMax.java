@@ -13,7 +13,7 @@ import aurora.util.*;
 /**
  * Form for queue limit change event.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelEventQueueMax.java,v 1.1.2.4 2008/10/16 04:27:09 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelEventQueueMax extends AbstractEventPanel {
 	private static final long serialVersionUID = 1222004371856565961L;

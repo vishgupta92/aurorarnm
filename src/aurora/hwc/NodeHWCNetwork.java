@@ -10,7 +10,7 @@ import aurora.*;
 /**
  * Road Network Node.
  * @author Alex Kurzhanskiy
- * @version $Id: NodeHWCNetwork.java,v 1.8.2.8.2.1.2.3 2009/10/22 02:58:13 akurzhan Exp $
+ * @version $Id$
  */
 public final class NodeHWCNetwork extends AbstractNodeComplex {
 	private static final long serialVersionUID = -124608463365357280L;

@@ -8,7 +8,7 @@ package aurora.hwc;
 /**
  * Dummy Link.
  * @author Alex Kurzhanskiy
- * @version $Id: LinkDummy.java,v 1.8.2.1.4.1 2009/09/11 23:33:54 akurzhan Exp $
+ * @version $Id$
  */
 public final class LinkDummy extends AbstractLinkHWC {
 	private static final long serialVersionUID = 2061517905572701027L;

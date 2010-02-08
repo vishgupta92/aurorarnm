@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * Class for describing simulation status.
  * @author Alex Kurzhanskiy
- * @version $Id: SimulationStatus.java,v 1.1.2.2 2007/04/14 05:08:41 akurzhan Exp $
+ * @version $Id$
  */
 public class SimulationStatus  implements Serializable {
 	private static final long serialVersionUID = 2380454189887604271L;

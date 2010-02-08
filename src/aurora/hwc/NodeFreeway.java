@@ -18,7 +18,7 @@ import aurora.*;
  * @see LinkFwML, LinkFwHOV, LinkOR, LinkFR, LinkDummy
  *  
  * @author Alex Kurzhanskiy
- * @version $Id: NodeFreeway.java,v 1.11.2.3.2.1.2.4 2009/11/12 02:33:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class NodeFreeway extends AbstractNodeHWC {
 	private static final long serialVersionUID = -3841872997290136430L;

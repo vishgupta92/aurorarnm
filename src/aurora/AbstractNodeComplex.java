@@ -15,7 +15,7 @@ import org.w3c.dom.*;
 /**
  * Base class for Network Nodes.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeComplex.java,v 1.18.2.12.2.12.2.18 2009/11/22 22:34:30 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractNodeComplex extends AbstractNode {
 	private static final long serialVersionUID = -6880500889959625206L;

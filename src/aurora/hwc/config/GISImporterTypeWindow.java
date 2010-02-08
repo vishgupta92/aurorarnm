@@ -19,7 +19,7 @@ import org.geotools.feature.GeometryAttributeType;
 /**
  * Implementation of type filter.
  * @author Jaimyoung Kwon
- * @version $Id: GISImporterTypeWindow.java,v 1.1.4.1.4.1 2009/10/01 00:13:12 akurzhan Exp $
+ * @version $Id$
  */
 public class GISImporterTypeWindow extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;

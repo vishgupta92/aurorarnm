@@ -13,7 +13,7 @@ import javax.swing.*;
 /**
  * Implementation of 
  * @author Alex Kurzhanskiy
- * @version $Id: HyperlinkLabel.java,v 1.1.4.1 2008/10/16 03:37:14 akurzhan Exp $
+ * @version $Id$
  */
 public class HyperlinkLabel extends JLabel implements MouseListener {
 	private static final long serialVersionUID = 5167616594614061634L;

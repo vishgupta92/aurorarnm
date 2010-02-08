@@ -19,7 +19,7 @@ import aurora.util.*;
  * @see LinkFwML, LinkFwHOV, LinkHw, LinkOR, LinkFR, LinkIc, LinkStreet, LinkDummy
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractLinkHWC.java,v 1.21.2.16.2.20.2.27 2009/11/28 02:33:27 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractLinkHWC extends AbstractLink {
 	private static final long serialVersionUID = 7448808131935808045L;

@@ -18,7 +18,7 @@ import org.w3c.dom.*;
 /**
  * Class for program settings description.
  * @author Alex Kurzhanskiy
- * @version $Id: SimulationSettings.java,v 1.1.2.6.2.3.2.2 2009/06/21 05:13:26 akurzhan Exp $
+ * @version $Id$
  */
 public class SimulationSettings implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = -5690805735719405L;

@@ -12,7 +12,7 @@ import org.w3c.dom.Node;
 /**
  * Functions that need to be implemented by configurable Aurora objects.
  * @author Alex Kurzhanskiy
- * @version $Id: AuroraConfigurable.java,v 1.1.2.2 2008/10/16 04:27:07 akurzhan Exp $
+ * @version $Id$
  */
 public interface AuroraConfigurable {
 

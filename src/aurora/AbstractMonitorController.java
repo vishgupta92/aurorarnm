@@ -13,7 +13,7 @@ import org.w3c.dom.*;
  * Partial implementation of Controller Monitor.<br>
  * This Monitor is needed for coordinated control of multiple nodes.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractMonitorController.java,v 1.1.2.2.2.11 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractMonitorController extends AbstractMonitor {
 	private static final long serialVersionUID = 8329990843622747175L;

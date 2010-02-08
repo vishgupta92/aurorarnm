@@ -11,7 +11,7 @@ import java.util.Vector;
  * Base class for Links.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractLink.java,v 1.12.2.2.2.1.2.2 2009/10/22 23:06:23 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractLink extends AbstractNetworkElement {
 	private static final long serialVersionUID = 2434370630381957283L;

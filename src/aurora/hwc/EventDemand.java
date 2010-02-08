@@ -14,7 +14,7 @@ import aurora.util.Util;
 /**
  * Event that changes the demand knob value on a given Link.
  * @author Alex Kurzhanskiy
- * @version $Id: EventDemand.java,v 1.4.2.6.2.1.2.3 2009/10/18 01:30:35 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventDemand extends AbstractEvent {
 	private static final long serialVersionUID = 6391985618194128997L;

@@ -18,7 +18,7 @@ import aurora.util.*;
  * @see NodeFreeway, NodeHighway, NodeUJSignal, NodeUJStop
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractNodeHWC.java,v 1.12.2.9.2.28.2.17 2009/11/28 02:35:30 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	private static final long serialVersionUID = 3609519064761135698L;

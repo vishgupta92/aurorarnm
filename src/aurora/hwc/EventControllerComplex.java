@@ -14,7 +14,7 @@ import aurora.util.Util;
 /**
  * Event that changes complex controller at given Monitor.
  * @author Alex Kurzhanskiy
- * @version $Id: EventControllerComplex.java,v 1.4.2.4.2.2.2.1 2009/10/18 01:23:16 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventControllerComplex extends AbstractEvent {
 	private static final long serialVersionUID = 4872783738180737465L;

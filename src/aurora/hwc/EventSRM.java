@@ -14,7 +14,7 @@ import aurora.util.Util;
 /**
  * Event that changes split ratio matrix at given simple Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventSRM.java,v 1.4.2.4.2.3.2.2 2009/10/18 21:35:42 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventSRM extends AbstractEvent {
 	private static final long serialVersionUID = -8952099927246173708L;

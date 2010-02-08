@@ -21,7 +21,7 @@ import aurora.util.*;
 /**
  * Window for Control Monitor display in the Configurator.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowMonitorController.java,v 1.1.2.3 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowMonitorController extends JInternalFrame implements ActionListener, ChangeListener, DocumentListener {
 	private static final long serialVersionUID = 6444306218621414981L;

@@ -15,7 +15,7 @@ import aurora.*;
  * @see NodeFreeway, NodeHihway, NodeHWCNetwork
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: LinkIC.java,v 1.8.2.1.4.1 2009/09/11 23:33:54 akurzhan Exp $
+ * @version $Id$
  */
 public final class LinkIC extends AbstractLinkHWC {
 	private static final long serialVersionUID = -8451041344485824646L;

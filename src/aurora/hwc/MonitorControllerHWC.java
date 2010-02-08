@@ -15,7 +15,7 @@ import aurora.*;
 /**
  * Implementation of control monitor for road networks.
  * @author Gabriel Gomes
- * $Id: MonitorControllerHWC.java,v 1.1.2.10 2009/10/08 04:55:04 gomes Exp $
+ * $Id$
  */
 public class MonitorControllerHWC extends AbstractMonitorController {
 	private static final long serialVersionUID = -5116887026275839462L;

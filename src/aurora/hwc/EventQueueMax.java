@@ -13,7 +13,7 @@ import aurora.util.Util;
 /**
  * Event that changes queue limit on the assigned Link.
  * @author Alex Kurzhanskiy
- * @version $Id: EventQueueMax.java,v 1.4.2.4.2.2.2.1 2009/10/18 01:23:16 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventQueueMax extends AbstractEvent {
 	private static final long serialVersionUID = 7217681145706831869L;

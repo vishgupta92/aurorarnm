@@ -16,7 +16,7 @@ import aurora.hwc.*;
 /**
  * Traffic responsive controller implementation.
  * @author Gabriel Gomes, Alex Kurzhanskiy
- * @version $Id: ControllerTR.java,v 1.1.2.7 2009/11/14 00:32:47 akurzhan Exp $
+ * @version $Id$
  */
 public class ControllerTR extends AbstractControllerSimpleHWC {
 	private static final long serialVersionUID = -4901478322713228948L;

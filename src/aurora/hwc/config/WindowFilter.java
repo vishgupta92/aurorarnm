@@ -15,7 +15,7 @@ import aurora.util.*;
 /**
  * Implementation of Filter window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowFilter.java,v 1.1.4.1 2008/10/16 04:27:06 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowFilter extends JDialog implements ActionListener {
 	private static final long serialVersionUID = -8646624624075264324L;

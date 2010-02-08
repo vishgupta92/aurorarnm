@@ -8,7 +8,7 @@ package aurora;
 /**
  * This class is a base for Node Controllers.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractControllerNode.java,v 1.1.2.1.2.2 2009/11/22 22:19:35 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractControllerNode extends AbstractController {
 	private static final long serialVersionUID = -7845344291835328109L;

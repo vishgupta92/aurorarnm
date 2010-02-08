@@ -22,7 +22,7 @@ import aurora.util.*;
 /**
  * Main window of Aurora HWC.
  * @author Alex Kurzhanskiy
- * @version $Id: MainPane.java,v 1.2.2.18.2.3.2.11 2009/11/14 02:01:32 akurzhan Exp $
+ * @version $Id$
  */
 public final class MainPane extends JFrame implements ActionListener, ItemListener, CommonMain {
 	private static final long serialVersionUID = 8711529895478014515L;

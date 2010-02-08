@@ -12,7 +12,7 @@ import javax.swing.*;
 /**
  * Implementation of Controller Editor window.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowControllerEditor.java,v 1.1.4.1.4.3 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowControllerEditor extends JDialog {
 	private static final long serialVersionUID = -4237759832291252238L;

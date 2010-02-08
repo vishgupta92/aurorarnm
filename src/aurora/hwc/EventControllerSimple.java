@@ -14,7 +14,7 @@ import aurora.util.Util;
  * Event that changes local controller for given Link
  * at the assigned Node.
  * @author Alex Kurzhanskiy
- * @version $Id: EventControllerSimple.java,v 1.4.2.5.2.2.2.2 2009/10/19 05:20:29 akurzhan Exp $
+ * @version $Id$
  */
 public final class EventControllerSimple extends AbstractEvent {
 	private static final long serialVersionUID = -4895477288111895032L;

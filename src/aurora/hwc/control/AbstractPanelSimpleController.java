@@ -16,7 +16,7 @@ import aurora.util.*;
 /**
  * Base class for simple controller editing panels.
  * @author Alex Kurzhanskiy
- * @version $Id: AbstractPanelSimpleController.java,v 1.1.2.1 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public abstract class AbstractPanelSimpleController extends AbstractPanelController implements ActionListener {
 	private static final long serialVersionUID = 4408308365725315058L;

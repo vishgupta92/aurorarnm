@@ -11,7 +11,7 @@ import java.lang.Exception;
  * Exception thrown if simulation error occurs.
  * 
  * @author Alex Kurzhanskiy
- * @version $Id: ExceptionSimulation.java,v 1.2 2007/02/10 23:26:56 akurzhan Exp $
+ * @version $Id$
  */
 public class ExceptionSimulation extends Exception {
 	private static final long serialVersionUID = 9118982666121373770L;

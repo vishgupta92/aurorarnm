@@ -12,7 +12,7 @@ import aurora.util.SpringUtilities;
 /**
  * Panel for editing ALINEA properties.
  * @author Alex Kurzhanskiy
- * @version $Id: PanelControllerALINEA.java,v 1.1.4.1.4.2 2009/10/01 05:49:01 akurzhan Exp $
+ * @version $Id$
  */
 public final class PanelControllerALINEA extends AbstractPanelSimpleController {
 	private static final long serialVersionUID = 6013620151807393177L;

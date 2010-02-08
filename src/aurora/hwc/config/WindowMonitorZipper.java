@@ -19,7 +19,7 @@ import aurora.util.*;
 /**
  * Window for Zipper display in the Configurator.
  * @author Alex Kurzhanskiy
- * @version $Id: WindowMonitorZipper.java,v 1.1.2.3 2009/01/11 19:42:09 akurzhan Exp $
+ * @version $Id$
  */
 public final class WindowMonitorZipper extends JInternalFrame implements ActionListener, ChangeListener, DocumentListener {
 	private static final long serialVersionUID = 2467662662857665813L;
