@@ -89,31 +89,6 @@ public final class TypesHWC extends AbstractTypes {
 		return "Unknown type";
 	}
 	
-	public final static String typeLetterCode(int type) {
-		switch(type) {
-		case NODE_FREEWAY: return "F";
-		case NODE_HIGHWAY: return "H";
-		case NODE_SIGNAL: return "S";
-		case NODE_STOP: return "P";
-		case NODE_OTHER: return "O";
-		case LINK_DUMMY: return "D";
-		case LINK_FREEWAY: return "FW";
-		case LINK_HOV: return "HOV";
-		case LINK_HIGHWAY: return "HW";
-		case LINK_ONRAMP: return "OR";
-		case LINK_OFFRAMP: return "FR";
-		case LINK_INTERCONNECT: return "IC";
-		case LINK_STREET: return "ST";
-		case LINK_HOT: return "HOT";
-		case LINK_HV: return "HV";
-		case LINK_ETC: return "ETC";
-		case MASK_MONITOR_CONTROLLER: return "C";
-		case MASK_MONITOR_EVENT: return "E";
-		case MASK_MONITOR_ZIPPER: return "Z";
-		}
-		return "UT";
-	}
-	
 	public final static String typeClassName(int type) {
 		switch(type) {
 		case NETWORK_HWC: return "aurora.hwc.NodeHWCNetwork";
