@@ -101,6 +101,13 @@ public abstract class AbstractMonitorZipper extends AbstractMonitor {
 	}
 	
 	/**
+	 * Returns letter code of the Monitor type.
+	 */
+	public final String getTypeLetterCode() {
+		return "Z";
+	}
+	
+	/**
 	 * Adds a Link pair to the list.
 	 * @param ol Out-Link.
 	 * @param il In-Link.

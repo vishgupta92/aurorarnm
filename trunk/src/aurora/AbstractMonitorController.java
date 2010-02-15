@@ -177,6 +177,13 @@ public abstract class AbstractMonitorController extends AbstractMonitor {
 			res &= myController.dataUpdate(ts);
 		return res;
 	}
+	
+	/**
+	 * Returns letter code of the Monitor type.
+	 */
+	public final String getTypeLetterCode() {
+		return "C";
+	}
 
 	/**
 	 * Returns controller.
