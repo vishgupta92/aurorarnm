@@ -34,6 +34,13 @@ public final class LinkStreet extends AbstractLinkHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Link type.
+	 */
+	public String getTypeLetterCode() {
+		return "ST";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

@@ -179,6 +179,13 @@ public final class SensorLoopDetector extends AbstractSensor {
 	}
 	
 	/**
+	 * Returns letter code of the Sensor type.
+	 */
+	public String getTypeLetterCode() {
+		return "LD";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

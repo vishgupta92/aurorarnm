@@ -34,6 +34,13 @@ public final class LinkFR extends AbstractLinkHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Link type.
+	 */
+	public String getTypeLetterCode() {
+		return "FR";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

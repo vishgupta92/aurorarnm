@@ -34,6 +34,13 @@ public final class LinkIC extends AbstractLinkHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Link type.
+	 */
+	public String getTypeLetterCode() {
+		return "IC";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

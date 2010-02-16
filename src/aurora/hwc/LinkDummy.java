@@ -27,6 +27,13 @@ public final class LinkDummy extends AbstractLinkHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Link type.
+	 */
+	public String getTypeLetterCode() {
+		return "D";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

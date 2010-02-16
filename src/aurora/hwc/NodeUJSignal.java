@@ -288,6 +288,13 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Node type.
+	 */
+	public String getTypeLetterCode() {
+		return "S";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

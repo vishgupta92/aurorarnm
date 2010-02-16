@@ -34,6 +34,13 @@ public final class LinkFwML extends AbstractLinkHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Link type.
+	 */
+	public String getTypeLetterCode() {
+		return "FW";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {
