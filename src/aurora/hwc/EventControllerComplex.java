@@ -127,6 +127,13 @@ public final class EventControllerComplex extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "CCONTROL";
+	}
+	
+	/**
 	 * Returns controller.
 	 */
 	public final AbstractControllerComplex getController() {

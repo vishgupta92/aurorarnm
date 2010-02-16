@@ -133,6 +133,13 @@ public final class EventDemand extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "DEMAND";
+	}
+	
+	/**
 	 * Returns demand knob values.
 	 */
 	public final double[] getDemandKnobs() {

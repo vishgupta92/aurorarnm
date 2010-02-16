@@ -73,6 +73,11 @@ public abstract class AbstractController implements AuroraConfigurable, Serializ
 	}
 	
 	/**
+	 * Returns letter code of the controller type.
+	 */
+	public abstract String getTypeLetterCode();
+	
+	/**
 	 * Checks if the controller is simple.
 	 * @return <code>true</code> if simple, <code>false</code> - otherwise.
 	 */

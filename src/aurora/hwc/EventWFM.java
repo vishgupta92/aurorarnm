@@ -183,6 +183,13 @@ public final class EventWFM extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "WFM";
+	}
+	
+	/**
 	 * Returns weaving factor matrix.
 	 */
 	public double[][] getWeavingFactorMatrix() {

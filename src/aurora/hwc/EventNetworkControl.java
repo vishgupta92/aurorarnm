@@ -143,6 +143,13 @@ public final class EventNetworkControl extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "TCONTROL";
+	}
+	
+	/**
 	 * Returns <code>true</code> if control is on, <code>false</code> - otherwise.
 	 */
 	public final boolean hasControl() {

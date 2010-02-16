@@ -190,6 +190,13 @@ public final class EventFD extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "FD";
+	}
+	
+	/**
 	 * Returns capacity of the link.
 	 */
 	public final double getMaxFlow() {

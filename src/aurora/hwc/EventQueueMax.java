@@ -128,6 +128,13 @@ public final class EventQueueMax extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "QLIM";
+	}
+	
+	/**
 	 * Returns queue limit.
 	 */
 	public final double getQueueMax() {

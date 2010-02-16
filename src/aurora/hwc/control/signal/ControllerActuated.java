@@ -837,4 +837,11 @@ public class ControllerActuated extends BaseSignalController {
 		return res;
 	}
 	
+	/**
+	 * Returns letter code of the controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "ACTUATED";
+	}
+	
 }

@@ -191,6 +191,12 @@ public final class ControllerSimpleSignal extends AbstractControllerHWC {
 		return res;
 	}
 	
+	/**
+	 * Returns letter code of the controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "SIMPLESIGNAL";
+	}
 	
 	/**
 	 * Overrides <code>java.lang.Object.toString()</code>.

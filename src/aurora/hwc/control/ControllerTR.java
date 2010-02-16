@@ -37,6 +37,13 @@ public class ControllerTR extends AbstractControllerSimpleHWC {
 	}
 	
 	/**
+	 * Returns letter code of the controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "TR";
+	}
+	
+	/**
 	 * Returns mask for compatible Node types.
 	 */
 	public final int getCompatibleNodeTypes() {
