@@ -34,6 +34,13 @@ public final class LinkHw extends AbstractLinkHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Link type.
+	 */
+	public String getTypeLetterCode() {
+		return "HW";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

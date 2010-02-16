@@ -33,6 +33,13 @@ public final class NodeUJStop extends AbstractNodeHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Node type.
+	 */
+	public String getTypeLetterCode() {
+		return "P";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

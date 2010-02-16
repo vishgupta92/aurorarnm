@@ -34,6 +34,13 @@ public final class LinkOR extends AbstractLinkHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Link type.
+	 */
+	public String getTypeLetterCode() {
+		return "OR";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

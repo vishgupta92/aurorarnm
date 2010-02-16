@@ -80,6 +80,13 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	}
 	
 	/**
+	 * Returns letter code of the Node type.
+	 */
+	public String getTypeLetterCode() {
+		return "N";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {
