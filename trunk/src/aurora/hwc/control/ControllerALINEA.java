@@ -174,6 +174,13 @@ public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 	}
 	
 	/**
+	 * Returns letter code of the controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "ALINEA";
+	}
+	
+	/**
 	 * Overrides <code>java.lang.Object.toString()</code>.
 	 * @return string that describes the Controller.
 	 */

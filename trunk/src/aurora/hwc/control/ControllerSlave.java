@@ -81,6 +81,13 @@ public class ControllerSlave extends AbstractControllerSimpleHWC {
 	public final String getDescription() {
 		return "Slave";
 	}
+	
+	/**
+	 * Returns letter code of the controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "SLAVE";
+	}
 
 	/**
 	 * Overrides <code>java.lang.Object.toString()</code>.

@@ -237,6 +237,8 @@ public final class ContainerHWC extends AbstractContainer {
 	 */
 	public void defaultTypes2Classnames() {
 		// *** Network Elements ***
+		// networks
+		ne_type2classname.put("N", "aurora.hwc.NodeHWCNetwork");
 		// monitors
 		ne_type2classname.put("C", "aurora.hwc.MonitorControllerHWC");
 		ne_type2classname.put("E", "aurora.hwc.MonitorZipperHWC");

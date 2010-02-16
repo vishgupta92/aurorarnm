@@ -172,6 +172,13 @@ public class ControllerHERO extends AbstractControllerComplexHWC {
 		return;
 	}
 	
+	/**
+	 * Returns letter code of the controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "HERO";
+	}
+	
 	private AbstractLinkHWC getUpMLbyORLink(AbstractLink or) {
 		AbstractNode x = or.getEndNode();
 		for (int i = 0; i < x.getPredecessors().size(); i++){

@@ -39,6 +39,13 @@ public final class NodeFreeway extends AbstractNodeHWC {
 	}
 	
 	/**
+	 * Returns letter code of the Node type.
+	 */
+	public String getTypeLetterCode() {
+		return "F";
+	}
+	
+	/**
 	 * Returns type description.
 	 */
 	public final String getTypeString() {

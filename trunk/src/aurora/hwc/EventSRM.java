@@ -196,6 +196,13 @@ public final class EventSRM extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "SRM";
+	}
+	
+	/**
 	 * Returns split ratio matrix.
 	 */
 	public AuroraIntervalVector[][] getSplitRatioMatrix() {

@@ -216,7 +216,14 @@ public class ControllerSWARM extends AbstractControllerComplexHWC {
 		out.print("</zones>\n");
 		out.print("</controller>\n");
 		return;
-	}	
+	}
+	
+	/**
+	 * Returns letter code of the controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "SWARM";
+	}
 	
 	// MAIN FUNCTION =======================================================================
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {

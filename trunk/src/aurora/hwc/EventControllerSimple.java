@@ -154,6 +154,13 @@ public final class EventControllerSimple extends AbstractEvent {
 	}
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public final String getTypeLetterCode() {
+		return "SCONTROL";
+	}
+	
+	/**
 	 * Returns controller.
 	 */
 	public final AbstractControllerSimple getController() {

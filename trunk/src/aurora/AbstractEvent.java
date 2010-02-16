@@ -146,6 +146,11 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 	public abstract String getTypeString();
 	
 	/**
+	 * Returns letter code of the event type.
+	 */
+	public abstract String getTypeLetterCode();
+	
+	/**
 	 * Returns event manager.
 	 */
 	public final EventManager getEventManager() {

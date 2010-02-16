@@ -17,7 +17,7 @@ import aurora.hwc.TypesHWC;
 import aurora.hwc.control.AbstractControllerComplexHWC;
 import aurora.hwc.control.ControllerSlave;
 
-public class BaseSignalController extends AbstractControllerComplexHWC {
+public abstract class BaseSignalController extends AbstractControllerComplexHWC {
 	private static final long serialVersionUID = 6659839156661203567L;
 
 	protected int numintersections;
