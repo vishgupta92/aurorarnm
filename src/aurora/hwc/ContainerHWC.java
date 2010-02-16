@@ -157,6 +157,7 @@ public final class ContainerHWC extends AbstractContainer {
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
 		mySettings = new SimulationSettingsHWC();
+		defaultTypes2Classnames();
 		boolean res = super.initFromDOM(p);
 		if (!res)
 			return !res;
@@ -229,6 +230,61 @@ public final class ContainerHWC extends AbstractContainer {
 		// reset network
 		res &= myNetwork.initialize();
 		return res;
+	}
+	
+	/**
+	 * Fills in the default type letter code to class name maps.
+	 */
+	public void defaultTypes2Classnames() {
+		// *** Network Elements ***
+		// monitors
+		ne_type2classname.put("C", "aurora.hwc.MonitorControllerHWC");
+		ne_type2classname.put("E", "aurora.hwc.MonitorZipperHWC");
+		ne_type2classname.put("Z", "aurora.hwc.MonitorEventHWC");
+		// nodes
+		ne_type2classname.put("F", "aurora.hwc.NodeFreeway");
+		ne_type2classname.put("H", "aurora.hwc.NodeHighway");
+		ne_type2classname.put("S", "aurora.hwc.NodeUJSignal");
+		ne_type2classname.put("P", "aurora.hwc.NodeUJStop");
+		ne_type2classname.put("O", "aurora.hwc.NodeOther");
+		// links
+		ne_type2classname.put("FW", "aurora.hwc.LinkFwML");
+		ne_type2classname.put("HW", "aurora.hwc.LinkHw");
+		ne_type2classname.put("HOV", "aurora.hwc.LinkFwHOV");
+		ne_type2classname.put("HOT", "aurora.hwc.LinkHOT");
+		ne_type2classname.put("HV", "aurora.hwc.LinkHV");
+		ne_type2classname.put("ETC", "aurora.hwc.LinkETC");
+		ne_type2classname.put("OR", "aurora.hwc.LinkOR");
+		ne_type2classname.put("FR", "aurora.hwc.LinkFR");
+		ne_type2classname.put("IC", "aurora.hwc.LinkIC");
+		ne_type2classname.put("ST", "aurora.hwc.LinkStreet");
+		ne_type2classname.put("D", "aurora.hwc.LinkDummy");
+		// sensors
+		ne_type2classname.put("LD", "aurora.hwc.SensorLoopDetector");
+		// *** Events ***
+		evt_type2classname.put("FD", "aurora.hwc.EventFD");
+		evt_type2classname.put("DEMAND", "aurora.hwc.EventDemand");
+		evt_type2classname.put("QLIM", "aurora.hwc.EventQueueMax");
+		evt_type2classname.put("SRM", "aurora.hwc.EventSRM");
+		evt_type2classname.put("WFM", "aurora.hwc.EventWFM");
+		evt_type2classname.put("SCONTROL", "aurora.hwc.EventControllerSimple");
+		evt_type2classname.put("NCONTROL", "aurora.hwc.EventControllerNode");
+		evt_type2classname.put("CCONTROL", "aurora.hwc.EventControllerComplex");
+		evt_type2classname.put("TCONTROL", "aurora.hwc.EventNetworkControl");
+		evt_type2classname.put("MONITOR", "aurora.hwc.EventMonitor");
+		// *** Controllers ***
+		ctr_type2classname.put("ALINEA", "aurora.hwc.control.ControllerALINEA");
+		ctr_type2classname.put("TOD", "aurora.hwc.control.ControllerTOD");
+		ctr_type2classname.put("TR", "aurora.hwc.control.ControllerTR");
+		ctr_type2classname.put("VSLTOD", "aurora.hwc.control.ControllerVSLTOD");
+		ctr_type2classname.put("SLAVE", "aurora.hwc.control.ControllerSlave");
+		ctr_type2classname.put("SIMPLESIGNAL", "aurora.hwc.control.ControllerSimpleSignal");
+		ctr_type2classname.put("SWARM", "aurora.hwc.control.ControllerSWARM");
+		ctr_type2classname.put("HERO", "aurora.hwc.control.ControllerHERO");
+		ctr_type2classname.put("PRETIMED", "aurora.hwc.control.signal.ControllerPretimed");
+		ctr_type2classname.put("ACTUATED", "aurora.hwc.control.signal.ControllerActuated");
+		ctr_type2classname.put("COORDINATED", "aurora.hwc.control.signal.ControllerCoordinated");
+		return;
 	}
 	
 	/**

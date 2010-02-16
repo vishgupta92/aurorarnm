@@ -24,8 +24,13 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	protected SimulationStatus myStatus = new SimulationStatus();
 	protected boolean isSim = true;
 	protected boolean isBatch = false;
+	protected HashMap<String, String> ne_type2classname = new HashMap<String, String>();
+	protected HashMap<String, String> evt_type2classname = new HashMap<String, String>();
+	protected HashMap<String, String> ctr_type2classname = new HashMap<String, String>();
+	protected HashMap<String, String> ne_type2classname_ext = new HashMap<String, String>();
+	protected HashMap<String, String> evt_type2classname_ext = new HashMap<String, String>();
+	protected HashMap<String, String> ctr_type2classname_ext = new HashMap<String, String>();
 
-	
 	
 	/**
 	 * Initializes the container contents from given DOM structure.
@@ -116,6 +121,11 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 * @throws ExceptionDatabase, ExceptionEvent
 	 */
 	public abstract boolean initialize() throws ExceptionConfiguration, ExceptionDatabase, ExceptionEvent;
+	
+	/**
+	 * Fills in the default type letter code to class name maps.
+	 */
+	public abstract void defaultTypes2Classnames();
 
 	/**
 	 * Bogus function that always returns <code>true</code>.
@@ -181,6 +191,39 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 */
 	public final SimulationStatus getMyStatus() {
 		return myStatus;
+	}
+	
+	/**
+	 * Returns Network Element class name for the specified type letter code.
+	 */
+	public String neType2Classname(String xx) {
+		String x = xx.toUpperCase();
+		String s = ne_type2classname_ext.get(x);
+		if (s == null)
+			s = ne_type2classname.get(x);
+		return s;
+	}
+	
+	/**
+	 * Returns event class name for the specified type letter code.
+	 */
+	public String evtType2Classname(String xx) {
+		String x = xx.toUpperCase();
+		String s = evt_type2classname_ext.get(x);
+		if (s == null)
+			s = evt_type2classname.get(x);
+		return s;
+	}
+	
+	/**
+	 * Returns controller class name for the specified type letter code.
+	 */
+	public String ctrType2Classname(String xx) {
+		String x = xx.toUpperCase();
+		String s = ctr_type2classname_ext.get(x);
+		if (s == null)
+			s = ctr_type2classname.get(x);
+		return s;
 	}
 	
 	/**
