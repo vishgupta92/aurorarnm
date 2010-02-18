@@ -318,6 +318,8 @@ public final class ContainerHWC extends AbstractContainer {
 		ctr_type2classname.put("QUEUEOVERRIDE", "aurora.hwc.control.QOverride");
 		ctr_type2classname.put("PROPORTIONAL", "aurora.hwc.control.QProportional");
 		ctr_type2classname.put("PI", "aurora.hwc.control.QPI");
+		// *** Models ***
+		mdl_type2classname.put("CTM", "aurora.hwc.DynamicsCTM");
 		return;
 	}
 	

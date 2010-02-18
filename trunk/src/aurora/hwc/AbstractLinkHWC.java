@@ -9,6 +9,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import org.w3c.dom.*;
+
 import aurora.*;
 import aurora.util.*;
 
@@ -100,7 +101,13 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 					if (pp.item(i).getNodeName().equals("end"))
 						setEndNode(myNetwork.getNodeById(Integer.parseInt(pp.item(i).getAttributes().getNamedItem("id").getNodeValue())));
 					if (pp.item(i).getNodeName().equals("dynamics")) {
-						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
+						Node type_attr = pp.item(i).getAttributes().getNamedItem("type");
+						String class_name = null;
+						if (type_attr != null)
+							class_name = myNetwork.getContainer().mdlType2Classname(type_attr.getNodeValue());
+						else
+							class_name = pp.item(i).getAttributes().getNamedItem("class").getNodeValue();
+						Class c = Class.forName(class_name);
 						myDynamics = (DynamicsHWC)c.newInstance();
 					}
 					if (pp.item(i).getNodeName().equals("density")) {
@@ -173,7 +180,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			out.print("<begin id=\"" + Integer.toString(predecessors.firstElement().getId()) + "\"/>");
 		if (successors.size() > 0)
 			out.print("<end id=\"" + Integer.toString(successors.firstElement().getId()) + "\"/>");
-		out.print("<dynamics class=\"" + myDynamics.getClass().getName() + "\"/>");
+		out.print("<dynamics type=\"" + myDynamics.getTypeLetterCode() + "\"/>");
 		out.print("<density>" + density.toStringWithInverseWeights(((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).getVehicleWeights(), false) + "</density>");
 		if (!demand.isEmpty()) {
 			out.print("<demand tp=\"" + Double.toString(demandTP) + "\" knob=\"" + getDemandKnobsAsString() + "\">");
