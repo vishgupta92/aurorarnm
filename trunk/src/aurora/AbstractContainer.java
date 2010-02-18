@@ -38,52 +38,7 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionConfiguration
 	 */
-	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if ((p == null) || (!p.hasChildNodes()))
-			return !res;
-		myNetwork = null;
-		myEventManager = new EventManager();
-		res &= myEventManager.setContainer(this);
-		try {
-			for (int i = 0; i < p.getChildNodes().getLength(); i++)
-				if (p.getChildNodes().item(i).getNodeName().equals("settings")) {
-					if (mySettings == null) {
-						Class c = Class.forName(p.getChildNodes().item(i).getAttributes().getNamedItem("class").getNodeValue());
-						mySettings = (SimulationSettings)c.newInstance();
-					}
-					res &= mySettings.initFromDOM(p.getChildNodes().item(i));
-				}
-			if (mySettings == null)
-				mySettings = new SimulationSettings();
-			for (int i = 0; i < p.getChildNodes().getLength(); i++) {
-				if (p.getChildNodes().item(i).getNodeName().equals("network")) {
-					if (myStatus != null)
-						myStatus.setSaved(true);
-					Class c = Class.forName(p.getChildNodes().item(i).getAttributes().getNamedItem("class").getNodeValue());
-					myNetwork = (AbstractNodeComplex)c.newInstance();
-					res &= myNetwork.setContainer(this);
-					res &= myNetwork.initFromDOM(p.getChildNodes().item(i));
-				}
-				if (p.getChildNodes().item(i).getNodeName().equals("EventList")) {
-					res &= myEventManager.initFromDOM(p.getChildNodes().item(i));
-				}
-			}
-		}
-		catch(Exception e) {
-			res = false;
-			throw new ExceptionConfiguration(e.getMessage());
-		}
-		if (myNetwork == null)
-			throw new ExceptionConfiguration("No network specified in the configuration file.");
-		if (myStatus == null)
-			myStatus = new SimulationStatus();
-		myStatus.setSaved(true);
-		myStatus.setStopped(true);
-		if (mySettings.getDisplayTP() < myNetwork.getTP())
-			mySettings.setDisplayTP(myNetwork.getTP());
-		return res;
-	}
+	public abstract boolean initFromDOM(Node p) throws ExceptionConfiguration;
 	
 	/**
 	 * Generates XML description of the Aurora system configuration.<br>
@@ -95,7 +50,7 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 		if (myNetwork != null)
 			myNetwork.xmlDump(out);
 		if (mySettings != null) {
-			out.print("<settings class=\"" + mySettings.getClass().getName() + "\">\n");
+			out.print("<settings>\n");
 			mySettings.xmlDump(out);
 			out.print("</settings>\n");
 		}
@@ -197,6 +152,8 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 * Returns Network Element class name for the specified type letter code.
 	 */
 	public String neType2Classname(String xx) {
+		if (xx == null)
+			return null;
 		String x = xx.toUpperCase();
 		String s = ne_type2classname_ext.get(x);
 		if (s == null)
@@ -208,6 +165,8 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 * Returns event class name for the specified type letter code.
 	 */
 	public String evtType2Classname(String xx) {
+		if (xx == null)
+			return null;
 		String x = xx.toUpperCase();
 		String s = evt_type2classname_ext.get(x);
 		if (s == null)
@@ -219,6 +178,8 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 * Returns controller class name for the specified type letter code.
 	 */
 	public String ctrType2Classname(String xx) {
+		if (xx == null)
+			return null;
 		String x = xx.toUpperCase();
 		String s = ctr_type2classname_ext.get(x);
 		if (s == null)

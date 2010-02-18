@@ -62,7 +62,7 @@ public class Path implements AuroraConfigurable, Serializable {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<path class=\"" + getClass().getName() + "\" name=\"" + name + "\">");
+		out.print("<path name=\"" + name + "\">");
 		for (int i = 0; i < linkCount; i++)
 			if (i == 0)
 				out.print(linkSequence.get(i).getId());

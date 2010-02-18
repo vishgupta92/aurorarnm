@@ -40,7 +40,13 @@ public class EventManager implements Serializable {
 		try {
 			for (int i = 0; i < pp.getLength(); i++) {
 				if (pp.item(i).getNodeName().equals("event")) {
-					Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
+					Node type_attr = pp.item(i).getAttributes().getNamedItem("type");
+					String class_name = null;
+					if (type_attr != null)
+						class_name = container.evtType2Classname(type_attr.getNodeValue());
+					else
+						class_name = pp.item(i).getAttributes().getNamedItem("class").getNodeValue();
+					Class c = Class.forName(class_name);
 					AbstractEvent evt = (AbstractEvent)c.newInstance();
 					evt.setEventManager(this);
 					if (evt.initFromDOM(pp.item(i)))

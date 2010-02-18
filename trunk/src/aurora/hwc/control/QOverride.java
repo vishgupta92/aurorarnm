@@ -112,6 +112,13 @@ public final class QOverride extends AbstractQueueController implements Serializ
 	}
 	
 	/**
+	 * Returns letter code of the queue controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "QUEUEOVERRIDE";
+	}
+	
+	/**
 	 * Overrides <code>java.lang.Object.toString()</code>.
 	 * @return string that describes the Controller.
 	 */

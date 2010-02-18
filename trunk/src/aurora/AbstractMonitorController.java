@@ -79,7 +79,13 @@ public abstract class AbstractMonitorController extends AbstractMonitor {
 					}
 				}
 				if (pp.item(i).getNodeName().equals("controller")) {
-					Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
+					Node type_attr = pp.item(i).getAttributes().getNamedItem("type");
+					String class_name = null;
+					if (type_attr != null)
+						class_name = myNetwork.getContainer().ctrType2Classname(type_attr.getNodeValue());
+					else
+						class_name = pp.item(i).getAttributes().getNamedItem("class").getNodeValue();
+					Class c = Class.forName(class_name);
 					myController = (AbstractControllerComplex)c.newInstance();
 					myController.setMyMonitor(this);
 					res &= myController.initFromDOM(pp.item(i));

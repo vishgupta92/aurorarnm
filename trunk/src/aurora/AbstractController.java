@@ -61,7 +61,7 @@ public abstract class AbstractController implements AuroraConfigurable, Serializ
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<controller class=\"" + this.getClass().getName() + "\" tp=\"" + Double.toString(3600*tp) + "\">");
+		out.print("<controller type=\"" + getTypeLetterCode() + "\" tp=\"" + Double.toString(3600*tp) + "\">");
 		return;
 	}
 	

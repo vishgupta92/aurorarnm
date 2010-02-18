@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.*;
 
 import org.w3c.dom.*;
+
 import aurora.*;
 import aurora.util.*;
 
@@ -66,8 +67,15 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 												if (pp3.item(k).getNodeName().equals("weavingfactors"))
 													wfbuf.add(pp3.item(k).getTextContent());
 												if (pp3.item(k).getNodeName().equals("controller")) {
-													Class c = Class.forName(pp3.item(k).getAttributes().getNamedItem("class").getNodeValue());
+													Node type_attr = pp3.item(k).getAttributes().getNamedItem("type");
+													String class_name = null;
+													if (type_attr != null)
+														class_name = myNetwork.getContainer().ctrType2Classname(type_attr.getNodeValue());
+													else
+														class_name = pp3.item(k).getAttributes().getNamedItem("class").getNodeValue();
+													Class c = Class.forName(class_name);
 													ctrl = (AbstractControllerSimple)c.newInstance();
+													ctrl.setMyLink(lk);
 													res &= ctrl.initFromDOM(pp3.item(k));
 												}
 											}
@@ -268,7 +276,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				srmProfile.remove(0);
 			//System.err.println(srmProfile.size());
 		}//*/
-		out.print("<node class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" name=\"" + name + "\">");
+		out.print("<node type=\"" + getTypeLetterCode() + "\" id=\"" + id + "\" name=\"" + name + "\">");
 		out.print("<description>" + description + "</description>\n");
 		out.print("<outputs>");
 		for (i = 0; i < successors.size(); i++)
