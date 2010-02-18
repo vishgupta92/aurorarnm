@@ -44,17 +44,17 @@ public final class TypesHWC extends AbstractTypes {
 	public final static int SENSOR_LOOPDETECTOR = MASK_SENSOR | 1;
 	
 	public final static int[] nodeSimpleTypeArray() {
-		int[] types = {NODE_FREEWAY, NODE_HIGHWAY, NODE_SIGNAL, NODE_STOP, NODE_OTHER};
+		int[] types = {NODE_FREEWAY, NODE_HIGHWAY, NODE_SIGNAL, NODE_STOP/*, NODE_OTHER*/};
 		return types;
 	}
 	
 	public final static int[] nodeTypeArray() {
-		int[] types = {NODE_FREEWAY, NODE_HIGHWAY, NODE_SIGNAL, NODE_STOP, NODE_OTHER, NETWORK_HWC};
+		int[] types = {NODE_FREEWAY, NODE_HIGHWAY, NODE_SIGNAL, NODE_STOP, /*NODE_OTHER,*/ NETWORK_HWC};
 		return types;
 	}
 	
 	public final static int[] linkTypeArray() {
-		int[] types = {LINK_FREEWAY, LINK_HIGHWAY, LINK_HOV, LINK_ONRAMP, LINK_OFFRAMP, LINK_INTERCONNECT, LINK_STREET, LINK_HOT, LINK_HV, LINK_ETC, LINK_DUMMY};
+		int[] types = {LINK_FREEWAY, LINK_HIGHWAY, LINK_HOV, LINK_ONRAMP, LINK_OFFRAMP, LINK_INTERCONNECT, LINK_STREET, /*LINK_HOT, LINK_HV, LINK_ETC,*/ LINK_DUMMY};
 		return types;
 	}
 	
