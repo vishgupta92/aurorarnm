@@ -195,7 +195,7 @@ public final class SensorLoopDetector extends AbstractSensor {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<sensor class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" link=\"" + myLink.getId() + "\" linkposition=\"" + linkPosition + "\" length = \"" + looplength*5280.0 + "\"></sensor>\n"); 
+		out.print("<sensor type=\"" + getTypeLetterCode() + "\" id=\"" + id + "\" link=\"" + myLink.getId() + "\" linkposition=\"" + linkPosition + "\" length = \"" + looplength*5280.0 + "\"></sensor>\n"); 
 		return;
 	}
 	@Override

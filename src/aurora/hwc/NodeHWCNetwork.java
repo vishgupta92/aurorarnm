@@ -4,6 +4,12 @@
 
 package aurora.hwc;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import aurora.*;
 
 
@@ -31,6 +37,32 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 			myNetwork = this;
 	}
 	
+	
+	/**
+	 * Initialize OD list from the DOM structure.
+	 */
+	protected boolean initODListFromDOM(Node p) throws Exception {
+		boolean res = true;
+		if (p == null)
+			return false;
+		if (p.hasChildNodes()) {
+			NodeList pp2 = p.getChildNodes();
+			for (int j = 0; j < pp2.getLength(); j++) {
+				if (pp2.item(j).getNodeName().equals("od")) {
+					OD od = new ODHWC();
+					od.setMyNetwork(this);
+					res &= od.initFromDOM(pp2.item(j));
+					addOD(od);
+				}
+				if (pp2.item(j).getNodeName().equals("include")) {
+					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp2.item(j).getAttributes().getNamedItem("uri").getNodeValue());
+					if (doc.hasChildNodes())
+						res &= initODListFromDOM(doc.getChildNodes().item(0));
+				}
+			}
+		}
+		return res;
+	}
 	
 	/**
 	 * Updates Network data.<br>

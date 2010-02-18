@@ -156,12 +156,33 @@ public final class ContainerHWC extends AbstractContainer {
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
+		boolean res = true;
 		mySettings = new SimulationSettingsHWC();
 		defaultTypes2Classnames();
-		boolean res = super.initFromDOM(p);
-		if (!res)
+		if ((p == null) || (!p.hasChildNodes()))
 			return !res;
+		myNetwork = null;
+		myEventManager = new EventManager();
+		res &= myEventManager.setContainer(this);
 		try {
+			for (int i = 0; i < p.getChildNodes().getLength(); i++)
+				if (p.getChildNodes().item(i).getNodeName().equals("settings")) {
+					if (mySettings == null)
+						mySettings = new SimulationSettingsHWC();
+					res &= mySettings.initFromDOM(p.getChildNodes().item(i));
+				}
+			for (int i = 0; i < p.getChildNodes().getLength(); i++) {
+				if (p.getChildNodes().item(i).getNodeName().equals("network")) {
+					if (myStatus != null)
+						myStatus.setSaved(true);
+					myNetwork = new NodeHWCNetwork();
+					res &= myNetwork.setContainer(this);
+					res &= myNetwork.initFromDOM(p.getChildNodes().item(i));
+				}
+				if (p.getChildNodes().item(i).getNodeName().equals("EventList")) {
+					res &= myEventManager.initFromDOM(p.getChildNodes().item(i));
+				}
+			}
 			for (int i = 0; i < p.getChildNodes().getLength(); i++) {
 				if (p.getChildNodes().item(i).getNodeName().equals("DemandProfile"))
 					res &= initDemandProfileFromDOM(p.getChildNodes().item(i));
@@ -177,6 +198,14 @@ public final class ContainerHWC extends AbstractContainer {
 			res = false;
 			throw new ExceptionConfiguration(e.getMessage());
 		}
+		if (myNetwork == null)
+			throw new ExceptionConfiguration("No network specified in the configuration file.");
+		if (myStatus == null)
+			myStatus = new SimulationStatus();
+		myStatus.setSaved(true);
+		myStatus.setStopped(true);
+		if (mySettings.getDisplayTP() < myNetwork.getTP())
+			mySettings.setDisplayTP(myNetwork.getTP());
 		return res;
 	}
 	
@@ -286,6 +315,9 @@ public final class ContainerHWC extends AbstractContainer {
 		ctr_type2classname.put("PRETIMED", "aurora.hwc.control.signal.ControllerPretimed");
 		ctr_type2classname.put("ACTUATED", "aurora.hwc.control.signal.ControllerActuated");
 		ctr_type2classname.put("COORDINATED", "aurora.hwc.control.signal.ControllerCoordinated");
+		ctr_type2classname.put("QUEUEOVERRIDE", "aurora.hwc.control.QOverride");
+		ctr_type2classname.put("PROPORTIONAL", "aurora.hwc.control.QProportional");
+		ctr_type2classname.put("PI", "aurora.hwc.control.QPI");
 		return;
 	}
 	

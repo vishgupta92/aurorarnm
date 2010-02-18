@@ -127,6 +127,13 @@ public final class QProportional extends AbstractQueueController implements Seri
 	}
 	
 	/**
+	 * Returns letter code of the queue controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "PROPORTIONAL";
+	}
+	
+	/**
 	 * Overrides <code>java.lang.Object.toString()</code>.
 	 * @return string that describes the Controller.
 	 */

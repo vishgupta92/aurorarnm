@@ -118,6 +118,13 @@ public final class QPI extends AbstractQueueController implements Serializable, 
 	}
 	
 	/**
+	 * Returns letter code of the queue controller type.
+	 */
+	public final String getTypeLetterCode() {
+		return "PI";
+	}
+	
+	/**
 	 * Overrides <code>java.lang.Object.toString()</code>.
 	 * @return string that describes the Controller.
 	 */

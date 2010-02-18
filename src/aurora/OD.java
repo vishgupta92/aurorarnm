@@ -6,9 +6,6 @@ package aurora;
 
 import java.io.*;
 import java.util.*;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.*;
 
 
@@ -19,7 +16,7 @@ import org.w3c.dom.*;
  * @author Alex Kurzhanskiy
  * @version $Id$
  */
-public class OD implements AuroraConfigurable, Serializable {
+public abstract class OD implements AuroraConfigurable, Serializable {
 	private static final long serialVersionUID = 127827305723133212L;
 	
 	protected AbstractNodeComplex myNetwork = null;
@@ -38,51 +35,7 @@ public class OD implements AuroraConfigurable, Serializable {
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionConfiguration
 	 */
-	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
-		boolean res = true;
-		if (p == null)
-			return res;
-		origin = myNetwork.getNodeById(Integer.parseInt(p.getAttributes().getNamedItem("begin").getNodeValue()));
-		destination = myNetwork.getNodeById(Integer.parseInt(p.getAttributes().getNamedItem("end").getNodeValue()));
-		if (!p.hasChildNodes())
-			return res;
-		NodeList pp = p.getChildNodes();
-		try {
-			for (int i = 0; i < pp.getLength(); i++) {
-				if (pp.item(i).getNodeName().equals("PathList")) {
-					if (pp.item(i).hasChildNodes()) {
-						NodeList pp2 = pp.item(i).getChildNodes();
-						for (int j = 0; j < pp2.getLength(); j++) {
-							if (pp2.item(j).getNodeName().equals("path")) {
-								Class c = Class.forName(pp2.item(j).getAttributes().getNamedItem("class").getNodeValue());
-								Path pth = (Path)c.newInstance();
-								pth.setMyOD(this);
-								pth.initFromDOM(pp2.item(j));
-								pathList.add(pth);
-							}
-							if (pp2.item(j).getNodeName().equals("include")) {
-								Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp2.item(j).getAttributes().getNamedItem("uri").getNodeValue());
-								NodeList ipp = doc.getChildNodes().item(0).getChildNodes();
-								for (int ii = 0; ii < ipp.getLength(); ii++)
-									if (ipp.item(ii).getNodeName().equals("path")) {
-										Class c = Class.forName(ipp.item(ii).getAttributes().getNamedItem("class").getNodeValue());
-										Path pth = (Path)c.newInstance();
-										pth.setMyOD(this);
-										pth.initFromDOM(ipp.item(ii));
-										pathList.add(pth);
-									}
-							}
-						}
-					}
-				}
-			}
-		}
-		catch(Exception e) {
-			res = false;
-			throw new ExceptionConfiguration(e.getMessage());
-		}
-		return res;
-	}
+	public abstract boolean initFromDOM(Node p) throws ExceptionConfiguration;
 
 	/**
 	 * Generates XML description of the OD.<br>
@@ -93,7 +46,7 @@ public class OD implements AuroraConfigurable, Serializable {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<od class=\"" + getClass().getName() + "\" begin=\"" + origin.getId() + "\" end=\"" + destination.getId() + "\">\n");
+		out.print("<od begin=\"" + origin.getId() + "\" end=\"" + destination.getId() + "\">\n");
 		out.print("<PathList>\n");
 		for (int i = 0; i < pathList.size(); i++)
 			pathList.get(i).xmlDump(out);

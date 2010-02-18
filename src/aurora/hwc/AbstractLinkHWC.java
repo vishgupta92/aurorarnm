@@ -168,7 +168,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				demand.remove(0);
 			//System.err.println(demand.size() + "\t" + procDemand.size());
 		}//*/
-		out.print("<link class=\"" + this.getClass().getName() + "\" id=\"" + Integer.toString(id) + "\" length=\"" + Double.toString(length) + "\" lanes=\"" + Double.toString(lanes) + "\" record=\"" + ss + "\">");
+		out.print("<link type=\"" + getTypeLetterCode() + "\" id=\"" + Integer.toString(id) + "\" length=\"" + Double.toString(length) + "\" lanes=\"" + Double.toString(lanes) + "\" record=\"" + ss + "\">");
 		if (predecessors.size() > 0)
 			out.print("<begin id=\"" + Integer.toString(predecessors.firstElement().getId()) + "\"/>");
 		if (successors.size() > 0)

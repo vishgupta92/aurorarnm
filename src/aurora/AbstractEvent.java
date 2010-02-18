@@ -73,7 +73,7 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<event class=\"" + this.getClass().getName() + "\" neid=\"" + Integer.toString(neid) + "\" tstamp=\"" + Double.toString(tstamp) + "\" enabled=\"" + Boolean.toString(enabled) + "\">");
+		out.print("<event type=\"" + getTypeLetterCode() + "\" neid=\"" + Integer.toString(neid) + "\" tstamp=\"" + Double.toString(tstamp) + "\" enabled=\"" + Boolean.toString(enabled) + "\">");
 		out.print("<description>" + description + "</description>");
 		return;
 	}

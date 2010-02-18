@@ -57,7 +57,13 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			NodeList pp2 = p.getChildNodes();
 			for (int j = 0; j < pp2.getLength(); j++) {
 				if ((pp2.item(j).getNodeName().equals("node")) || (pp2.item(j).getNodeName().equals("network"))) {
-					Class c = Class.forName(pp2.item(j).getAttributes().getNamedItem("class").getNodeValue());
+					Node type_attr = pp2.item(j).getAttributes().getNamedItem("type");
+					String class_name = null;
+					if (type_attr != null)
+						class_name = container.neType2Classname(type_attr.getNodeValue());
+					else
+						class_name = pp2.item(j).getAttributes().getNamedItem("class").getNodeValue();
+					Class c = Class.forName(class_name);
 					AbstractNode nd = (AbstractNode)c.newInstance();
 					nd.setMyNetwork(this);
 					res &= nd.initFromDOM(pp2.item(j));
@@ -85,7 +91,13 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			NodeList pp2 = p.getChildNodes();
 			for (int j = 0; j < pp2.getLength(); j++) {
 				if (pp2.item(j).getNodeName().equals("link")) {
-					Class c = Class.forName(pp2.item(j).getAttributes().getNamedItem("class").getNodeValue());
+					Node type_attr = pp2.item(j).getAttributes().getNamedItem("type");
+					String class_name = null;
+					if (type_attr != null)
+						class_name = container.neType2Classname(type_attr.getNodeValue());
+					else
+						class_name = pp2.item(j).getAttributes().getNamedItem("class").getNodeValue();
+					Class c = Class.forName(class_name);
 					AbstractLink lk = (AbstractLink)c.newInstance();
 					lk.setMyNetwork(this);
 					res &= lk.initFromDOM(pp2.item(j));
@@ -112,7 +124,13 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			NodeList pp2 = p.getChildNodes();
 			for (int j = 0; j < pp2.getLength(); j++) {
 				if (pp2.item(j).getNodeName().equals("sensor")) {
-					Class c = Class.forName(pp2.item(j).getAttributes().getNamedItem("class").getNodeValue());
+					Node type_attr = pp2.item(j).getAttributes().getNamedItem("type");
+					String class_name = null;
+					if (type_attr != null)
+						class_name = container.neType2Classname(type_attr.getNodeValue());
+					else
+						class_name = pp2.item(j).getAttributes().getNamedItem("class").getNodeValue();
+					Class c = Class.forName(class_name);
 					AbstractSensor sns = (AbstractSensor)c.newInstance();
 					sns.setMyNetwork(this);
 					res &= sns.initFromDOM(pp2.item(j));
@@ -139,7 +157,13 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			NodeList pp2 = p.getChildNodes();
 			for (int j = 0; j < pp2.getLength(); j++) {
 				if (pp2.item(j).getNodeName().equals("monitor")) {
-					Class c = Class.forName(pp2.item(j).getAttributes().getNamedItem("class").getNodeValue());
+					Node type_attr = pp2.item(j).getAttributes().getNamedItem("type");
+					String class_name = null;
+					if (type_attr != null)
+						class_name = container.neType2Classname(type_attr.getNodeValue());
+					else
+						class_name = pp2.item(j).getAttributes().getNamedItem("class").getNodeValue();
+					Class c = Class.forName(class_name);
 					AbstractMonitor mon = (AbstractMonitor)c.newInstance();
 					mon.setMyNetwork(this);
 					res &= mon.initFromDOM(pp2.item(j));
@@ -158,29 +182,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	/**
 	 * Initialize OD list from the DOM structure.
 	 */
-	private boolean initODListFromDOM(Node p) throws Exception {
-		boolean res = true;
-		if (p == null)
-			return false;
-		if (p.hasChildNodes()) {
-			NodeList pp2 = p.getChildNodes();
-			for (int j = 0; j < pp2.getLength(); j++) {
-				if (pp2.item(j).getNodeName().equals("od")) {
-					Class c = Class.forName(pp2.item(j).getAttributes().getNamedItem("class").getNodeValue());
-					OD od = (OD)c.newInstance();
-					od.setMyNetwork(this);
-					res &= od.initFromDOM(pp2.item(j));
-					addOD(od);
-				}
-				if (pp2.item(j).getNodeName().equals("include")) {
-					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp2.item(j).getAttributes().getNamedItem("uri").getNodeValue());
-					if (doc.hasChildNodes())
-						res &= initODListFromDOM(doc.getChildNodes().item(0));
-				}
-			}
-		}
-		return res;
-	}
+	protected abstract boolean initODListFromDOM(Node p) throws Exception;
 	
 	/**
 	 * Initializes the complex Node from given DOM structure.
@@ -294,7 +296,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		int i;
 		if (out == null)
 			out = System.out;
-		out.print("<network class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" name=\"" + name + "\" top=\"" + top + "\" controlled=\"" + controlled + "\" tp=\"" + 3600*tp + "\">\n");
+		out.print("<network id=\"" + id + "\" name=\"" + name + "\" top=\"" + top + "\" controlled=\"" + controlled + "\" tp=\"" + 3600*tp + "\">\n");
 		out.print("<description>" + description + "</description>\n");
 		position.xmlDump(out);
 		out.print("<MonitorList>\n");

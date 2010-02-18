@@ -89,7 +89,7 @@ public abstract class AbstractMonitor extends AbstractNetworkElement {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<monitor class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" enabled=\"" + enabled + "\">\n");
+		out.print("<monitor type=\"" + getTypeLetterCode() + "\" id=\"" + id + "\" enabled=\"" + enabled + "\">\n");
 		out.print("<description>" + description + "</description>\n");
 		return;
 	}

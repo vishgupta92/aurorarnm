@@ -65,9 +65,14 @@ public abstract class AbstractQueueController {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<qcontroller class=\"" + this.getClass().getName() + "\">");
+		out.print("<qcontroller type=\"" + getTypeLetterCode() + "\">");
 		return;
 	}
+	
+	/**
+	 * Returns letter code of the queue controller type.
+	 */
+	public abstract String getTypeLetterCode();
 	
 	public void setMyController(AbstractControllerSimpleHWC c){
 		myController = c;
