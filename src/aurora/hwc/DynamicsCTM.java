@@ -184,5 +184,12 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		v.constraint(new AuroraInterval(x.getV()/2, x.getV()));
 		return v;
 	}
+	
+	/**
+	 * Returns letter code of the model type.
+	 */
+	public String getTypeLetterCode() {
+		return "CTM";
+	}
 
 }

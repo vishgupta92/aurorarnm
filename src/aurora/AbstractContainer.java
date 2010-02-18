@@ -27,9 +27,11 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	protected HashMap<String, String> ne_type2classname = new HashMap<String, String>();
 	protected HashMap<String, String> evt_type2classname = new HashMap<String, String>();
 	protected HashMap<String, String> ctr_type2classname = new HashMap<String, String>();
+	protected HashMap<String, String> mdl_type2classname = new HashMap<String, String>();
 	protected HashMap<String, String> ne_type2classname_ext = new HashMap<String, String>();
 	protected HashMap<String, String> evt_type2classname_ext = new HashMap<String, String>();
 	protected HashMap<String, String> ctr_type2classname_ext = new HashMap<String, String>();
+	protected HashMap<String, String> mdl_type2classname_ext = new HashMap<String, String>();
 
 	
 	/**
@@ -184,6 +186,19 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 		String s = ctr_type2classname_ext.get(x);
 		if (s == null)
 			s = ctr_type2classname.get(x);
+		return s;
+	}
+	
+	/**
+	 * Returns dynamics model class name for the specified type letter code.
+	 */
+	public String mdlType2Classname(String xx) {
+		if (xx == null)
+			return null;
+		String x = xx.toUpperCase();
+		String s = mdl_type2classname_ext.get(x);
+		if (s == null)
+			s = mdl_type2classname.get(x);
 		return s;
 	}
 	

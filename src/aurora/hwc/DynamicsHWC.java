@@ -17,4 +17,5 @@ public interface DynamicsHWC {
 	public Object computeSpeed(AbstractLinkHWC x);
 	public Object computeCapacity(AbstractLinkHWC x);
 	public Object computeDensity(AbstractLinkHWC x);
+	public String getTypeLetterCode();
 }
