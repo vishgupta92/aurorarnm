@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="Aurora" default="install_file" basedir=".">
+<project name="auroraSVN" default="install_file" basedir=".">
 	<property name="src.dir" value="${basedir}/src" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="build.classes" value="${build.dir}/classes" />
