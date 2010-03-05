@@ -153,7 +153,9 @@ public class ControllerTOD extends AbstractControllerSimpleHWC {
 	/**
 	 * This class implements TOD table entry.
 	 */
-	public class TODdataRow {
+	public class TODdataRow implements Serializable {
+		private static final long serialVersionUID = -2278076197548839554L;
+		
 		private double time;
 		private double rate;
 		
