@@ -87,7 +87,7 @@ public final class EventNetworkControl extends AbstractEvent {
 	
 	/**
 	 * Changes the control mode for a given network.
-	 * @return <code>true</code> if operation succeded, <code>false</code> - otherwise.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 * @throws ExceptionEvent
 	 */
 	public final boolean activate(AbstractNodeComplex top) throws ExceptionEvent {
