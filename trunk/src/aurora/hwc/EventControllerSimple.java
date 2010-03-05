@@ -6,6 +6,7 @@ package aurora.hwc;
 
 import java.io.*;
 import org.w3c.dom.*;
+
 import aurora.*;
 import aurora.util.Util;
 
@@ -58,7 +59,13 @@ public final class EventControllerSimple extends AbstractEvent {
 					if (pp.item(i).getNodeName().equals("lkid"))
 						linkId = Integer.parseInt(pp.item(i).getTextContent());
 					if (pp.item(i).getNodeName().equals("controller")) {
-						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
+						Node type_attr = pp.item(i).getAttributes().getNamedItem("type");
+						String class_name = null;
+						if (type_attr != null)
+							class_name = myManager.getContainer().ctrType2Classname(type_attr.getNodeValue());
+						else
+							class_name = pp.item(i).getAttributes().getNamedItem("class").getNodeValue();
+						Class c = Class.forName(class_name);
 						controller = (AbstractControllerSimple)c.newInstance();
 						res &= controller.initFromDOM(pp.item(i));
 					}
