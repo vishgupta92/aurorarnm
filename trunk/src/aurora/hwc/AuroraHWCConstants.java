@@ -14,7 +14,7 @@ import aurora.AuroraConstants;
  */
 public class AuroraHWCConstants extends AuroraConstants {
 	
-	public final static String VERSION = "20100219";
+	public final static String VERSION = "20100304";
 	public final static String NAME = "Aurora Road Network Modeler";
 
 }
