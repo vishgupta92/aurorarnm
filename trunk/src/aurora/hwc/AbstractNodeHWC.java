@@ -1830,6 +1830,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			int n = successors.size();
 			if ((m < 1) || (n < 1)) {
 				splitRatioMatrix = null;
+				weavingFactorMatrix = null;
 				return idx;
 			}
 			int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
@@ -1842,6 +1843,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				}
 			}
 			splitRatioMatrix = srm;
+			weavingFactorMatrix = wfm;
 		}
 		return idx;
 	}
@@ -1867,6 +1869,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			int n = successors.size();
 			if ((m < 1) || (n < 1)) {
 				splitRatioMatrix = null;
+				weavingFactorMatrix = null;
 				return idx;
 			}
 			int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
@@ -1879,6 +1882,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				}
 			}
 			splitRatioMatrix = srm;
+			weavingFactorMatrix = wfm;
 		}
 		return idx;
 	}
@@ -1894,6 +1898,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		int n = successors.size();
 		if ((m < 1) || (n < 1)) {
 			splitRatioMatrix = null;
+			weavingFactorMatrix = null;
 			return idx;
 		}
 		int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
@@ -1906,6 +1911,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			}
 		}
 		splitRatioMatrix = srm;
+		weavingFactorMatrix = wfm;
 		return idx;
 	}
 	
@@ -1920,6 +1926,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		int n = successors.size();
 		if ((m < 1) || (n < 1)) {
 			splitRatioMatrix = null;
+			weavingFactorMatrix = null;
 			return idx;
 		}
 		int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
@@ -1932,6 +1939,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			}
 		}
 		splitRatioMatrix = srm;
+		weavingFactorMatrix = wfm;
 		return idx;
 	}
 	
