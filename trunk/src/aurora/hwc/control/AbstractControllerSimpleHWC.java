@@ -23,8 +23,8 @@ public abstract class AbstractControllerSimpleHWC extends AbstractControllerSimp
 	public boolean urms;								// whether to use the URMS state transitions diagram
 	
 	public boolean usesensors = false;	// TEMPORARY!
-	public SensorLoopDetector mlsensor;
-	public AbstractLinkHWC mlup;
+	public SensorLoopDetector mlsensor = null;
+	public AbstractLinkHWC mlup = null;
 	
 	// parameters in the URMS state transition diagram
 	public enum State { NonMeterWaiting, NonMeterReady,  NonMeterToMeter, Meter, MeterToNonMeter };	 				 
@@ -110,8 +110,8 @@ public abstract class AbstractControllerSimpleHWC extends AbstractControllerSimp
 	 * @throws ExceptionConfiguration
 	 */
 	public boolean initialize() throws ExceptionConfiguration {
-		if(usesensors){
-			mlup = getUpML((AbstractNodeHWC) myLink.getEndNode());
+		mlup = getUpML((AbstractNodeHWC) myLink.getEndNode());
+		if (usesensors) {
 			mlsensor = (SensorLoopDetector) myLink.getMyNetwork().getSensorByLinkId(mlup.getId());
 		}
 		return super.initialize();
@@ -283,7 +283,9 @@ public abstract class AbstractControllerSimpleHWC extends AbstractControllerSimp
 		}
 	}
 	
-	public class URMSLookupTable {
+	public class URMSLookupTable implements Serializable {
+		private static final long serialVersionUID = -7830795185385939811L;
+		
 		public Vector<Float> t_occ;			// [%] Occupancy thresholds
 		public Vector<Float> t_flw; 		// [vphpl] Flow thresholds
 		public Vector<Float> t_spd;			// [mph] Speed thresholds

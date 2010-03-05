@@ -121,10 +121,10 @@ public class ControllerTR extends AbstractControllerSimpleHWC {
 			MLflw = mlup.getFlow().sum().getCenter() / mlup.getLanes();
 			MLspd = mlup.getSpeed().getCenter();
 		}
-	    int ii =  findFirstGreaterThan(URMStable.t_occ,MLocc);
-	    int jj =  findFirstGreaterThan(URMStable.t_flw,MLflw);
-	    int kk =  findFirstLessThan(URMStable.t_spd,MLspd);
-	    Double TRrate = URMStable.meteringrate.get( Math.max( Math.max(ii,jj) , kk ) );
+	    int ii =  findFirstGreaterThan(t_dns, MLocc);
+	    int jj =  findFirstGreaterThan(t_flw, MLflw);
+	    int kk =  findFirstLessThan(t_spd, MLspd);
+	    Double TRrate = rate.get(Math.max(Math.max(ii,jj), kk));
 		flw = ApplyURMS(TRrate);
 		flw = ApplyQueueControl(flw);
 		input = ApplyLimits(flw);
@@ -132,21 +132,21 @@ public class ControllerTR extends AbstractControllerSimpleHWC {
 
 	}
 	
-	private int findFirstLessThan(Vector<Float> v,double x){
-		if(URMStable.meteringrate.get(0).isNaN())
+	private int findFirstLessThan(Vector<Double> v,double x){
+		if (v == null)
 			return -1;
-		for(int j=1;j<v.size();j++){
-			if( v.get(j)<x)
+		for (int j = 1; j < v.size(); j++) {
+			if(v.get(j) < x)
 				return j;
 		}
 		return v.size()-1;
 	}
 
-	private int findFirstGreaterThan(Vector<Float> v,double x){
-		if(URMStable.meteringrate.get(0).isNaN())
+	private int findFirstGreaterThan(Vector<Double> v,double x){
+		if (v == null)
 			return -1;
-		for(int j=1;j<v.size();j++){
-			if( v.get(j)>x)
+		for (int j = 1; j < v.size(); j++) {
+			if (v.get(j) > x)
 				return j;
 		}
 		return v.size()-1;
