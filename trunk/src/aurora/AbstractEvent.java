@@ -196,8 +196,6 @@ public abstract class AbstractEvent implements AuroraConfigurable, Serializable 
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	public synchronized boolean setNEID(int x) {
-		if (x < 0)
-			return false;
 		neid = x;
 		return true;
 	}
