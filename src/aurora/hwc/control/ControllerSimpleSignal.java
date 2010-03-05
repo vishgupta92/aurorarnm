@@ -211,7 +211,10 @@ public final class ControllerSimpleSignal extends AbstractControllerHWC {
 	/**
 	 * This class implements TOD table entry.
 	 */
-	public class CycleDataRow {
+	public class CycleDataRow implements Serializable {
+		private static final long serialVersionUID = -1021146674537376048L;
+		
+		
 		private double time;
 		private double green;
 		private double red;
