@@ -1,18 +1,12 @@
 package aurora.hwc.control.signal;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
+import java.io.*;
+import java.util.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import aurora.*;
+import aurora.hwc.*;
 
-import aurora.AbstractNodeComplex;
-import aurora.ExceptionConfiguration;
-import aurora.ExceptionDatabase;
-import aurora.ExceptionSimulation;
-import aurora.hwc.NodeUJSignal;
 
 public class ControllerActuated extends BaseSignalController {
 	private static final long serialVersionUID = -8233560098363094720L;
@@ -736,7 +730,8 @@ public class ControllerActuated extends BaseSignalController {
 //	 ========================================================================
 //	 PRIVATE CLASSES ========================================================
 //	 ========================================================================
-	public class ASC_Parameters {
+	public class ASC_Parameters implements Serializable {
+		private static final long serialVersionUID = -1473719703162111105L;
 		
 		// ASC input parameters
 		public boolean lagleft;
@@ -806,7 +801,9 @@ public class ControllerActuated extends BaseSignalController {
 	}
 	*/
 //	 --------------------------------------------------------------------------
-	private class nextPhaseAndBarrier{
+	private class nextPhaseAndBarrier implements Serializable {
+		private static final long serialVersionUID = -4416291700809270630L;
+		
 		int phase;
 		int barrier;
 	}
