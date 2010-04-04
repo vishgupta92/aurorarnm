@@ -217,7 +217,7 @@ public final class EventWFM extends AbstractEvent {
 		weavingFactorMatrix = new double[m][n];
 		for (int i = 0; i < m; i++)
 			for (int j = 0; j < n; j++)
-				weavingFactorMatrix[i][j] = Math.max(1, x[i][j]);
+				weavingFactorMatrix[i][j] = x[i][j];
 		return true;
 	}
 	

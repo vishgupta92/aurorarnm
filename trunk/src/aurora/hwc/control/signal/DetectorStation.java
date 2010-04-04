@@ -1,15 +1,17 @@
 package aurora.hwc.control.signal;
 
+import java.io.Serializable;
 import java.util.Vector;
-
 import aurora.hwc.NodeUJSignal;
 import aurora.hwc.SensorLoopDetector;
 
-public class DetectorStation {
+
+public class DetectorStation implements Serializable {
 
 //	 ========================================================================
 //	 FIELDS =================================================================
 //	 ========================================================================
+	private static final long serialVersionUID = -7537927917380115046L;
 	
 	int myNEMA;
 	DetectorStationType myType = null;
