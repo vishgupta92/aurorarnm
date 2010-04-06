@@ -917,9 +917,9 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	public synchronized boolean setMaxFlowRange(double x) {
-		if ((x < 0.0) || (x > (flowMax/2)))
+		if ((x < 0.0) || (x > 1))
 			return false;
-		flowMaxRange.setCenter(flowMax, x);
+		flowMaxRange.setCenter(flowMax, 2*x*flowMax);
 		return true;
 	}
 	
@@ -931,8 +931,9 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	public synchronized boolean setMaxFlow(double x) {
 		if (x < 0.0)
 			return false;
+		double rf = Math.min(1, flowMaxRange.getSize()/(2*flowMax));
 		flowMax = x;
-		flowMaxRange.setCenter(flowMax, Math.min(flowMaxRange.getSize(), 2*flowMax));
+		flowMaxRange.setCenter(flowMax, 2*rf*flowMax);
 		return true;
 	}
 	
@@ -1016,11 +1017,12 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	public synchronized boolean setFD(double fmax, double rhoc, double rhoj, double capd) {
 		boolean res = false;
 		if ((fmax >= 0.0) && (rhoc >= 0.0) && (rhoj >= 0.0) && (rhoc <= rhoj)) {
+			double rf = Math.min(1, flowMaxRange.getSize()/(2*flowMax));
 			flowMax = fmax;
 			densityCritical = rhoc;
 			densityJam = rhoj;
 			capacityDrop = Math.max(0, Math.min(fmax, capd));
-			flowMaxRange.setCenter(flowMax, Math.min(flowMaxRange.getSize(), 2*flowMax));
+			flowMaxRange.setCenter(flowMax, 2*rf*flowMax);
 			res = true;
 		}
 		return res;

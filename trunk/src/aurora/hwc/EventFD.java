@@ -137,11 +137,11 @@ public final class EventFD extends AbstractEvent {
 		boolean res = true;
 		if (fraction > 0) {
 			res &= ((AbstractLinkHWC)alnk).setFD(fraction * fm, fraction * dc, fraction * dj, fraction * cd);
-			res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(fraction * sz);
+			res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(fraction*sz/(2*fraction*fm));
 		}
 		else {
 			res &= ((AbstractLinkHWC)alnk).setFD(flowMax, densityCritical, densityJam, capacityDrop);
-			res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(sz);
+			res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(sz/(2*flowMax));
 		}
 		res &= ((AbstractLinkHWC)alnk).randomizeFD();
 		densityCritical = dc;
@@ -172,7 +172,7 @@ public final class EventFD extends AbstractEvent {
 		double sz = ((AbstractLinkHWC)alnk).getMaxFlowRange().getSize();
 		double cd = ((AbstractLinkHWC)alnk).getCapacityDrop();
 		boolean res = ((AbstractLinkHWC)alnk).setFD(flowMax, densityCritical, densityJam, capacityDrop);
-		res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(sz);
+		res &= ((AbstractLinkHWC)alnk).setMaxFlowRange(sz/(2*flowMax));
 		res &= ((AbstractLinkHWC)alnk).randomizeFD();
 		densityCritical = dc;
 		densityJam = dj;

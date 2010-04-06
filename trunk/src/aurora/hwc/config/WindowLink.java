@@ -448,9 +448,9 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		fdp.add(prmp);
 		genPanel.add(fdp);
 		// Capacity uncertainty
-		pCR.setBorder(BorderFactory.createTitledBorder("Capacity Uncertainty +/- (vphl)"));
-		crSpinner = new JSpinner(new SpinnerNumberModel((lnk.getMaxFlowRange().getSize()/lnk.getLanes())/2, 0.0, 999.99, 1.0));
-		crSpinner.setEditor(new JSpinner.NumberEditor(crSpinner, "##0.00"));
+		pCR.setBorder(BorderFactory.createTitledBorder("Capacity Uncertainty +/- (%)"));
+		crSpinner = new JSpinner(new SpinnerNumberModel(100*lnk.getMaxFlowRange().getSize()/(2*lnk.getMaxFlow()), 0.0, 100.0, 0.1));
+		crSpinner.setEditor(new JSpinner.NumberEditor(crSpinner, "##0.####"));
 		crSpinner.setName(nmCapRange);
 		crSpinner.addChangeListener(this);
 		pCR.add(crSpinner);
@@ -575,7 +575,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 			if (fdModified)
 				lnk.setFD(mf*lnk.getLanes(), cd*lnk.getLanes(), jd*lnk.getLanes(), drp*lnk.getLanes());
 			if (crModified)
-				lnk.setMaxFlowRange(cr*lnk.getLanes()*2);
+				lnk.setMaxFlowRange(cr/100);
 			if (dcModified)
 				lnk.setDemandKnobs(dcTF.getText());
 			if (dpModified)
@@ -738,7 +738,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		if (nm.equals(nmCapRange)) {
 			crModified = true;
 			cr = (Double)crSpinner.getValue();
-			pCR.setBorder(BorderFactory.createTitledBorder("*Capacity Uncertainty +/- (vphl)"));
+			pCR.setBorder(BorderFactory.createTitledBorder("*Capacity Uncertainty +/- (%)"));
 		}
 		return;
 	}
