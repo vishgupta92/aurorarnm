@@ -58,6 +58,12 @@ public final class PanelEventSRM extends AbstractEventPanel {
 		nIn = nd.getInputs().size();
 		nOut = nd.getOutputs().size();
 		srm = ((EventSRM)myEvent).getSplitRatioMatrix();
+		if (srm == null) {
+			srm = new AuroraIntervalVector[nIn][nOut];
+			for (int i = 0; i < nIn; i++)
+				for (int j = 0; j < nOut; j++)
+					srm[i][j] = new AuroraIntervalVector();
+		}
 		if ((srm.length != nIn) || (srm[0].length != nOut))
 			srm = nd.getSplitRatioMatrix();
 		initialize(ne, em);
