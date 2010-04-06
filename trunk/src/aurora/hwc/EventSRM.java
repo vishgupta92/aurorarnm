@@ -115,17 +115,20 @@ public final class EventSRM extends AbstractEvent {
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
 		super.xmlDump(out);
-		out.print("<srm>");
-		for (int i = 0; i < splitRatioMatrix.length; i++) {
-			String buf = "";
-			for (int j = 0; j < splitRatioMatrix[0].length; j++) {
-				if (j > 0)
-					buf += ", ";
-				buf += splitRatioMatrix[i][j].toString();
+		if (splitRatioMatrix != null) {
+			out.print("<srm>");
+			for (int i = 0; i < splitRatioMatrix.length; i++) {
+				String buf = "";
+				for (int j = 0; j < splitRatioMatrix[0].length; j++) {
+					if (j > 0)
+						buf += ", ";
+					buf += splitRatioMatrix[i][j].toString();
+				}
+				out.print("<splitratios>" + buf + "</splitratios>");
 			}
-			out.print("<splitratios>" + buf + "</splitratios>");
+			out.print("</srm>");
 		}
-		out.print("</srm></event>");
+		out.print("</event>");
 		return;
 	}
 	
