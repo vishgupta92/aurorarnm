@@ -49,6 +49,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private JSpinner qlimSpinner;
 	private JTextField densityTF;
 	private JTextField dcTF;
+	private JTextField duTF;
 	private JSpinner capacitySpinner;
 	private JSpinner crSpinner;
 	private JSpinner capdropSpinner;
@@ -71,6 +72,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private JPanel pWdth = new JPanel(new SpringLayout());
 	private JPanel pQLim = new JPanel(new SpringLayout());
 	private JPanel pDen = new JPanel(new SpringLayout());
+	private JPanel pDU = new JPanel(new SpringLayout());
 	private Box fdp = Box.createVerticalBox();
 	private JPanel pCR = new JPanel(new SpringLayout());
 	private JPanel pDC = new JPanel(new SpringLayout());
@@ -106,6 +108,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	private boolean ctpModified = false;
 	private boolean cpModified = false;
 	private boolean crModified = false;
+	private boolean duModified = false;
 	private boolean saveModified = false;
 	
 	private int[] linkTypes;
@@ -502,6 +505,13 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		demandProfile.getStyledDocument().addDocumentListener(new DPChangeListener());
 		pDP.add(new JScrollPane(demandProfile));
 		demandPanel.add(pDP);
+		// Demand Uncertainty
+		pDU.setBorder(BorderFactory.createTitledBorder("Demand Uncertainty +/- (%)"));
+		duTF = new JTextField(lnk.getDemandUncertaintyAsString());
+		duTF.getDocument().addDocumentListener(new DUChangeListener());
+		pDU.add(duTF);
+		SpringUtilities.makeCompactGrid(pDU, 1, 1, 2, 2, 2, 2);
+		demandPanel.add(pDU);
 		panel.add(demandPanel);
 		return panel;
 	}
@@ -580,6 +590,8 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 				lnk.setDemandKnobs(dcTF.getText());
 			if (dpModified)
 				lnk.setDemandVector(demandProfile.getText());
+			if (duModified)
+				lnk.setDemandUncertainty(duTF.getText());
 			if (cpModified)
 				lnk.setCapacityVector(capacityProfile.getText());
 			if (tpModified) {
@@ -623,7 +635,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		if (cmdOK.equals(cmd)) {
-			if (idModified || lengthModified || widthModified || qlimModified || denModified || fdModified || crModified || dcModified || dpModified || tpModified || cpModified || ctpModified || typeModified || saveModified) {
+			if (idModified || lengthModified || widthModified || qlimModified || denModified || fdModified || crModified || duModified || dcModified || dpModified || tpModified || cpModified || ctpModified || typeModified || saveModified) {
 				provisionLinkData();
 				mySystem.getMyStatus().setSaved(false);
 			}
@@ -762,6 +774,15 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 	}
 	
 	/**
+	 * Reaction to demand uncertainty update.
+	 */
+	private void duUpdate() {
+		duModified = true;
+		pDU.setBorder(BorderFactory.createTitledBorder("*Demand Uncertainty +/- (%)"));
+		return;
+	}
+	
+	/**
 	 * Reaction to demand profile update.
 	 */
 	private void dpUpdate() {
@@ -817,6 +838,26 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		
 		public void removeUpdate(DocumentEvent e) {
 			dcUpdate();
+			return;
+		}
+	}
+	
+	/**
+	 * Document listener for demand uncertainty field.
+	 */
+	private class DUChangeListener implements DocumentListener {
+		public void changedUpdate(DocumentEvent e) {
+			duUpdate();
+			return;
+		}
+		
+		public void insertUpdate(DocumentEvent e) {
+			duUpdate();
+			return;
+		}
+		
+		public void removeUpdate(DocumentEvent e) {
+			duUpdate();
 			return;
 		}
 	}
