@@ -717,6 +717,38 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Returns demand uncertainty values as string
+	 */
+	public final String getDemandUncertaintyAsString() {
+		NumberFormat form = NumberFormat.getInstance();
+		form.setMinimumFractionDigits(0);
+		form.setMaximumFractionDigits(4);
+		String buf = "";
+		double[] du = new double[((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes()];
+		for (int i = 0; i < demand.size(); i++) {
+			AuroraIntervalVector dvec = demand.get(i);
+			for (int j = 0; j < du.length; j++) {
+				double ui = 100*dvec.get(j).getSize()/(2*dvec.get(j).getCenter());
+				if (i == 0)
+					du[j] = ui;
+				else
+					du[j] = Math.max(du[j], ui);
+			}
+		}
+		boolean eq = true;
+		for (int i = 0; i < du.length; i++) {
+			if (i > 0)
+				buf += ":";
+			if (Math.abs(du[0]-du[i]) > 0.0001)
+				eq = false;
+			buf += form.format(du[i]);
+		}
+		if (eq)
+			buf = form.format(du[0]);
+		return buf;
+	}
+	
+	/**
 	 * Returns the frequency of demand value change.
 	 */
 	public final double getDemandTP() {
@@ -1205,6 +1237,45 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				demandKnobs[i] = demandKnobs[0];
 			else
 				demandKnobs[i] = 1;
+		}
+		return true;
+	}
+	
+	/**
+	 * Sets demand uncertainty from given string buffer.
+	 * @param x string with column separated demand knob values.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setDemandUncertainty(String x) {
+		if ((x == null) || (x.isEmpty()))
+			return false;
+		StringTokenizer st = new StringTokenizer(x, ": ");
+		if (st.countTokens() < 1)
+			return false;
+		int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
+		double[] du = new double[sz];
+		sz = Math.min(du.length, st.countTokens());
+		for (int i = 0; i < sz; i++) {
+			try {
+				du[i] = Math.min(1, Math.max(0, Double.parseDouble(st.nextToken())/100));
+			}
+			catch(Exception e) {
+				du[i] = 0;
+			}
+		}
+		for (int i = sz; i < du.length; i++) {
+			if (sz == 1)
+				du[i] = du[0];
+			else
+				du[i] = 0;
+		}
+		for (int i = 0; i < demand.size(); i++) {
+			AuroraIntervalVector dvec = demand.get(i);
+			sz = Math.min(du.length, dvec.size());
+			for (int j = 0; j < dvec.size(); j++) {
+				double ctr = dvec.get(j).getCenter();
+				dvec.get(j).setCenter(ctr, 2*du[j]*ctr);
+			}
 		}
 		return true;
 	}
