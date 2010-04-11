@@ -30,7 +30,9 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	protected PrintStream tmpDataOutput = null;
 	protected double displayTP = 1.0/12.0;
 	protected double timeMax = 24;
+	protected double timeInitial = 0;
 	protected int tsMax = 100000;
+	protected int tsInitial = 0;
 	protected int timeout = 1000;
 	
 	
@@ -49,10 +51,24 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 				NodeList pp = p.getChildNodes();
 				for (int i = 0; i < pp.getLength(); i++) {
 					if (pp.item(i).getNodeName().equals("display")) {
-						displayTP = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("tp").getNodeValue());
-						timeout = Integer.parseInt(pp.item(i).getAttributes().getNamedItem("timeout").getNodeValue());
-						tsMax = Integer.parseInt(pp.item(i).getAttributes().getNamedItem("tsMax").getNodeValue());
-						timeMax = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("timeMax").getNodeValue());
+						Node att = pp.item(i).getAttributes().getNamedItem("tp");
+						if (att != null)
+							displayTP = Math.max(0, Double.parseDouble(att.getNodeValue()));
+						att = pp.item(i).getAttributes().getNamedItem("timeout");
+						if (att != null)
+							timeout = Math.max(0, Integer.parseInt(att.getNodeValue()));
+						att = pp.item(i).getAttributes().getNamedItem("tsMax");
+						if (att != null)
+							tsMax = Math.max(0, Integer.parseInt(att.getNodeValue()));
+						att = pp.item(i).getAttributes().getNamedItem("timeMax");
+						if (att != null)
+							timeMax = Math.max(0, Double.parseDouble(att.getNodeValue()));
+						att = pp.item(i).getAttributes().getNamedItem("tsInitial");
+						if (att != null)
+							tsInitial = Math.max(0, Integer.parseInt(att.getNodeValue()));
+						att = pp.item(i).getAttributes().getNamedItem("timeInitial");
+						if (att != null)
+							timeInitial = Math.max(0, Double.parseDouble(att.getNodeValue()));
 					}
 					if (pp.item(i).getNodeName().equals("include")) {
 						Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp.item(i).getAttributes().getNamedItem("uri").getNodeValue());
@@ -79,7 +95,7 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<display tp=\"" + Double.toString(displayTP) + "\" timeout=\"" + Integer.toString(timeout) + "\" tsMax=\"" + Integer.toString(tsMax) + "\" timeMax=\"" + Double.toString(timeMax) + "\" />\n");
+		out.print("<display tp=\"" + Double.toString(displayTP) + "\" timeout=\"" + Integer.toString(timeout) + "\" tsMax=\"" + Integer.toString(tsMax) + "\" timeMax=\"" + Double.toString(timeMax) + "\" tsMax=\"" + Integer.toString(tsInitial) + "\" timeMax=\"" + Double.toString(timeInitial) + "\" />\n");
 		return;
 	}
 	
@@ -126,10 +142,24 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	}
 
 	/**
+	 * Returns initial simulation time.
+	 */
+	public double getTimeInitial() {
+		return timeInitial;
+	}
+
+	/**
 	 * Returns maximum simulation step.
 	 */
 	public int getTSMax() {
 		return tsMax;
+	}
+	
+	/**
+	 * Returns initial simulation step.
+	 */
+	public int getTSInitial() {
+		return tsInitial;
 	}
 	
 	/**
@@ -318,6 +348,18 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 		timeMax = tmax;
 		return true;
 	}
+	
+	/**
+	 * Sets initial simulation time.
+	 * @param tinit initial time value.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise. 
+	 */
+	public synchronized boolean setTimeInitial(double tinit) {
+		if (tinit <= 0.0)
+			return false;
+		timeInitial = tinit;
+		return true;
+	}
 
 	/**
 	 * Sets max simulation step.
@@ -328,6 +370,18 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 		if (ts <= 0)
 			return false;
 		tsMax = ts;
+		return true;
+	}
+	
+	/**
+	 * Sets initial simulation step.
+	 * @param ts initial step value.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise. 
+	 */
+	public synchronized boolean setTSInitial(int ts) {
+		if (ts <= 0)
+			return false;
+		tsInitial = ts;
 		return true;
 	}
 	
