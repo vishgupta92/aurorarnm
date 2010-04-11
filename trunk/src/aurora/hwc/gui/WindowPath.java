@@ -262,13 +262,13 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		AuroraIntervalVector[] densities = myPath.getAverageDensities();
 		AuroraInterval[] speeds = myPath.getAverageSpeeds();
 		for (int i = 0; i < linkCount; i++) {
-			flowData[2][linkCount*tStep + i] = flows[i].sum().getCenter();
+			flowData[2][linkCount*(tStep-initStep) + i] = flows[i].sum().getCenter();
 			minFlow = treePane.updateMinFlow(flows[i].sum().getCenter());
 			maxFlow = treePane.updateMaxFlow(flows[i].sum().getCenter());
-			densityData[2][linkCount*tStep + i] = densities[i].sum().getCenter();
+			densityData[2][linkCount*(tStep-initStep) + i] = densities[i].sum().getCenter();
 			minDensity = treePane.updateMinDensity(densities[i].sum().getCenter());
 			maxDensity = treePane.updateMaxDensity(densities[i].sum().getCenter());
-			speedData[2][linkCount*tStep + i] = speeds[i].getCenter();
+			speedData[2][linkCount*(tStep-initStep) + i] = speeds[i].getCenter();
 			minSpeed = treePane.updateMinSpeed(speeds[i].getCenter());
 			maxSpeed = treePane.updateMaxSpeed(speeds[i].getCenter());
 			if (newRun) {
@@ -344,7 +344,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		Vector<AbstractLink> links = myPath.getLinkVector();
 		int xSize = linkCount;
 		maxTime = Math.min(mySystem.getMySettings().getTSMax()*mySystem.getMyNetwork().getTP(), mySystem.getMySettings().getTimeMax());
-		int ySize = (int)Math.floor(maxTime/tp);
+		int ySize = (int)(maxTime/tp) - initStep;
 		flowData = new double[3][xSize*ySize];
 		densityData = new double[3][xSize*ySize];
 		speedData = new double[3][xSize*ySize];
@@ -352,11 +352,11 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			double dd = 0.0;
 			for (int i = 0; i < xSize; i++) {
 				flowData[0][j*xSize + i] = dd;
-				flowData[1][j*xSize + i] = j * tp + tp;
+				flowData[1][j*xSize + i] = (j+initStep) * tp;
 				densityData[0][j*xSize + i] = dd;
-				densityData[1][j*xSize + i] = j * tp + tp;
+				densityData[1][j*xSize + i] = (j+initStep) * tp;
 				speedData[0][j*xSize + i] = dd;
-				speedData[1][j*xSize + i] = j * tp + tp;
+				speedData[1][j*xSize + i] = (j+initStep) * tp;
 				dd += links.get(i).getLength();
 			}
 		}
@@ -453,13 +453,14 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		NumberAxis mileAxis;
 		NumberAxis dateAxis;
 		NumberAxis scaleAxis;
+		// flow
 		mileAxis = new NumberAxis("Mile");
 		mileAxis.setRange(0.0, myPath.getLength());
 		mileAxis.setLowerMargin(0.0);
 		mileAxis.setUpperMargin(0.0);
 		dateAxis = new NumberAxis("Hours");
 		dateAxis.setUpperMargin(0.0);
-		dateAxis.setRange(0.0, maxTime);
+		dateAxis.setRange(initStep*mySystem.getMySettings().getDisplayTP(), maxTime);
 		renderer = new XYBlockRenderer();
         renderer.setBlockWidth(bw);
         renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
@@ -482,14 +483,14 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
         cp = new ChartPanel(flowChart);
 		cp.setPreferredSize(new Dimension(200, 80));
 		simPanel.add(cp);
-		
+		// density
 		mileAxis = new NumberAxis("Mile");
 		mileAxis.setRange(0.0, myPath.getLength());
 		mileAxis.setLowerMargin(0.0);
 		mileAxis.setUpperMargin(0.0);
 		dateAxis = new NumberAxis("Hours");
 		dateAxis.setUpperMargin(0.0);
-		dateAxis.setRange(0.0, maxTime);
+		dateAxis.setRange(initStep*mySystem.getMySettings().getDisplayTP(), maxTime);
 		renderer = new XYBlockRenderer();
         renderer.setBlockWidth(bw);
         renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
@@ -512,13 +513,14 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
         cp = new ChartPanel(densityChart);
 		cp.setPreferredSize(new Dimension(200, 80));
 		simPanel.add(cp);
+		// speed
 		mileAxis = new NumberAxis("Mile");
 		mileAxis.setRange(0.0, myPath.getLength());
 		mileAxis.setLowerMargin(0.0);
 		mileAxis.setUpperMargin(0.0);
 		dateAxis = new NumberAxis("Hours");
 		dateAxis.setUpperMargin(0.0);
-		dateAxis.setRange(0.0, maxTime);
+		dateAxis.setRange(initStep*mySystem.getMySettings().getDisplayTP(), maxTime);
 		renderer = new XYBlockRenderer();
         renderer.setBlockWidth(bw);
         renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
