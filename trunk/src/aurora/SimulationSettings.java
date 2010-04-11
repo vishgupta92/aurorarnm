@@ -95,7 +95,7 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<display tp=\"" + Double.toString(displayTP) + "\" timeout=\"" + Integer.toString(timeout) + "\" tsMax=\"" + Integer.toString(tsMax) + "\" timeMax=\"" + Double.toString(timeMax) + "\" tsMax=\"" + Integer.toString(tsInitial) + "\" timeMax=\"" + Double.toString(timeInitial) + "\" />\n");
+		out.print("<display tp=\"" + Double.toString(displayTP) + "\" timeout=\"" + Integer.toString(timeout) + "\" tsMax=\"" + Integer.toString(tsMax) + "\" timeMax=\"" + Double.toString(timeMax) + "\" tsInitial=\"" + Integer.toString(tsInitial) + "\" timeInitial=\"" + Double.toString(timeInitial) + "\" />\n");
 		return;
 	}
 	
