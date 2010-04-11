@@ -49,7 +49,7 @@ public abstract class AbstractNetworkElement implements AuroraConfigurable, Seri
 	 * @throws ExceptionConfiguration, ExceptionDatabase
 	 */
 	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
-		ts = 0;
+		ts = Math.max(myNetwork.getContainer().getMySettings().getTSInitial(), (int)(myNetwork.getContainer().getMySettings().getTimeInitial()/myNetwork.getTop().getTP()));
 		return true;
 	}
 	

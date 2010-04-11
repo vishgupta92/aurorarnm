@@ -793,7 +793,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	public boolean initialize() throws ExceptionConfiguration, ExceptionDatabase {
 		boolean res = super.initialize();
 		simNo++;
-		tsV = 0;
+		tsV = ts;
 		if (!top) {
 			maxTimeStep = (int)Math.floor((getTop().getTP()*getTop().getMaxTimeStep())/tp);
 		}
