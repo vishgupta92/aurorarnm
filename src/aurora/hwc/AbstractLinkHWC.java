@@ -236,6 +236,15 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				inflowSum.add((AuroraIntervalVector)getBeginNode().getOutputs().get(getBeginNode().getSuccessors().indexOf(this)));
 			}
 			outflowSum.add(getActualFlow());
+			for (int i = 0; i < qSize.size(); i++)  // make sure queue has no negative values
+				if (qSize.get(i).getUpperBound() < 0.0)
+					qSize.get(i).setCenter(0.0, 0.0);
+				else
+					qSize.get(i).setBounds(Math.max(qSize.get(i).getLowerBound(), 0.0), qSize.get(i).getUpperBound());
+			speed.copy((AuroraInterval)myDynamics.computeSpeed(this));
+			speedSum.add(speed);
+			density = (AuroraIntervalVector)myDynamics.computeDensity(this);
+			densitySum.add(density);
 			if (os != null) {
 				NumberFormat form = NumberFormat.getInstance();
 				form.setMinimumFractionDigits(0);
@@ -248,17 +257,9 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 						+ form.format(qMax) + ";"
 						+ form.format(currentWeavingFactor));
 			}
-			for (int i = 0; i < qSize.size(); i++)  // make sure queue has no negative values
-				if (qSize.get(i).getUpperBound() < 0.0)
-					qSize.get(i).setCenter(0.0, 0.0);
-				else
-					qSize.get(i).setBounds(Math.max(qSize.get(i).getLowerBound(), 0.0), qSize.get(i).getUpperBound());
-			speed.copy((AuroraInterval)myDynamics.computeSpeed(this));
-			speedSum.add(speed);
-			density = (AuroraIntervalVector)myDynamics.computeDensity(this);
-			densitySum.add(density);
-			if (successors.size() == 0)
-				speed = (AuroraInterval)myDynamics.computeSpeed(this);
+			// FIXME: why is it here?
+			//if (successors.size() == 0)
+			//	speed = (AuroraInterval)myDynamics.computeSpeed(this);
 			double tp = myNetwork.getTP();
 			if (predecessors.size() == 0)
 				vht = qSize.sum().getCenter() * tp;
