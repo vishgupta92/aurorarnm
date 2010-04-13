@@ -28,23 +28,32 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 	
 	// simulation tab
 	protected JPanel pDUP = new JPanel(new FlowLayout());
+	protected JPanel pIST = new JPanel(new FlowLayout());
 	protected JPanel pMST = new JPanel(new FlowLayout());
+	protected JPanel pISS = new JPanel(new SpringLayout());
 	protected JPanel pMSS = new JPanel(new SpringLayout());
 	protected JPanel pT = new JPanel(new SpringLayout());
 	protected JSpinner hDUP;
 	protected JSpinner mDUP;
 	protected JSpinner sDUP;
+	protected JSpinner hIST;
+	protected JSpinner mIST;
+	protected JSpinner sIST;
 	protected JSpinner hMST;
 	protected JSpinner mMST;
 	protected JSpinner sMST;
+	protected JSpinner spinISS;
 	protected JSpinner spinMSS;
 	protected JSpinner spinT;
 	
 	protected final static String nmDUP = "DispUpdatePeriod";
-	protected final static String nmMST = "SimTimeMax";
-	protected final static String nmMSS = "SimStepMax";
+	protected final static String nmIST = "InitSimTime";
+	protected final static String nmMST = "MaxSimTime";
+	protected final static String nmISS = "InitSimStep";
+	protected final static String nmMSS = "MaxSimStep";
 	protected final static String nmTimeout = "Timeout";
 	protected boolean modifiedDUP = false;
+	protected boolean modifiedIST = false;
 	protected boolean modifiedMST = false;
 	protected boolean modifiedSettings = false;
 	
@@ -62,7 +71,7 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 			mySettings.copyData(mySystem.getMySettings());
 		if (parent != null)
 			mainWindow = parent;
-		setSize(300, 400);
+		setSize(300, 450);
 		setLocationRelativeTo(null);
 		setModal(true);
 		JPanel panelMain = new JPanel(new BorderLayout());
@@ -96,6 +105,7 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 		pSSP.setBorder(BorderFactory.createTitledBorder("Sampling Period"));
 		pSSP.add(new JLabel("<html><font color=\"blue\">" + Util.time2string(mySystem.getMyNetwork().getTP()) + "</font></html>"));
 		fp.add(pSSP);
+		// display update period
 		pDUP.setBorder(BorderFactory.createTitledBorder("Display Update Period"));
 		hDUP = new JSpinner(new SpinnerNumberModel(Util.getHours(mySettings.getDisplayTP()), 0, 99, 1));
 		hDUP.setEditor(new JSpinner.NumberEditor(hDUP, "00"));
@@ -116,6 +126,28 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 		pDUP.add(sDUP);
 		pDUP.add(new JLabel("s"));
 		fp.add(pDUP);
+		// simulation start time
+		pIST.setBorder(BorderFactory.createTitledBorder("Initial Simulation Time"));
+		hIST = new JSpinner(new SpinnerNumberModel(Util.getHours(mySettings.getTimeInitial()), 0, 99, 1));
+		hIST.setEditor(new JSpinner.NumberEditor(hIST, "00"));
+		hIST.setName(nmIST);
+		hIST.addChangeListener(this);
+		pIST.add(hIST);
+		pIST.add(new JLabel("h "));
+		mIST = new JSpinner(new SpinnerNumberModel(Util.getMinutes(mySettings.getTimeInitial()), 0, 59, 1));
+		mIST.setEditor(new JSpinner.NumberEditor(mIST, "00"));
+		mIST.setName(nmIST);
+		mIST.addChangeListener(this);
+		pIST.add(mIST);
+		pIST.add(new JLabel("m "));
+		sIST = new JSpinner(new SpinnerNumberModel(Util.getSeconds(mySettings.getTimeInitial()), 0, 59.99, 1));
+		sIST.setEditor(new JSpinner.NumberEditor(sIST, "00.##"));
+		sIST.setName(nmIST);
+		sIST.addChangeListener(this);
+		pIST.add(sIST);
+		pIST.add(new JLabel("s"));
+		fp.add(pIST);
+		// simulation end time
 		pMST.setBorder(BorderFactory.createTitledBorder("Maximum Simulation Time"));
 		hMST = new JSpinner(new SpinnerNumberModel(Util.getHours(mySettings.getTimeMax()), 0, 99, 1));
 		hMST.setEditor(new JSpinner.NumberEditor(hMST, "00"));
@@ -136,6 +168,16 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 		pMST.add(sMST);
 		pMST.add(new JLabel("s"));
 		fp.add(pMST);
+		// initial simulation step
+		pISS.setBorder(BorderFactory.createTitledBorder("Initial Simulation Step"));
+		spinISS = new JSpinner(new SpinnerNumberModel(mySettings.getTSInitial(), 0, 9999999, 1));
+		spinISS.setEditor(new JSpinner.NumberEditor(spinISS));
+		spinISS.setName(nmISS);
+		spinISS.addChangeListener(this);
+		pISS.add(spinISS);
+		SpringUtilities.makeCompactGrid(pISS, 1, 1, 2, 2, 2, 2);
+		fp.add(pISS);
+		// maximum simulation step
 		pMSS.setBorder(BorderFactory.createTitledBorder("Maximum Simulation Step"));
 		spinMSS = new JSpinner(new SpinnerNumberModel(mySettings.getTSMax(), 1, 9999999, 1));
 		spinMSS.setEditor(new JSpinner.NumberEditor(spinMSS));
@@ -144,6 +186,7 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 		pMSS.add(spinMSS);
 		SpringUtilities.makeCompactGrid(pMSS, 1, 1, 2, 2, 2, 2);
 		fp.add(pMSS);
+		// timeout
 		pT.setBorder(BorderFactory.createTitledBorder("Timeout (milliseconds)"));
 		spinT = new JSpinner(new SpinnerNumberModel(mySettings.getTimeout(), 1, 9999999, 1));
 		spinT.setEditor(new JSpinner.NumberEditor(spinT));
@@ -166,9 +209,17 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 			modifiedDUP = true;
 			pDUP.setBorder(BorderFactory.createTitledBorder("*Display Update Period"));
 		}
+		if (nm.equals(nmIST)) {
+			modifiedIST = true;
+			pIST.setBorder(BorderFactory.createTitledBorder("*Initial Simulation Time"));
+		}
 		if (nm.equals(nmMST)) {
 			modifiedMST = true;
 			pMST.setBorder(BorderFactory.createTitledBorder("*Maximum Simulation Time"));
+		}
+		if (nm.equals(nmISS)) {
+			mySettings.setTSInitial((Integer)spinISS.getValue());
+			pISS.setBorder(BorderFactory.createTitledBorder("*Initial Simulation Step"));
 		}
 		if (nm.equals(nmMSS)) {
 			mySettings.setTSMax((Integer)spinMSS.getValue());
@@ -202,6 +253,12 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 				mySettings.setDisplayTP(h + (m/60.0) + (s/3600.0));
 				if (mySettings.getDisplayTP() < mySystem.getMyNetwork().getTP())
 					mySettings.setDisplayTP(mySystem.getMyNetwork().getTP());
+			}
+			if (modifiedIST) {
+				h = (Integer)hIST.getValue();
+				m = (Integer)mIST.getValue();
+				s = (Double)sIST.getValue();
+				mySettings.setTimeInitial(h + (m/60.0) + (s/3600.0));
 			}
 			if (modifiedMST) {
 				h = (Integer)hMST.getValue();

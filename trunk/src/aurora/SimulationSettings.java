@@ -407,7 +407,8 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 			return false;
 		displayTP = x.getDisplayTP();
 		timeMax = x.getTimeMax();
-		tsMax = x.getTSMax();
+		timeInitial = x.getTimeInitial();
+		tsInitial = x.getTSInitial();
 		timeout = x.getTimeout();
 		outputStream = x.getOutputStream();
 		errorStream = x.getErrorStream();
