@@ -203,7 +203,7 @@ public final class WindowNetwork extends JInternalFrame implements ActionListene
 	private void updatePerfSeries() {
 		Second cts = Util.time2second(myNetwork.getSimTime());
 		try {
-			perfDataSets[0].getSeries(0).add(cts, ((NodeHWCNetwork)myNetwork).getSumDelay());
+			perfDataSets[0].getSeries(0).add(cts, ((NodeHWCNetwork)myNetwork).getSumDelay().getCenter());
 		}
 		catch(SeriesException e) {}
 		return;

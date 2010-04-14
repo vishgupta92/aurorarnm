@@ -111,10 +111,10 @@ public final class DBDerby implements DataStorage, Serializable {
 		stmt += Integer.toString(lnk.getTS()) + ", ";
 		stmt += lnk.getDensity().toString() + ", ";
 		stmt += lnk.getSpeed().toString() + ", ";
-		stmt += Double.toString(lnk.getVHT()) + ", ";
-		stmt += Double.toString(lnk.getVMT()) + ", ";
-		stmt += Double.toString(lnk.getDelay()) + ", ";
-		stmt += Double.toString(lnk.getPLoss()) + ", ";
+		stmt += lnk.getVHT() + ", ";
+		stmt += lnk.getVMT() + ", ";
+		stmt += lnk.getDelay() + ", ";
+		stmt += lnk.getPLoss() + ", ";
 		stmt += Double.toString(lnk.getCriticalDensity()) + ", ";
 		stmt += Double.toString(lnk.getJamDensity()) + ", ";
 		stmt += Double.toString(lnk.getMaxFlow()) + ", ";

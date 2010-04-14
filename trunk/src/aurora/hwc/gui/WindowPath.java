@@ -563,15 +563,15 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		double ploss = 0.0;
 		for (int i = 0; i < links.size(); i++) {
 			myLink = (AbstractLinkHWC)links.get(i);
-			vmt += myLink.getSumVMT();
+			vmt += myLink.getSumVMT().getCenter();
 			maxvmt += g * ((Double)myLink.getMaxFlow()) * myLink.getLength() * tp;
-			vht += myLink.getSumVHT();
-			delay += myLink.getSumDelay();
-			critvht += myLink.getSumVHT() - myLink.getSumDelay();
-			ploss += myLink.getSumPLoss();
+			vht += myLink.getSumVHT().getCenter();
+			delay += myLink.getSumDelay().getCenter();
+			critvht += myLink.getSumVHT().getCenter() - myLink.getSumDelay().getCenter();
+			ploss += myLink.getSumPLoss().getCenter();
 		}
 		try {
-			perfDataSets[0].getSeries(0).add(cts, 60 * myPath.getTravelTime());
+			perfDataSets[0].getSeries(0).add(cts, 60 * myPath.getTravelTime().getCenter());
 			perfDataSets[0].getSeries(1).add(cts, 60 * myPath.getMinTravelTime());
 			perfDataSets[1].getSeries(0).add(cts, vmt);
 			perfDataSets[1].getSeries(1).add(cts, maxvmt);

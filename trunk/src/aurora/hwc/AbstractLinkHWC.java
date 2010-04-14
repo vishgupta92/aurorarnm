@@ -49,14 +49,14 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	protected AuroraIntervalVector outflowSum = new AuroraIntervalVector(); // in vph
 	protected AuroraInterval speed = new AuroraInterval(); // mean speed 
 	protected AuroraInterval speedSum = new AuroraInterval(); // mean speed 
-	protected double vht = 0; // vehicle hours traveled per sampling time period
-	protected double vhtSum = 0;
-	protected double vmt = 0; // vehicle miles traveled per sampling time period
-	protected double vmtSum = 0;
-	protected double delay = 0; // delay introduced when speed is below free flow speed
-	protected double delaySum = 0;
-	protected double ploss = 0; // productivity loss
-	protected double plossSum = 0;
+	protected AuroraInterval vht = new AuroraInterval(); // vehicle hours traveled per sampling time period
+	protected AuroraInterval vhtSum = new AuroraInterval();
+	protected AuroraInterval vmt = new AuroraInterval(); // vehicle miles traveled per sampling time period
+	protected AuroraInterval vmtSum = new AuroraInterval();
+	protected AuroraInterval delay = new AuroraInterval(); // delay introduced when speed is below free flow speed
+	protected AuroraInterval delaySum = new AuroraInterval();
+	protected AuroraInterval ploss = new AuroraInterval(); // productivity loss
+	protected AuroraInterval plossSum = new AuroraInterval();
 	
 	protected double qMax = 100; // max queue size in vehicles
 	protected AuroraIntervalVector qSize = new AuroraIntervalVector(); // actual queue size in vehicles
@@ -257,25 +257,38 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 						+ form.format(qMax) + ";"
 						+ form.format(currentWeavingFactor));
 			}
-			// FIXME: why is it here?
-			//if (successors.size() == 0)
-			//	speed = (AuroraInterval)myDynamics.computeSpeed(this);
 			double tp = myNetwork.getTP();
-			if (predecessors.size() == 0)
-				vht = qSize.sum().getCenter() * tp;
-			else
-				vht = density.sum().getCenter() * length * tp;
-			vhtSum += vht;
-			vmt = density.sum().getCenter() * speed.getCenter() * length * tp;
-			vmtSum += vmt;
-			delay = Math.max((vht - (vmt/getV())), 0.0);
-			delaySum += delay;
+			if (predecessors.size() == 0) {
+				vht.copy(qSize.sum());
+				vht.affineTransform(tp, 0);
+			}
+			else {
+				vht.copy(density.sum());
+				vht.affineTransform(length, 0);
+				vht.affineTransform(tp, 0);
+			}
+			vhtSum.add(vht);
+			vmt.setBounds(density.sum().getLowerBound()*speed.getUpperBound()*length*tp, density.sum().getUpperBound()*speed.getLowerBound()*length*tp);
+			vmtSum.add(vmt);
+			delay.copy(vmt);
+			delay.inverseAffineTransform(getV(), 0);
+			delay.negative();
+			delay.add(vht);
+			delay.constraintLB(0);
+			delaySum.add(delay);
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(delay);
 			if (density.sum().getCenter() <= densityCritical)
-				ploss = 0;
-			else
-				ploss = Math.max((tp * length * lanes * (1 - (getActualFlow().sum().getCenter() / flowMax))), 0.0);
-			plossSum += ploss;
+				ploss.setCenter(0, 0);
+			else {
+				ploss.setBounds(getActualFlow().sum().getLowerBound()/flowMaxRange.getLowerBound(), getActualFlow().sum().getUpperBound()/flowMaxRange.getUpperBound());
+				ploss.negative();
+				ploss.affineTransform(1, 1);
+				ploss.affineTransform(lanes, 0);
+				ploss.affineTransform(length, 0);
+				ploss.affineTransform(tp, 0);
+				ploss.constraintLB(0);
+			}
+			plossSum.add(ploss);
 		}
 		return res;
 	}
@@ -552,57 +565,73 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	/**
 	 * Returns VHT.
 	 */
-	public final double getVHT() {
-		return vht;
+	public final AuroraInterval getVHT() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(vht);
+		return v;
 	}
 	
 	/**
 	 * Returns sum of VHT.
 	 */
-	public final double getSumVHT() {
-		return vhtSum;
+	public final AuroraInterval getSumVHT() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(vhtSum);
+		return v;
 	}
 	
 	/**
 	 * Returns VMT.
 	 */
-	public final double getVMT() {
-		return vmt;
+	public final AuroraInterval getVMT() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(vmt);
+		return v;
 	}
 	
 	/**
 	 * Returns sum of VMT.
 	 */
-	public final double getSumVMT() {
-		return vmtSum;
+	public final AuroraInterval getSumVMT() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(vmtSum);
+		return v;
 	}
 	
 	/**
 	 * Returns delay.
 	 */
-	public final double getDelay() {
-		return delay;
+	public final AuroraInterval getDelay() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(delay);
+		return v;
 	}
 	
 	/**
 	 * Returns sum of delay.
 	 */
-	public final double getSumDelay() {
-		return delaySum;
+	public final AuroraInterval getSumDelay() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(delaySum);
+		return v;
 	}
 	
 	/**
 	 * Returns productivity loss.
 	 */
-	public final double getPLoss() {
-		return ploss;
+	public final AuroraInterval getPLoss() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(ploss);
+		return v;
 	}
 	
 	/**
 	 * Returns sum of productivity loss.
 	 */
-	public final double getSumPLoss() {
-		return plossSum;
+	public final AuroraInterval getSumPLoss() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(plossSum);
+		return v;
 	}
 	
 	/**
@@ -820,17 +849,25 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	/**
 	 * Returns instantaneous travel time.
 	 */
-	public final double getTravelTime() {
-		double tt = 0.0;
-		if (getBeginNode() != null)
-			tt = length/speed.getCenter();
-		else {
-			if (qSize.sum().getCenter() > Util.EPSILON);
-				tt = qSize.sum().getCenter()/(getActualFlow().sum().getCenter());
+	public AuroraInterval getTravelTime() {
+		AuroraInterval tt = new AuroraInterval();
+		if (getBeginNode() != null) {
+			double lb = length/speed.getUpperBound();
+			double ub = length/speed.getLowerBound();
+			if ((lb == Double.NaN) || (lb == Double.POSITIVE_INFINITY))
+				lb = Double.MAX_VALUE;
+			if ((ub == Double.NaN) || (ub == Double.POSITIVE_INFINITY))
+				ub = Double.MAX_VALUE;
+			tt.setBounds(lb, ub);
 		}
-		if ((tt == Double.NaN) || (tt == Double.POSITIVE_INFINITY))
-			tt = Double.MAX_VALUE;
-		return Math.max(tt, getMinTravelTime());
+		else {
+			tt.copy(qSize.sum());
+			AuroraInterval af = getActualFlow().sum();
+			af.constraintLB(Util.EPSILON);
+			tt.quotient(af);
+		}
+		tt.constraintLB(getMinTravelTime());
+		return tt; 
 	}
 	
 	/**
@@ -1375,14 +1412,14 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Resets VMT, VHT, Delay, Productivity Loss, In/Out Flow, Density and Speed sums.
 	 */
 	public synchronized void resetSums() {
-		vht = 0;
-		vmt = 0;
-		delay = 0;
-		ploss = 0;
-		vmtSum = 0;
-		vhtSum = 0;
-		delaySum = 0;
-		plossSum = 0;
+		vht.setCenter(0, 0);
+		vmt.setCenter(0, 0);
+		delay.setCenter(0, 0);
+		ploss.setCenter(0, 0);
+		vmtSum.setCenter(0, 0);
+		vhtSum.setCenter(0, 0);
+		delaySum.setCenter(0, 0);
+		plossSum.setCenter(0, 0);
 		tsCount = 0;
 		int sz = ((SimulationSettingsHWC)myNetwork.getContainer().getMySettings()).countVehicleTypes();
 		densitySum = new AuroraIntervalVector(sz);
