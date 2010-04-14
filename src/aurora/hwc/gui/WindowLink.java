@@ -301,12 +301,12 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		Second cts = Util.time2second(myLink.getTS()*myLink.getTop().getTP());
 		double tp = myLink.getMyNetwork().getTP();
 		double g = mySystem.getMySettings().getDisplayTP() / tp;
-		double vmt = myLink.getSumVMT();
+		double vmt = myLink.getSumVMT().getCenter();
 		double maxvmt = g * ((Double)myLink.getMaxFlow()) * myLink.getLength() * tp;
-		double vht = myLink.getSumVHT();
-		double delay = myLink.getSumDelay();
+		double vht = myLink.getSumVHT().getCenter();
+		double delay = myLink.getSumDelay().getCenter();
 		double critvht = vht - delay;
-		double ploss = myLink.getSumPLoss();
+		double ploss = myLink.getSumPLoss().getCenter();
 		try {
 			perfDataSets[0].getSeries(0).add(cts, vmt);
 			perfDataSets[0].getSeries(1).add(cts, maxvmt);

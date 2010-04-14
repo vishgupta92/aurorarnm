@@ -21,8 +21,8 @@ import aurora.*;
 public final class NodeHWCNetwork extends AbstractNodeComplex {
 	private static final long serialVersionUID = -124608463365357280L;
 	
-	private double totalDelay = 0.0;
-	private double totalDelaySum = 0.0;
+	private AuroraInterval totalDelay = new AuroraInterval();
+	private AuroraInterval totalDelaySum = new AuroraInterval();
 	private boolean resetAllSums = true;
 	private int tsV = 0;
 	private boolean qControl = true;
@@ -72,7 +72,7 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
-		totalDelay = 0;
+		totalDelay.setCenter(0, 0);
 		boolean res = super.dataUpdate(ts);
 		if (resetAllSums)
 			resetSums();
@@ -80,7 +80,7 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 			tsV = ts;
 			resetAllSums = true;
 		}
-		totalDelaySum += totalDelay;
+		totalDelaySum.add(totalDelay);
 		if (!isTop())
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(totalDelay);
 		return res;
@@ -128,15 +128,19 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	/**
 	 * Returns total network delay.
 	 */
-	public final double getDelay() {
-		return totalDelay;
+	public final AuroraInterval getDelay() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(totalDelay);
+		return v;
 	}
 	
 	/**
 	 * Returns sum of total network delay.
 	 */
-	public final double getSumDelay() {
-		return totalDelaySum;
+	public final AuroraInterval getSumDelay() {
+		AuroraInterval v = new AuroraInterval();
+		v.copy(totalDelaySum);
+		return v;
 	}
 	
 	/**
@@ -159,8 +163,8 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	/**
 	 * Increments total delay by the given value.
 	 */
-	public synchronized void addToTotalDelay(double x) {
-		totalDelay += x;
+	public synchronized void addToTotalDelay(AuroraInterval x) {
+		totalDelay.add(x);
 		return;
 	}
 	
@@ -168,7 +172,7 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 * Resets quantities derived by integration: VHT, VMT, Delay, Productivity Loss.
 	 */
 	public synchronized void resetSums() {
-		totalDelaySum = 0;
+		totalDelaySum.setCenter(0, 0);
 		resetAllSums = false;
 		return;
 	}

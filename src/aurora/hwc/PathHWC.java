@@ -18,18 +18,18 @@ public class PathHWC extends Path {
 	/**
 	 * Returns instantaneous travel time in hours.
 	 */
-	public double getTravelTime() {
-		double tt = 0.0;
+	public AuroraInterval getTravelTime() {
+		AuroraInterval tt = new AuroraInterval();
 		for (int i = 0; i < linkCount; i++) {
 			if ((i < (linkCount - 1)) &&
 				(((AbstractNodeHWC)linkSequence.get(i).getEndNode()).getSplitRatio(linkSequence.get(i), linkSequence.get(i+1)).sum().getCenter() <= Double.MIN_VALUE)) {
-					tt = Double.MAX_VALUE;
+					tt.constraintLB(Double.MAX_VALUE);
 					break;
 				}
-			tt += ((AbstractLinkHWC)linkSequence.get(i)).getTravelTime();
+			tt.add(((AbstractLinkHWC)linkSequence.get(i)).getTravelTime());
 		}
-		if ((tt == Double.NaN) || (tt == Double.POSITIVE_INFINITY) || (tt > 24))
-			tt = 24; //Double.MAX_VALUE;
+		if ((tt.getUpperBound() == Double.NaN) || (tt.getUpperBound() == Double.POSITIVE_INFINITY) || (tt.getUpperBound() > 24))
+			tt.constraintUB(24); //Double.MAX_VALUE;
 		return tt;
 	}
 	
