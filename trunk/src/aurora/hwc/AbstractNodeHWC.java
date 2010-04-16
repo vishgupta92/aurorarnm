@@ -30,8 +30,10 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	protected Vector<AuroraIntervalVector[][]> srmProfile = new Vector<AuroraIntervalVector[][]>();
 	protected double srTP = 1.0/12.0; // split ratio matrix change period (default: 1/12 hour)
 	
+	protected boolean inUpperBoundFirst = false;
+	protected boolean outUpperBoundFirst = false;
 	
-	
+		
 	/**
 	 * Initializes the simple Node from given DOM structure.
 	 * @param p DOM node.
@@ -1482,6 +1484,20 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		return res;
 	}
 	
+	
+	/**
+	 * Checks if upper input bound should be subtracted from the upstream lower density bound.
+	 */
+	public boolean isInputUpperBoundFirst() {
+		return inUpperBoundFirst;
+	}
+	
+	/**
+	 * Checks if upper output bound should be added to the downstream lower density bound.
+	 */
+	public boolean isOutputUpperBoundFirst() {
+		return outUpperBoundFirst;
+	}
 	
 	/**
 	 * Returns compatible simple controller type names.
