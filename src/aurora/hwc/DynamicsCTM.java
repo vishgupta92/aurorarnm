@@ -84,6 +84,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 			den2.affineTransform(x.getWeavingFactor(), 0);
 			ifl2.affineTransform(x.getInputWeavingFactor(), 0);
 			ofl2.affineTransform(x.getWeavingFactor(), 0);
+			//TODO: lb-lb; ub-ub
 			ifl.subtract(ofl);
 			ifl.affineTransform(x.getMyNetwork().getTP()/x.getLength(), 0);
 			den.add(ifl);
@@ -93,7 +94,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		}
 		den.constraintLB(0);
 		den2.constraintLB(0);
-		if (x.getJamDensity() < den.sum().getUpperBound()) {
+		/*if (x.getJamDensity() < den.sum().getUpperBound()) {
 			double s = x.getJamDensity() / den.sum().getUpperBound();
 			for (int i = 0; i < den.size(); i++)
 				den.get(i).setUpperBound(s * den.get(i).getUpperBound());
@@ -102,7 +103,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 			double s = x.getJamDensity() / den2.sum().getUpperBound();
 			for (int i = 0; i < den2.size(); i++)
 				den2.get(i).setUpperBound(s * den2.get(i).getUpperBound());
-		}
+		}*/
 		den3.copy(den);
 		double[] owf = x.getOutputWeavingFactors();
 		den3.affineTransform(owf, 0);
