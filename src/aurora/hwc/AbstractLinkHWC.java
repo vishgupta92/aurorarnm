@@ -489,10 +489,29 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Returns critical density range for the link.
+	 */
+	public final AuroraInterval getCriticalDensityRange() {
+		AuroraInterval cdr = new AuroraInterval();
+		cdr.setBounds(flowMaxRange.getLowerBound()/getV(), flowMaxRange.getUpperBound()/getV());
+		return cdr;
+	}
+	
+	/**
 	 * Returns critical density for the link.
 	 */
 	public final double getCriticalDensity() {
 		return densityCritical;
+	}
+	
+	/**
+	 * Returns jam density range for the link.
+	 */
+	public final AuroraInterval getJamDensityRange() {
+		AuroraInterval cdr = new AuroraInterval();
+		double sz = getCriticalDensityRange().getSize();
+		cdr.setBounds(densityJam - sz/2, densityJam + sz/2);
+		return cdr;
 	}
 	
 	/**
