@@ -28,8 +28,9 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	protected double lanes = 1.0;
 	protected double flowMax = 1800; // in vph
 	protected AuroraInterval flowMaxRange = new AuroraInterval(flowMax, 0);
-	protected double currentWeavingFactor = 1.0;
-	protected double inputWeavingFactor = 1.0;
+	protected AuroraInterval currentWeavingFactor = new AuroraInterval(1, 0);
+	protected AuroraInterval inputWeavingFactor = new AuroraInterval(1, 0);
+	protected boolean wfUpperBoundFirst = false;
 	protected double[] outputWeavingFactors = null;
 	protected double capacityDrop = 0; // in vph
 	protected double densityCritical = 30; // in vpm
@@ -447,17 +448,24 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Checks if the upper bound of the weaving factor should apply to lower density bound.
+	 */
+	public final boolean isWFUpperBoundFirst() {
+		return wfUpperBoundFirst;
+	}
+	
+	/**
 	 * Returns the weaving factor.
 	 */
-	public final double getWeavingFactor() {
+	public final AuroraInterval getWeavingFactor() {
 		return currentWeavingFactor;
 	}
 	
 	/**
 	 * Returns the input weaving factor.
 	 */
-	public final double getInputWeavingFactor() {
-		return inputWeavingFactor;
+	public final AuroraInterval getInputWeavingFactor() {
+		return new AuroraInterval(inputWeavingFactor.getCenter(), inputWeavingFactor.getSize());
 	}
 	
 	/**
@@ -478,6 +486,8 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Returns capacity range.
 	 */
 	public final AuroraInterval getMaxFlowRange() {
+		if (myNetwork.getContainer().isSimulation() && !myNetwork.getContainer().isPrediction())
+			return new AuroraInterval(flowMax, 0);
 		return new AuroraInterval(flowMax, flowMaxRange.getSize());
 	}
 	
@@ -656,8 +666,12 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	/**
 	 * Returns occupancy.
 	 */
-	public final double getOccupancy() {
-		return Math.min(1, (currentWeavingFactor * density.sum().getCenter()) / densityJam);
+	public final AuroraInterval getOccupancy() {
+		double olb = density.sum().getLowerBound() * currentWeavingFactor.getLowerBound() / getJamDensityRange().getUpperBound();
+		double oub = density.sum().getUpperBound() * currentWeavingFactor.getUpperBound() / getJamDensityRange().getLowerBound();
+		olb = Math.min(olb, 1);
+		oub = Math.min(oub, 1);
+		return new AuroraInterval((olb+oub)/2, Math.abs(oub-olb));
 	}
 	
 	/**
@@ -815,16 +829,18 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Returns downstream capacity.
 	 */
 	public final AuroraInterval getCapacityValue() {
-		if (extCapVal != null)
-			return extCapVal;
+		AuroraInterval cv = new AuroraInterval();
+		if (extCapVal != null) {
+			cv.copy(extCapVal);
+			return cv;
+		}
 		double t = myNetwork.getSimTime(); // simulation time (in hours)
 		int idx = (int)Math.floor(t/capacityTP);
 		int n = capacity.size() - 1; // max index of the capacity profile
 		if ((idx < 0) || (idx > n))
 			idx = n;
 		if ((idx < 0) || (getEndNode() != null))
-			return new AuroraInterval(flowMax);
-		AuroraInterval cv = new AuroraInterval();
+			return getMaxFlowRange();
 		cv.copy(capacity.get(idx));
 		return cv;
 	}
@@ -962,14 +978,25 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Indicates if the upper bound of the weaving factor should apply to the lower bound of the density.
+	 * @param x bound order flag.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean inverseWFBounds(boolean x) {
+		wfUpperBoundFirst = x;
+		return true;
+	}
+	
+	/**
 	 * Assigns weaving factor.
 	 * @param x weaving factor.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setWeavingFactor(double x) {
-		if (x < 1.0)
+	public synchronized boolean setWeavingFactor(AuroraInterval x) {
+		if (x == null)
 			return false;
-		currentWeavingFactor = x;
+		currentWeavingFactor.copy(x);
+		currentWeavingFactor.constraintLB(1);
 		return true;
 	}
 	
@@ -978,10 +1005,11 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * @param x input flow weaving factor.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setInputWeavingFactor(double x) {
-		if (x < 1.0)
+	public synchronized boolean setInputWeavingFactor(AuroraInterval x) {
+		if (x == null)
 			return false;
-		inputWeavingFactor = x;
+		inputWeavingFactor.copy(x);
+		inputWeavingFactor.constraintLB(1);
 		return true;
 	}
 	

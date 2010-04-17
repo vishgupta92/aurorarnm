@@ -30,7 +30,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	protected Vector<AuroraIntervalVector[][]> srmProfile = new Vector<AuroraIntervalVector[][]>();
 	protected double srTP = 1.0/12.0; // split ratio matrix change period (default: 1/12 hour)
 	
-	protected boolean inUpperBoundFirst = false;
+	protected boolean inUpperBoundFirst = true;
 	protected boolean outUpperBoundFirst = false;
 	
 		
@@ -1436,13 +1436,21 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				outFlow2.add(flw2);
 			}
 			outputs.set(j, outFlow);
-			double nm = outFlow2.sum().getCenter();
-			double dnm = outFlow.sum().getCenter();
-			if (nm > 0.000000001)
-				nm = nm / dnm;
+			double nmL = outFlow2.sum().getLowerBound();
+			double dnmL = outFlow.sum().getLowerBound();
+			if (nmL > Util.EPSILON)
+				nmL = nmL / dnmL;
 			else
-				nm = 1;
-			((AbstractLinkHWC)successors.get(j)).setInputWeavingFactor(nm);
+				nmL = 1;
+			double nmU = outFlow2.sum().getUpperBound();
+			double dnmU = outFlow.sum().getUpperBound();
+			if (nmU > Util.EPSILON)
+				nmU = nmU / dnmU;
+			else
+				nmU = 1;
+			if (nmU - nmL < Util.EPSILON) // avoid rounding error
+				nmU = nmL;
+			((AbstractLinkHWC)successors.get(j)).setInputWeavingFactor(new AuroraInterval((nmL+nmU)/2, Math.abs(nmU-nmL)));
 		}
 		return res;
 	}

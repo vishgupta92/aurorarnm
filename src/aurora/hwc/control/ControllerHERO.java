@@ -271,7 +271,7 @@ public class ControllerHERO extends AbstractControllerComplexHWC {
 				mlocc = mlsensor.Occupancy();
 		}
 		else
-			mlocc = mllink.getOccupancy();
+			mlocc = mllink.getOccupancy().getCenter();
 		c1 = orlink.getQueue().sum().getCenter() / orlink.getQueueMax() > onrampinfo.getActivationThreshold();
 		c2 = mlocc > 0.9 * mllink.getCriticalDensity();
 		return c1 && c2;		
@@ -289,7 +289,7 @@ public class ControllerHERO extends AbstractControllerComplexHWC {
 				mlocc = mlsensor.Occupancy();
 		}
 		else
-			mlocc = mllink.getOccupancy();
+			mlocc = mllink.getOccupancy().getCenter();
 		c1 = orlink.getQueue().sum().getCenter() / orlink.getQueueMax() > onrampinfo.getActivationThreshold();
 		c2 = mlocc < 0.8 * mllink.getCriticalDensity();
 		return c1 || c2;		
