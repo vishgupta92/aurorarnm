@@ -23,6 +23,7 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	protected SimulationSettings mySettings = null;
 	protected SimulationStatus myStatus = new SimulationStatus();
 	protected boolean isSim = true;
+	protected boolean isPred = false;
 	protected boolean isBatch = false;
 	protected HashMap<String, String> ne_type2classname = new HashMap<String, String>();
 	protected HashMap<String, String> evt_type2classname = new HashMap<String, String>();
@@ -105,6 +106,13 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	 */
 	public final boolean isSimulation() {
 		return isSim;
+	}
+	
+	/**
+	 * Returns <code>true</code> if current application runs simulation with prediction, <code>false</code> - otherwise.
+	 */
+	public final boolean isPrediction() {
+		return isPred;
 	}
 	
 	/**
@@ -211,10 +219,20 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	}
 	
 	/**
+	 * Set application type to simulation with prediction.
+	 */
+	public synchronized void applicationPrediction() {
+		isSim = true;
+		isPred = true;
+		return;
+	}
+	
+	/**
 	 * Set application type to configuration.
 	 */
 	public synchronized void applicationConfiguration() {
 		isSim = false;
+		isPred = false;
 		return;
 	}
 	
