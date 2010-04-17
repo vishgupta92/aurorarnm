@@ -117,7 +117,7 @@ public class ControllerTR extends AbstractControllerSimpleHWC {
 			MLspd = mlsensor.Speed();
 		}
 		else{
-			MLocc = mlup.getOccupancy();
+			MLocc = mlup.getOccupancy().getCenter();
 			MLflw = mlup.getFlow().sum().getCenter() / mlup.getLanes();
 			MLspd = mlup.getSpeed().getCenter();
 		}

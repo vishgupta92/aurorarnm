@@ -146,7 +146,7 @@ public abstract class AbstractControllerSimpleHWC extends AbstractControllerSimp
 			MLspd = mlsensor.Speed();
 		}
 		else{
-			MLocc = mlup.getOccupancy();
+			MLocc = mlup.getOccupancy().getCenter();
 			MLflw = mlup.getFlow().sum().getCenter() / mlup.getLanes();
 			MLspd = mlup.getSpeed().getCenter();
 		}

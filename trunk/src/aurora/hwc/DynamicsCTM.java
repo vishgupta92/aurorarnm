@@ -25,7 +25,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 * @return allowed in-flow (type <code>AuroraInterval</code>).
 	 */
 	public Object computeCapacity(AbstractLinkHWC x) {
-		double density = x.getDensity().sum().getCenter() * x.getWeavingFactor();
+		double density = x.getDensity().sum().getCenter() * x.getWeavingFactor().getCenter();
 		double cv = Math.min(x.getMaxFlow(), x.getW() * (x.getJamDensity() - density));
 		return new AuroraInterval(cv);
 	}
@@ -36,11 +36,15 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 * @return allowed in-flow (type <code>AuroraInterval</code>).
 	 */
 	public Object computeCapacityL(AbstractLinkHWC x) {
-		double densityLB = x.getDensity().sum().getLowerBound() * x.getWeavingFactor();
+		double wf = x.getWeavingFactor().getLowerBound();
+		if (x.isWFUpperBoundFirst())
+			wf = x.getWeavingFactor().getUpperBound();
+		double densityLB = x.getDensity().sum().getLowerBound() * wf;
 		AuroraInterval cap = x.getMaxFlowRange();
 		double lb = Math.min(cap.getLowerBound(), x.getW() * (x.getJamDensityRange().getLowerBound() - densityLB));
 		double ub = Math.min(cap.getUpperBound(), x.getW() * (x.getJamDensityRange().getUpperBound() - densityLB));
 		cap.setBounds(lb, ub);
+		cap.constraintLB(0);
 		return cap;
 	}
 	
@@ -50,11 +54,15 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 * @return allowed in-flow (type <code>AuroraInterval</code>).
 	 */
 	public Object computeCapacityU(AbstractLinkHWC x) {
-		double densityUB = x.getDensity().sum().getUpperBound() * x.getWeavingFactor();
+		double wf = x.getWeavingFactor().getUpperBound();
+		if (x.isWFUpperBoundFirst())
+			wf = x.getWeavingFactor().getLowerBound();
+		double densityUB = x.getDensity().sum().getUpperBound() * wf;
 		AuroraInterval cap = x.getMaxFlowRange();
 		double lb = Math.min(cap.getLowerBound(), x.getW() * (x.getJamDensityRange().getLowerBound() - densityUB));
 		double ub = Math.min(cap.getUpperBound(), x.getW() * (x.getJamDensityRange().getUpperBound() - densityUB));
 		cap.setBounds(lb, ub);
+		cap.constraintLB(0);
 		return cap;
 	}
 
@@ -69,7 +77,6 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	public Object computeDensity(AbstractLinkHWC x) {
 		AuroraIntervalVector den = new AuroraIntervalVector();
 		AuroraIntervalVector den2 = new AuroraIntervalVector();
-		AuroraIntervalVector den3 = new AuroraIntervalVector();
 		AbstractNode bnd = x.getBeginNode();
 		if (bnd == null) {
 			den.copy((AuroraIntervalVector)x.getQueue());
@@ -79,65 +86,110 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		else {
 			AuroraIntervalVector ifl = new AuroraIntervalVector();
 			AuroraIntervalVector ofl = new AuroraIntervalVector();
+			double[] ifL, ifU, ofL, ofU;
+			double wfL, wfU, iwfL, iwfU;
 			ifl.copy((AuroraIntervalVector)bnd.getOutputs().get(bnd.getSuccessors().indexOf(x)));
+			if (((AbstractNodeHWC)bnd).isOutputUpperBoundFirst()) {
+				ifL = ifl.getUpperBounds();
+				ifU = ifl.getLowerBounds();
+				iwfL = x.getInputWeavingFactor().getUpperBound();
+				iwfU = x.getInputWeavingFactor().getLowerBound();
+			}
+			else {
+				ifL = ifl.getLowerBounds();
+				ifU = ifl.getUpperBounds();
+				iwfL = x.getInputWeavingFactor().getLowerBound();
+				iwfU = x.getInputWeavingFactor().getUpperBound();
+			}
+			if (x.isWFUpperBoundFirst()) {
+				wfL = x.getWeavingFactor().getUpperBound();
+				wfU = x.getWeavingFactor().getLowerBound();
+			}
+			else {
+				wfL = x.getWeavingFactor().getLowerBound();
+				wfU = x.getWeavingFactor().getUpperBound();
+			}
 			AbstractNode end = x.getEndNode();
 			if (end == null) {
 				ofl = x.getFlow();
-				AuroraInterval cap = new AuroraInterval();
-				cap.copy(x.getCapacityValue());
-				ofl.affineTransform(Math.min(cap.getUpperBound()/ofl.sum().getUpperBound(), 1), 0);
+				AuroraInterval cap = x.getCapacityValue();
+				double lbc = cap.getUpperBound()/ofl.sum().getLowerBound();
+				double ubc = cap.getLowerBound()/ofl.sum().getUpperBound();
+				ofL = ofl.getLowerBounds();
+				ofU = ofl.getUpperBounds();
+				for (int i = 0; i < ofL.length; i++) {
+					if (lbc < 0)
+						ofL[i] = lbc * ofL[i];
+					if (ubc < 0)
+						ofU[i] = ubc * ofU[i];
+					if (Math.abs(ofL[i] - ofU[i]) < Util.EPSILON) // to avoid rounding errors
+						ofL[i] = ofU[i];
+				}
 			}
-			else
+			else {
 				ofl.copy((AuroraIntervalVector)end.getInputs().get(end.getPredecessors().indexOf(x)));
+				if (((AbstractNodeHWC)end).isInputUpperBoundFirst()) {
+					ofL = ofl.getUpperBounds();
+					ofU = ofl.getLowerBounds();
+				}
+				else {
+					ofL = ofl.getLowerBounds();
+					ofU = ofl.getUpperBounds();
+				}
+			}
 			den.copy((AuroraIntervalVector)x.getDensity());
-			AuroraIntervalVector ifl2 = new AuroraIntervalVector();
-			AuroraIntervalVector ofl2 = new AuroraIntervalVector();
 			den2.copy(den);
-			ifl2.copy(ifl);
-			ofl2.copy(ofl);
-			den2.affineTransform(x.getWeavingFactor(), 0);
-			ifl2.affineTransform(x.getInputWeavingFactor(), 0);
-			ofl2.affineTransform(x.getWeavingFactor(), 0);
-			//TODO: lb-lb; ub-ub
-			ifl.subtract(ofl);
-			ifl.affineTransform(x.getMyNetwork().getTP()/x.getLength(), 0);
-			den.add(ifl);
-			ifl2.subtract(ofl2);
-			ifl2.affineTransform(x.getMyNetwork().getTP()/x.getLength(), 0);
-			den2.add(ifl2);
+			double dtdx = x.getMyNetwork().getTP()/x.getLength();
+			for (int i = 0; i < den.size(); i++) {
+				double dlb = den.get(i).getLowerBound() + dtdx * (ifL[i] - ofL[i]);
+				double dub = den.get(i).getUpperBound() + dtdx * (ifU[i] - ofU[i]);
+				double dlb2 = wfL*den.get(i).getLowerBound() + dtdx * (iwfL*ifL[i] - wfL*ofL[i]);
+				double dub2 = wfU*den.get(i).getUpperBound() + dtdx * (iwfU*ifU[i] - wfU*ofU[i]);
+				if (Math.abs(dub - dlb) < Util.EPSILON) { // avoid rounding error
+					dub = dlb;
+					dub2 = dlb2;
+				}
+				den.get(i).setBounds(dlb, dub);
+				den.get(i).constraintLB(0);
+				den2.get(i).setBounds(dlb2, dub2);
+				den2.get(i).constraintLB(0);
+			}
 		}
-		den.constraintLB(0);
-		den2.constraintLB(0);
-		/*if (x.getJamDensity() < den.sum().getUpperBound()) {
-			double s = x.getJamDensity() / den.sum().getUpperBound();
-			for (int i = 0; i < den.size(); i++)
-				den.get(i).setUpperBound(s * den.get(i).getUpperBound());
-		}
-		if (x.getJamDensity() < den2.sum().getUpperBound()) {
-			double s = x.getJamDensity() / den2.sum().getUpperBound();
-			for (int i = 0; i < den2.size(); i++)
-				den2.get(i).setUpperBound(s * den2.get(i).getUpperBound());
-		}*/
+		double dL = den.sum().getLowerBound();
+		double dU = den.sum().getUpperBound();
+		double wf2L = den2.sum().getLowerBound();
+		double wf2U = den2.sum().getUpperBound();
+		AuroraIntervalVector den3 = new AuroraIntervalVector();
 		den3.copy(den);
 		double[] owf = x.getOutputWeavingFactors();
 		den3.affineTransform(owf, 0);
-		double wf3 = den3.sum().getCenter();
-		double wf2 = den2.sum().getCenter();
-		double dnm = den.sum().getCenter();
-		if (dnm > 0.000000001) {
-			wf2 = wf2 / dnm;
-			wf3 = wf3 / dnm;
+		double wf3L = den3.sum().getLowerBound();
+		double wf3U = den3.sum().getUpperBound();
+		if (dL > Util.EPSILON) {
+			wf2L = wf2L / dL;
+			wf3L = wf3L / dL;
 		}
 		else {
-			wf2 = 1;
-			wf3 = 1;
+			wf2L = 1;
+			wf3L = 1;
 		}
-		x.setWeavingFactor(Math.max(wf2, wf3));
+		if (dU > Util.EPSILON) {
+			wf2U = wf2U / dU;
+			wf3U = wf3U / dU;
+		}
+		else {
+			wf2U = 1;
+			wf3U = 1;
+		}
+		wf2L = Math.max(wf2L, wf3L);
+		wf2U = Math.max(wf2U, wf3U);
+		x.inverseWFBounds(wf2U < wf2L);
+		x.setWeavingFactor(new AuroraInterval((wf2L+wf2U)/2, Math.abs(wf2U-wf2L)));
 		return den;
 	}
-
+	
 	/**
-	 * Computes desired out-flow from given Link.<br>
+	 * Computes desired out-flow range from given Link.<br>
 	 * Looks at density. If density is below critical, then
 	 * the flow is computed from the fundamental diagram;
 	 * else - maximum flow is taken.<br>
@@ -154,75 +206,38 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		else {
 			flow.copy((AuroraIntervalVector)x.getDensity());
 			flow.affineTransform(x.getV(), 0);
-			/* FIXME: unnecessary code
-			if (x.getEndNode() == null) {
-				if (x.getMaxFlow() < flow.sum().getUpperBound()) {
-					double fv = x.getMaxFlow() / flow.sum().getUpperBound();
-					for (int i = 0; i < flow.size(); i++)
-						flow.get(i).affineTransformUB(fv, 0);
-				}
-			} */
-		}
-		double fmax = x.getMaxFlow() - x.getCapacityDrop();
-		double lb = flow.sum().getLowerBound();
-		double ub = flow.sum().getUpperBound();
-		if (fmax < ub) {
-			if (fmax < lb) {
-				for (int i = 0; i < flow.size(); i++) {
-					flow.get(i).constraintUB((fmax/ub)*flow.get(i).getUpperBound());
-				}
-			}
-			else {
-				for (int i = 0; i < flow.size(); i++) {
-					flow.get(i).setBounds(flow.get(i).getLowerBound(), (fmax/ub)*flow.get(i).getUpperBound());
-				}
-			}
-		}
-		return flow;
-	}
-	
-	/**
-	 * Computes desired out-flow range from given Link.<br>
-	 * Looks at density. If density is below critical, then
-	 * the flow is computed from the fundamental diagram;
-	 * else - maximum flow is taken.<br>
-	 * If given Link is Origin Link (has no begin Node), then
-	 * demand and queue determine the value of desired out-flow.
-	 * @param x given Link.
-	 * @return desired out-flow (type <code>AuroraIntervalVector</code>).
-	 */
-	public Object computeFlowLU(AbstractLinkHWC x) {
-		AuroraIntervalVector flow = new AuroraIntervalVector();
-		AbstractNode bnd = x.getBeginNode();
-		if (bnd == null)
-			flow.copy((AuroraIntervalVector)x.getDemandValue());
-		else {
-			flow.copy((AuroraIntervalVector)x.getDensity());
-			flow.affineTransform(x.getV(), 0);
 		}
 		AuroraInterval fmax = x.getMaxFlowRange();
 		fmax.affineTransform(1, -x.getCapacityDrop());
-		double lbc = flow.sum().getLowerBound()/fmax.getLowerBound();
+		double lbc = fmax.getLowerBound()/flow.sum().getLowerBound();
+		double ubc = fmax.getUpperBound()/flow.sum().getUpperBound();
 		if (lbc < 1)
 			for (int i = 0; i < flow.size(); i++)
 				flow.get(i).setLowerBound(lbc * flow.get(i).getLowerBound());
-		double ubc = flow.sum().getUpperBound()/fmax.getUpperBound();
-		while (ubc < 1 - Util.EPSILON) {
+		int count = 0;
+		while ((ubc < 1) && (count < flow.size())) {
 			double ns = 0;
+			count = 0;
 			for (int i = 0; i < flow.size(); i++) {
 				double c = 1;
 				double v = flow.get(i).getUpperBound();
 				if (v > Util.EPSILON)
 					c = flow.get(i).getLowerBound()/v;
-				if (ubc < c) {
+				if (ubc <= c) {
 					v = c * v;
 					flow.get(i).setUpperBound(v);
 					ns += v;
 				}
-				else
+				else {
 					flow.get(i).setUpperBound(ubc * v);
+					count++;
+				}
+				flow.get(i).toLower(Util.EPSILON);
 			}
-			ubc = (flow.sum().getUpperBound() - ns)/(fmax.getUpperBound() - ns);
+			if (flow.sum().getUpperBound() - ns < Util.EPSILON)
+				ubc = 1;
+			else
+				ubc = (fmax.getUpperBound() - ns)/(flow.sum().getUpperBound() - ns);
 		}
 		return flow;
 	}
@@ -237,7 +252,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	 */
 	public Object computeSpeed(AbstractLinkHWC x) {
 		AuroraInterval density = ((AuroraIntervalVector)x.getDensity()).sum();
-		density.affineTransform(x.getWeavingFactor(), 0);
+		density.product(x.getWeavingFactor());
 		if (density.getUpperBound() < 1) // in lieu of (density == 0)
 			return new AuroraInterval(x.getV());
 		AuroraInterval ofl = x.getActualFlow().sum();
