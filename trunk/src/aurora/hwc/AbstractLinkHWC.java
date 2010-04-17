@@ -401,6 +401,20 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	}
 	
 	/**
+	 * Returns lower bounds maximum flow that can be accepted from upstream node.
+	 */
+	public AuroraInterval getCapacityL() {
+		return (AuroraInterval)myDynamics.computeCapacityL(this);
+	}
+	
+	/**
+	 * Returns upper bounds of maximum flow that can be accepted from upstream node.
+	 */
+	public AuroraInterval getCapacityU() {
+		return (AuroraInterval)myDynamics.computeCapacityU(this);
+	}
+	
+	/**
 	 * Returns mean speed of traffic in the link.
 	 */
 	public AuroraInterval getSpeed() {
