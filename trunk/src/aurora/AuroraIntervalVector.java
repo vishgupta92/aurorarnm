@@ -364,6 +364,28 @@ public class AuroraIntervalVector implements Serializable {
 	}
 	
 	/**
+	 * Collapses all intervals in the vector to their lower bounds.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean toLower() {
+		boolean res = true;
+		for (int i = 0; i < data.length; i++)
+			res &= data[i].toLower();
+		return res;
+	}
+	
+	/**
+	 * Collapses all intervals in the vector to their upper bounds.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean toUpper() {
+		boolean res = true;
+		for (int i = 0; i < data.length; i++)
+			res &= data[i].toUpper();
+		return res;
+	}
+	
+	/**
 	 * Assigns the lower bound of the intervals in the vector.
 	 * @param lb lower bound.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
