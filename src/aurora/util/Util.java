@@ -18,7 +18,7 @@ import org.jfree.data.time.Second;
  * @version $Id$
  */
 public class Util {
-	public final static double EPSILON = Math.pow(10, -7);
+	public final static double EPSILON = Math.pow(10, -10);
 	
 
 	/**
