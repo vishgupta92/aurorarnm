@@ -93,6 +93,54 @@ public class AuroraInterval implements Serializable {
 	}
 	
 	/**
+	 * Collapses the interval to the lower bound.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean toLower() {
+		center = center - size/2;
+		size = 0;
+		return true;
+	}
+	
+	/**
+	 * Collapses the interval to the lower bound if the size is below given threshold.
+	 * @param v value against which the size must be checked.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean toLower(double v) {
+		if (size < v) {
+			center = center - size/2;
+			size = 0;
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Collapses the interval to the upper bound.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean toUpper() {
+		center = center + size/2;
+		size = 0;
+		return true;
+	}
+	
+	/**
+	 * Collapses the interval to the upper bound if the size is below given threshold.
+	 * @param v value against which the size must be checked.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean toUpper(double v) {
+		if (size < v) {
+			center = center + size/2;
+			size = 0;
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * Assigns the lower bound of the interval.
 	 * @param lb lower bound.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
