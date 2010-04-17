@@ -170,12 +170,6 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		boolean ss = false;
 		if ((saveState == 3) || (saveState == 2))
 			ss = true;
-		/*/FIXME
-		if (demand.size() > 1) {
-			for (int i = 0; i < 48; i++)
-				demand.remove(0);
-			//System.err.println(demand.size() + "\t" + procDemand.size());
-		}//*/
 		out.print("<link type=\"" + getTypeLetterCode() + "\" id=\"" + Integer.toString(id) + "\" length=\"" + Double.toString(length) + "\" lanes=\"" + Double.toString(lanes) + "\" record=\"" + ss + "\">");
 		if (predecessors.size() > 0)
 			out.print("<begin id=\"" + Integer.toString(predecessors.firstElement().getId()) + "\"/>");
@@ -1265,15 +1259,10 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			/*// FIXME: Redistribute demand
 			double[] rv = {0.78, 0.22};
 			v.redistribute(rv);//*/
-			/*// Generate uncertainty in demands
-			for (int i = 0; i < v.size(); i++) {
-				double sz = v.get(i).getCenter() * 0.1;
-				v.get(i).setCenter(v.get(i).getCenter(), sz);
-			}//*/
 			demand.add(v);
 			AuroraIntervalVector v2 = new AuroraIntervalVector();
 			v2.copy(v);
-			if (myNetwork.getContainer().isSimulation())
+			if (myNetwork.getContainer().isSimulation() && (!myNetwork.getContainer().isPrediction()))
 				v2.randomize();
 			procDemand.add(v2);
 		}
