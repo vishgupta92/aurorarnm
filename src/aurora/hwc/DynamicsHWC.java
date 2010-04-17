@@ -14,7 +14,6 @@ package aurora.hwc;
  */
 public interface DynamicsHWC {
 	public Object computeFlow(AbstractLinkHWC x);
-	public Object computeFlowLU(AbstractLinkHWC x);
 	public Object computeSpeed(AbstractLinkHWC x);
 	public Object computeCapacity(AbstractLinkHWC x);
 	public Object computeCapacityL(AbstractLinkHWC x);
