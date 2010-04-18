@@ -89,7 +89,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 			double[] ifL, ifU, ofL, ofU;
 			double wfL, wfU, iwfL, iwfU;
 			ifl.copy((AuroraIntervalVector)bnd.getOutputs().get(bnd.getSuccessors().indexOf(x)));
-			if (((AbstractNodeHWC)bnd).isOutputUpperBoundFirst()) {
+			if (x.isInputUpperBoundFirst()) {
 				ifL = ifl.getUpperBounds();
 				ifU = ifl.getLowerBounds();
 				iwfL = x.getInputWeavingFactor().getUpperBound();
@@ -128,7 +128,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 			}
 			else {
 				ofl.copy((AuroraIntervalVector)end.getInputs().get(end.getPredecessors().indexOf(x)));
-				if (((AbstractNodeHWC)end).isInputUpperBoundFirst()) {
+				if (x.isOutputUpperBoundFirst()) {
 					ofL = ofl.getUpperBounds();
 					ofU = ofl.getLowerBounds();
 				}
@@ -258,7 +258,7 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		AuroraInterval ofl = x.getActualFlow().sum();
 		double lb, ub;
 		AbstractNodeHWC en = (AbstractNodeHWC)x.getEndNode();
-		if ((en != null) && (en.isInputUpperBoundFirst())) {
+		if ((en != null) && (x.isOutputUpperBoundFirst())) {
 			lb = ofl.getLowerBound() / density.getUpperBound();
 			ub = ofl.getUpperBound() / density.getLowerBound();
 		}
