@@ -31,6 +31,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	protected AuroraInterval currentWeavingFactor = new AuroraInterval(1, 0);
 	protected AuroraInterval inputWeavingFactor = new AuroraInterval(1, 0);
 	protected boolean wfUpperBoundFirst = false;
+	protected boolean iwfUpperBoundFirst = false;
 	protected double[] outputWeavingFactors = null;
 	protected double capacityDrop = 0; // in vph
 	protected double densityCritical = 30; // in vpm
@@ -477,6 +478,13 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 */
 	public final boolean isWFUpperBoundFirst() {
 		return wfUpperBoundFirst;
+	}
+	
+	/**
+	 * Checks if the upper bound of the input weaving factor should apply to lower density bound.
+	 */
+	public final boolean isIWFUpperBoundFirst() {
+		return iwfUpperBoundFirst;
 	}
 	
 	/**
@@ -1032,6 +1040,17 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 */
 	public synchronized boolean inverseWFBounds(boolean x) {
 		wfUpperBoundFirst = x;
+		return true;
+	}
+	
+	/**
+	 * Sets the flag indicating whether the upper bound of the input weaving factor
+	 * should apply to the lower bound of the incoming flow and vice versa, or not.
+	 * @param x bound order flag.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean inverseIWFBounds(boolean x) {
+		iwfUpperBoundFirst = x;
 		return true;
 	}
 	
