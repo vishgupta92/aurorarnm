@@ -92,12 +92,16 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 			if (x.isInputUpperBoundFirst()) {
 				ifL = ifl.getUpperBounds();
 				ifU = ifl.getLowerBounds();
-				iwfL = x.getInputWeavingFactor().getUpperBound();
-				iwfU = x.getInputWeavingFactor().getLowerBound();
 			}
 			else {
 				ifL = ifl.getLowerBounds();
 				ifU = ifl.getUpperBounds();
+			}
+			if (x.isIWFUpperBoundFirst()) {
+				iwfL = x.getInputWeavingFactor().getUpperBound();
+				iwfU = x.getInputWeavingFactor().getLowerBound();
+			}
+			else {
 				iwfL = x.getInputWeavingFactor().getLowerBound();
 				iwfU = x.getInputWeavingFactor().getUpperBound();
 			}
