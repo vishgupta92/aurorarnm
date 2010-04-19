@@ -650,7 +650,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		AuroraIntervalVector[] demandUI = new AuroraIntervalVector[nIn];
 		AuroraIntervalVector[] demandUO = new AuroraIntervalVector[nIn];
 		AuroraIntervalVector[] demandUOm = new AuroraIntervalVector[nIn];
-		boolean[] inputsChecked = new boolean[nIn];
+		AuroraIntervalVector[] demandUOt = new AuroraIntervalVector[nIn];
 		for (int i = 0; i < nIn; i++) {
 			demandLI[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlow();
 			demandLI[i].toLower();
@@ -677,7 +677,8 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			demandUO[i].copy(demandUI[i]);
 			demandUOm[i] = new AuroraIntervalVector();
 			demandUOm[i].copy(demandUI[i]);
-			inputsChecked[i] = false;
+			demandUOt[i] = new AuroraIntervalVector();
+			demandUOt[i].copy(demandUI[i]);
 		}
 		//
 		// Initialize output capacities
@@ -731,7 +732,6 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			AuroraInterval sumInsL = new AuroraInterval();
 			Vector<Integer> contributorsL = new Vector<Integer>();
 			AuroraInterval sumInsU = new AuroraInterval();
-			AuroraInterval sumInsUO = new AuroraInterval();
 			Vector<Integer> contributorsU = new Vector<Integer>();
 			// compute total input demand assigned to output 'j'
 			for (int i = 0; i < nIn; i++) {
@@ -749,9 +749,6 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					if (val.getCenter() > 0.000001)
 						isContributorU = true;
 					sumInsU.add(val);
-					val.copy(demandUO[i].get(ii));
-					val.affineTransform(srm[i + ii*nIn][j], 0);
-					sumInsUO.add(val);
 					inputsSRInfo[i + ii*nIn][0] -= srm[i + ii*nIn][j];
 				} // vehicle types 'for' loop
 				if (isContributorL)
@@ -773,22 +770,51 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			double ubcI = Math.min(1, outCapacityU[j].getLowerBound()/sumInsU.getCenter());
 			if (ubcI == Double.NaN)
 				ubcI = 1;
-			double ubcO = Math.min(1, outCapacityL[j].getUpperBound()/sumInsUO.getCenter());
-			if (ubcO == Double.NaN)
-				ubcO = 1;
-			for (int i = 0; i < contributorsU.size(); i++) {
+			for (int i = 0; i < contributorsU.size(); i++)
 				demandUI[contributorsU.get(i)].affineTransform(ubcI, 0);
-				if (!inputsChecked[contributorsU.get(i)]) {
-					inputsChecked[contributorsU.get(i)] = true;
-					demandUOm[contributorsU.get(i)].affineTransform(ubcO, 0);
-				}
-				else {
-					for (int ii = 0; ii < nTypes; ii++)
-						demandUOm[contributorsU.get(i)].get(ii).setCenter(Math.max(demandUOm[contributorsU.get(i)].get(ii).getCenter(), ubcO*demandUOm[contributorsU.get(i)].get(ii).getCenter()), 0);
-				}
-			}
 		} // column 'for' loop
 		//
+		// Special treatment for demandUO
+		//
+		for (int jj = 0; jj < nOut; jj++) {
+			if (badColumns.indexOf((Integer)jj) > -1)
+				continue;
+			for (int j = 0; j < nOut; j++) {
+				AuroraInterval sumInsU = new AuroraInterval();
+				Vector<Integer> contributorsU = new Vector<Integer>();
+				for (int i = 0; i < nIn; i++) {
+					boolean isContributorU = false;
+					for (int ii = 0; ii < nTypes; ii++) {
+						AuroraInterval val = new AuroraInterval();
+						val.copy(demandUI[i].get(ii));
+						val.affineTransform(srm[i + ii*nIn][j], 0);
+						if (val.getCenter() > 0.000001)
+							isContributorU = true;
+						sumInsU.add(val);
+					} // vehicle types 'for' loop
+					if (isContributorU)
+						contributorsU.add((Integer)i);
+				} // row 'for' loop
+				double ubcO;
+				if (jj == j)
+					ubcO = Math.min(1, outCapacityU[j].getUpperBound()/sumInsU.getCenter());
+				else
+					ubcO = Math.min(1, outCapacityL[j].getUpperBound()/sumInsU.getCenter());
+				if (ubcO == Double.NaN)
+					ubcO = 1;
+				for (int i = 0; i < contributorsU.size(); i++)
+					demandUOt[contributorsU.get(i)].affineTransform(ubcO, 0);
+			} // column 'for' loop
+			// update demandUOm and re-initialize demandUOt
+			for (int i = 0; i < nIn; i++) {
+				if (jj == 0)
+					demandUOm[i].copy(demandUOt[i]);
+				else
+					for (int ii = 0; ii < nTypes; ii++)
+						demandUOm[i].get(ii).setCenter(Math.max(demandUOm[i].get(ii).getCenter(), demandUOt[i].get(ii).getCenter()));
+				demandUO[i].copy(demandUO[i]);
+			}
+		}
 		// Set adjusted demandUO
 		//
 		for (int i = 0; i < nIn; i++)
@@ -806,7 +832,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		//
 		for (int i = 0; i < nIn; i++) {
 			AbstractLinkHWC lnk = (AbstractLinkHWC)predecessors.get(i);
-			lnk.inverseInputBounds(demandLI[i].sum().getCenter() > demandUI[i].sum().getCenter());
+			lnk.inverseOutputBounds(demandLI[i].sum().getCenter() > demandUI[i].sum().getCenter());
 			for (int ii = 0; ii < nTypes; ii++)
 				demandLI[i].get(ii).setBounds(demandLI[i].get(ii).getCenter(), demandUI[i].get(ii).getCenter());
 			inputs.set(i, demandLI[i]);
@@ -830,41 +856,58 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		//
 		// Assign output flows
 		//
-		//TODO
-		/*
 		for (int j = 0; j < nOut; j++) {
-			AuroraIntervalVector outFlow = new AuroraIntervalVector(nTypes);
-			AuroraIntervalVector outFlow2 = new AuroraIntervalVector(nTypes);
+			AuroraIntervalVector outFlowL = new AuroraIntervalVector(nTypes);
+			AuroraIntervalVector outFlowL2 = new AuroraIntervalVector(nTypes);
+			AuroraIntervalVector outFlowU = new AuroraIntervalVector(nTypes);
+			AuroraIntervalVector outFlowU2 = new AuroraIntervalVector(nTypes);
 			for (int i = 0; i < nIn; i++) {
 				double[] splitRatios = new double[nTypes];
 				for (int ii = 0; ii < nTypes; ii++)
 					splitRatios[ii] = srm[i + ii*nIn][j];
 				AuroraIntervalVector flw = new AuroraIntervalVector(nTypes);
 				AuroraIntervalVector flw2 = new AuroraIntervalVector(nTypes);
-				flw.copy(inDemand[i]);
+				flw.copy(demandLO[i]);
 				flw.affineTransform(splitRatios, 0);
-				outFlow.add(flw);
+				outFlowL.add(flw);
 				flw2.copy(flw);
 				flw2.affineTransform(Math.max(1, weavingFactorMatrix[i][j]), 0);
-				outFlow2.add(flw2);
+				outFlowL2.add(flw2);
+				flw.copy(demandUO[i]);
+				flw.affineTransform(splitRatios, 0);
+				outFlowU.add(flw);
+				flw2.copy(flw);
+				flw2.affineTransform(Math.max(1, weavingFactorMatrix[i][j]), 0);
+				outFlowU2.add(flw2);
 			}
-			outputs.set(j, outFlow);
-			double nmL = outFlow2.sum().getLowerBound();
-			double dnmL = outFlow.sum().getLowerBound();
+			// compute bounds for the input weaving factor
+			double nmL = outFlowL2.sum().getCenter();
+			double dnmL = outFlowL.sum().getCenter();
 			if (nmL > Util.EPSILON)
 				nmL = nmL / dnmL;
 			else
 				nmL = 1;
-			double nmU = outFlow2.sum().getUpperBound();
-			double dnmU = outFlow.sum().getUpperBound();
+			double nmU = outFlowU2.sum().getCenter();
+			double dnmU = outFlowU.sum().getCenter();
 			if (nmU > Util.EPSILON)
 				nmU = nmU / dnmU;
 			else
 				nmU = 1;
 			if (nmU - nmL < Util.EPSILON) // avoid rounding error
 				nmU = nmL;
+			((AbstractLinkHWC)successors.get(j)).inverseIWFBounds(nmL > nmU);
 			((AbstractLinkHWC)successors.get(j)).setInputWeavingFactor(new AuroraInterval((nmL+nmU)/2, Math.abs(nmU-nmL)));
-		}*/
+			// scale back upper out-flow bound if necessary
+			double ubc = outCapacityU[j].getCenter() / outFlowU.sum().getCenter();
+			if (ubc == Double.NaN)
+				ubc = 1;
+			if (ubc < 1)
+				outFlowU.affineTransform(ubc, 0);
+			((AbstractLinkHWC)successors.get(j)).inverseInputBounds(outFlowL.sum().getCenter() > outFlowU.sum().getCenter());
+			for (int ii = 0; ii < nTypes; ii++)
+				outFlowL.get(ii).setBounds(outFlowL.get(ii).getCenter(), outFlowU.get(ii).getCenter());
+			outputs.set(j, outFlowL);
+		}
 		return res;
 	}
 	
