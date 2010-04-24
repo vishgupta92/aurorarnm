@@ -392,7 +392,8 @@ public class AuroraInterval implements Serializable {
 	public synchronized boolean subtract(AuroraInterval x) {
 		if (x == null)
 			return false;
-		return setBounds(getLowerBound() - x.getUpperBound(), getUpperBound() - x.getLowerBound());
+		//return setBounds(getLowerBound() - x.getUpperBound(), getUpperBound() - x.getLowerBound());
+		return setBounds(getLowerBound() - x.getLowerBound(), getUpperBound() - x.getUpperBound());
 	}
 	
 	/**
