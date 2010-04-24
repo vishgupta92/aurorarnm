@@ -37,7 +37,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	protected double densityCritical = 30; // in vpm
 	protected double densityJam = 150; // in vpm
 	protected boolean inUpperBoundFirst = false;
-	protected boolean outUpperBoundFirst = true;
+	protected boolean outUpperBoundFirst = false;
 	
 	//protected Vector<Double> densityH = new Vector<Double>();
 	//protected Vector<Double> oflowH = new Vector<Double>();
@@ -227,6 +227,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				qSize.add((AuroraIntervalVector)getDemand());
 				qSize.subtract(ofl);
 				qSize.affineTransform(tp, 0);
+				qSize.constraintLB(0);
 				inflowSum.add(getDemand());
 			}
 			else {
@@ -384,6 +385,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			flw.copy((AuroraIntervalVector)en.getInputs().get(en.getPredecessors().indexOf(this)));
 		else {
 			flw = getFlow();
+			//TODO
 			flw.affineTransform(Math.min(getCapacityValue().getUpperBound()/flw.sum().getUpperBound(), 1), 0);
 		}
 		return flw;
@@ -736,6 +738,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		orq.copy((AuroraIntervalVector)getQueue());
 		orq.affineTransform(1/getMyNetwork().getTP(), 0);
 		ord.add(orq);
+		//TODO
 		double dv = ord.sum().getCenter();
 		if (getMaxFlow() < dv)
 			ord.affineTransform(getMaxFlow()/dv, 0);
