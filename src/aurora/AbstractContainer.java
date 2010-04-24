@@ -23,7 +23,7 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	protected SimulationSettings mySettings = null;
 	protected SimulationStatus myStatus = new SimulationStatus();
 	protected boolean isSim = true;
-	protected boolean isPred = false;
+	protected boolean isPred = false; //!!TODO
 	protected boolean isBatch = false;
 	protected HashMap<String, String> ne_type2classname = new HashMap<String, String>();
 	protected HashMap<String, String> evt_type2classname = new HashMap<String, String>();
