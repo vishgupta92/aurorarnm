@@ -171,7 +171,11 @@ public class TreePane extends JPanel {
      * Opens Link internal frame.
      */
     private synchronized void openWindowLink(AbstractNetworkElement ne, ImageIcon icon) {
-    	WindowLink wn = new WindowLink(mySystem, (AbstractLinkHWC)ne, this);
+    	JInternalFrame wn;
+    	if (mySystem.isPrediction())
+    		wn = new WindowLinkP(mySystem, (AbstractLinkHWC)ne, this);
+    	else
+    		wn = new WindowLink(mySystem, (AbstractLinkHWC)ne, this);
 		wn.setFrameIcon(icon);
 		wn.setVisible(true);
 		actionPane.getDesktopPane().add(wn);
@@ -473,8 +477,12 @@ public class TreePane extends JPanel {
     			((WindowNetwork)frame).updateView();
     		if ((ne.getType() & TypesHWC.MASK_NODE) > 0)
     			((WindowNode)frame).updateView();
-    		if ((ne.getType() & TypesHWC.MASK_LINK) > 0)
-    			((WindowLink)frame).updateView();
+    		if ((ne.getType() & TypesHWC.MASK_LINK) > 0) {
+    			if (mySystem.isPrediction())
+    				((WindowLinkP)frame).updateView();
+    			else
+    				((WindowLink)frame).updateView();
+    		}
 			if ((ne.getType() & TypesHWC.MASK_SENSOR) > 0)
     			((WindowSensor)frame).updateView();
     	}
@@ -500,8 +508,12 @@ public class TreePane extends JPanel {
     			((WindowNetwork)frame).resetView();
     		if ((ne.getType() & TypesHWC.MASK_NODE) > 0)
     			((WindowNode)frame).resetView();
-    		if ((ne.getType() & TypesHWC.MASK_LINK) > 0)
-    			((WindowLink)frame).resetView();
+    		if ((ne.getType() & TypesHWC.MASK_LINK) > 0) {
+    			if (mySystem.isPrediction())
+    				((WindowLinkP)frame).resetView();
+    			else
+    				((WindowLink)frame).resetView();
+    		}
     	}
     	frames = win2pth.keySet();
     	for (iter = frames.iterator(); iter.hasNext();) {
