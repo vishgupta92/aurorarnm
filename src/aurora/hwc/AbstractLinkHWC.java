@@ -267,15 +267,19 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				vht.affineTransform(tp, 0);
 			}
 			vhtSum.add(vht);
-			vmt.setBounds(density.sum().getLowerBound()*speed.getUpperBound()*length*tp, density.sum().getUpperBound()*speed.getLowerBound()*length*tp);
+			if (getBeginNode() == null) {
+				vmt.copy(getActualFlow().sum());
+				vmt.affineTransform(length, 0);
+				vmt.affineTransform(tp, 0);
+				vmt.setCenter(0, 0);
+			}
+			else
+				vmt.setBounds(density.sum().getLowerBound()*speed.getUpperBound()*length*tp, density.sum().getUpperBound()*speed.getLowerBound()*length*tp);
 			vmtSum.add(vmt);
 			delay.copy(vmt);
 			delay.affineTransform(1/getV(), 0);
-			delay.negative();
-			delay.add(vht);
+			delay.setBounds(vht.getLowerBound()-delay.getLowerBound(), vht.getUpperBound()-delay.getUpperBound());
 			delay.constraintLB(0);
-			if (!(delay.getLowerBound() >= 0))
-				delay.setCenter(0, 0);
 			delaySum.add(delay);
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(delay);
 			if (density.sum().getCenter() <= densityCritical)
@@ -523,7 +527,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Returns capacity range.
 	 */
 	public final AuroraInterval getMaxFlowRange() {
-		if (myNetwork.getContainer().isSimulation() && !myNetwork.getContainer().isPrediction())
+		if (myNetwork.getContainer().isSimulation() && !myNetwork.getContainer().getMySettings().isPrediction())
 			return new AuroraInterval(flowMax, 0);
 		return new AuroraInterval(flowMax, flowMaxRange.getSize());
 	}
@@ -1340,7 +1344,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			demand.add(v);
 			AuroraIntervalVector v2 = new AuroraIntervalVector();
 			v2.copy(v);
-			if (myNetwork.getContainer().isSimulation() && (!myNetwork.getContainer().isPrediction()))
+			if (myNetwork.getContainer().isSimulation() && (!myNetwork.getContainer().getMySettings().isPrediction()))
 				v2.randomize();
 			procDemand.add(v2);
 		}
