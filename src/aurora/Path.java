@@ -134,6 +134,15 @@ public class Path implements AuroraConfigurable, Serializable {
 	}
 	
 	/**
+	 * Returns the link by index.
+	 */
+	public final AbstractLink getLink(int idx) {
+		if ((!linkSequence.isEmpty()) && (idx >= 0) && (idx < linkSequence.size()))
+			return linkSequence.get(idx);
+		return null;
+	}
+	
+	/**
 	 * Returns first Link in the Path.
 	 */
 	public final AbstractLink getBegin() {
