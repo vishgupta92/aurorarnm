@@ -270,10 +270,12 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			vmt.setBounds(density.sum().getLowerBound()*speed.getUpperBound()*length*tp, density.sum().getUpperBound()*speed.getLowerBound()*length*tp);
 			vmtSum.add(vmt);
 			delay.copy(vmt);
-			delay.inverseAffineTransform(getV(), 0);
+			delay.affineTransform(1/getV(), 0);
 			delay.negative();
 			delay.add(vht);
 			delay.constraintLB(0);
+			if (!(delay.getLowerBound() >= 0))
+				delay.setCenter(0, 0);
 			delaySum.add(delay);
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(delay);
 			if (density.sum().getCenter() <= densityCritical)
