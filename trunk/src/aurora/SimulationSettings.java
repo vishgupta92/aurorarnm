@@ -34,6 +34,7 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	protected int tsMax = 100000;
 	protected int tsInitial = 0;
 	protected int timeout = 1000;
+	protected boolean isPred = false;
 	
 	
 	/**
@@ -69,6 +70,9 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 						att = pp.item(i).getAttributes().getNamedItem("timeInitial");
 						if (att != null)
 							timeInitial = Math.max(0, Double.parseDouble(att.getNodeValue()));
+						att = pp.item(i).getAttributes().getNamedItem("mode");
+						if (att != null)
+							isPred = att.getNodeValue().toUpperCase().equals("P");
 					}
 					if (pp.item(i).getNodeName().equals("include")) {
 						Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pp.item(i).getAttributes().getNamedItem("uri").getNodeValue());
@@ -95,7 +99,10 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<display tp=\"" + Double.toString(displayTP) + "\" timeout=\"" + Integer.toString(timeout) + "\" tsMax=\"" + Integer.toString(tsMax) + "\" timeMax=\"" + Double.toString(timeMax) + "\" tsInitial=\"" + Integer.toString(tsInitial) + "\" timeInitial=\"" + Double.toString(timeInitial) + "\" />\n");
+		String modeBuf = "";
+		if (isPred)
+			modeBuf = " mode=\"P\"";
+		out.print("<display tp=\"" + Double.toString(displayTP) + "\" timeout=\"" + Integer.toString(timeout) + "\" tsMax=\"" + Integer.toString(tsMax) + "\" timeMax=\"" + Double.toString(timeMax) + "\" tsInitial=\"" + Integer.toString(tsInitial) + "\" timeInitial=\"" + Double.toString(timeInitial) + "\"" + modeBuf + " />\n");
 		return;
 	}
 	
@@ -104,6 +111,13 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	 */
 	public boolean validate() throws ExceptionConfiguration {
 		return true;
+	}
+	
+	/**
+	 * Returns <code>true</code> if current application runs simulation with prediction, <code>false</code> - otherwise.
+	 */
+	public final boolean isPrediction() {
+		return isPred;
 	}
 	
 	/**
@@ -398,6 +412,15 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 	}
 	
 	/**
+	 * Set application type to simulation with prediction.
+	 */
+	public synchronized void setPrediction(boolean x) {
+		isPred = x;
+		return;
+	}
+	
+	
+	/**
 	 * Copies data from the given settings object to the current one.
 	 * @param x given settings object.
 	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
@@ -413,6 +436,7 @@ public class SimulationSettings implements AuroraConfigurable, Serializable {
 		timeout = x.getTimeout();
 		outputStream = x.getOutputStream();
 		errorStream = x.getErrorStream();
+		isPred = x.isPrediction();
 		return true;
 	}
 	
