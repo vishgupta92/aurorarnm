@@ -1134,6 +1134,8 @@ public final class WindowPathP extends JInternalFrame implements ActionListener 
 	 * @return label.
 	 */
 	private String htmlLinkLabel(AbstractLinkHWC lk, String clr) {
+		if (lk == null)
+			return null;
 		NumberFormat form = NumberFormat.getInstance();
 		form.setMinimumFractionDigits(0);
 		form.setMaximumFractionDigits(2);
@@ -1150,8 +1152,6 @@ public final class WindowPathP extends JInternalFrame implements ActionListener 
 			demand = lk.getDemand().sum().getLowerBound();
 			queue = lk.getQueue().sum().getLowerBound();
 		}
-		if (lk == null)
-			return null;
 		String txt = "<html><font color=\"" + clr + "\"><b><u>" + lk.toString() + "</u></b> (" + TypesHWC.typeString(lk.getType()) + ")";
 		txt += "<br><b>Length:</b> " + form.format((Double)lk.getLength()) + " mi";
 		txt += "<br><b>Width:</b> " + form.format(lk.getLanes()) + " lanes";
