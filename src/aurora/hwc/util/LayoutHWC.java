@@ -39,6 +39,12 @@ public class LayoutHWC extends AbstractLayout {
 		winParent = w;
 		currentIteration = 0;
 	}
+	public LayoutHWC(aurora.hwc.gui.WindowNetworkP w) {
+		super(w.getGraph());
+		gBounds = w.getGeoBounds();
+		winParent = w;
+		currentIteration = 0;
+	}
 	public LayoutHWC(aurora.hwc.config.WindowNetwork w) {
 		super(w.getGraph());
 		gBounds = w.getGeoBounds();
@@ -46,6 +52,12 @@ public class LayoutHWC extends AbstractLayout {
 		currentIteration = 0;
 	}
 	public LayoutHWC(aurora.hwc.gui.WindowPath w) {
+		super(w.getGraph());
+		gBounds = w.getGeoBounds();
+		winParent = w;
+		currentIteration = 0;
+	}
+	public LayoutHWC(aurora.hwc.gui.WindowPathP w) {
 		super(w.getGraph());
 		gBounds = w.getGeoBounds();
 		winParent = w;
