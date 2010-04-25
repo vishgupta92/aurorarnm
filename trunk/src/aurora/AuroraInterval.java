@@ -20,6 +20,7 @@ public class AuroraInterval implements Serializable {
 	
 	protected double center = 0.0;
 	protected double size = 0.0;
+	protected boolean inverted = false;
 	
 	
 	public AuroraInterval() { }
@@ -30,6 +31,13 @@ public class AuroraInterval implements Serializable {
 			size = sz;
 	}
 	
+	
+	/**
+	 * Returns <code>true</code> if upper bound should go before the lower bound, <code> false</code> - otherwise.
+	 */
+	public boolean isInverted() {
+		return inverted;
+	}
 	
 	/**
 	 * Return the interval center.
@@ -73,6 +81,7 @@ public class AuroraInterval implements Serializable {
 	 */
 	public synchronized boolean setCenter(double ctr) {
 		center = ctr;
+		inverted = false;
 		return true;
 	}
 	
@@ -84,6 +93,7 @@ public class AuroraInterval implements Serializable {
 	 */
 	public synchronized boolean setCenter(double ctr, double sz) {
 		boolean res = false;
+		inverted = false;
 		center = ctr;
 		if (sz >= 0.0) {
 			size = sz;
@@ -138,6 +148,16 @@ public class AuroraInterval implements Serializable {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Sets 'inverted' flag.
+	 * @param x boolean flag.
+	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean setInverted(boolean x) {
+		inverted = x;
+		return true;
 	}
 	
 	/**
@@ -203,6 +223,10 @@ public class AuroraInterval implements Serializable {
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	public synchronized boolean setBounds(double lb, double ub) {
+		if (ub < lb)
+			inverted = true;
+		else
+			inverted = false;
 		center = (lb + ub)/2.0;
 		size = Math.abs(ub - lb);
 		return true;
@@ -286,7 +310,7 @@ public class AuroraInterval implements Serializable {
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
 	public synchronized boolean negative() {
-		center = - center;
+		center = -center;
 		return true;
 	}
 	
