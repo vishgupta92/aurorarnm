@@ -33,6 +33,7 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 	protected JPanel pISS = new JPanel(new SpringLayout());
 	protected JPanel pMSS = new JPanel(new SpringLayout());
 	protected JPanel pT = new JPanel(new SpringLayout());
+	protected JPanel pM = new JPanel(new SpringLayout());
 	protected JSpinner hDUP;
 	protected JSpinner mDUP;
 	protected JSpinner sDUP;
@@ -45,6 +46,7 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 	protected JSpinner spinISS;
 	protected JSpinner spinMSS;
 	protected JSpinner spinT;
+	protected JComboBox comboM;
 	
 	protected final static String nmDUP = "DispUpdatePeriod";
 	protected final static String nmIST = "InitSimTime";
@@ -52,9 +54,11 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 	protected final static String nmISS = "InitSimStep";
 	protected final static String nmMSS = "MaxSimStep";
 	protected final static String nmTimeout = "Timeout";
+	protected final static String cmdMode = "Mode";
 	protected boolean modifiedDUP = false;
 	protected boolean modifiedIST = false;
 	protected boolean modifiedMST = false;
+	protected boolean modifiedM = false;
 	protected boolean modifiedSettings = false;
 	
 	
@@ -195,7 +199,20 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 		pT.add(spinT);
 		SpringUtilities.makeCompactGrid(pT, 1, 1, 2, 2, 2, 2);
 		fp.add(pT);
-		panel.add(fp, BorderLayout.CENTER);
+		if (!mySystem.isSimulation()) {
+			pM.setBorder(BorderFactory.createTitledBorder("Operation Mode"));
+			comboM = new JComboBox();
+			comboM.addItem("Simulation");
+			comboM.addItem("Prediction");
+			if (mySettings.isPrediction())
+				comboM.setSelectedIndex(1);
+			comboM.setActionCommand(cmdMode);
+			comboM.addActionListener(this);
+			pM.add(comboM);
+			SpringUtilities.makeCompactGrid(pM, 1, 1, 2, 2, 2, 2);
+			fp.add(pM);
+		}
+		panel.add(new JScrollPane(fp), BorderLayout.CENTER);
 		return panel;
 	}
 	
@@ -239,6 +256,12 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 	 */
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
+		if (cmdMode.equals(cmd)) {
+			modifiedM = true;
+			modifiedSettings = true;
+			pM.setBorder(BorderFactory.createTitledBorder("*Operation Mode"));
+			return;
+		}
 		if (cmdOK.equals(cmd) && modifiedSettings) {
 			if (mainWindow == null)
 				mySystem.getMyStatus().setSaved(false);
@@ -265,6 +288,9 @@ public class WindowSettings extends JDialog implements ActionListener, ChangeLis
 				m = (Integer)mMST.getValue();
 				s = (Double)sMST.getValue();
 				mySettings.setTimeMax(h + (m/60.0) + (s/3600.0));
+			}
+			if (modifiedM) {
+				mySettings.setPrediction(comboM.getSelectedIndex() == 1);
 			}
 			mySystem.setMySettings(mySettings);
 			if (mainWindow != null)
