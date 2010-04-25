@@ -311,7 +311,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
-		if (myNetwork.getContainer().isPrediction())
+		if (myNetwork.getContainer().getMySettings().isPrediction())
 			return dataUpdate1(ts);
 		return dataUpdate0(ts);
 	}
