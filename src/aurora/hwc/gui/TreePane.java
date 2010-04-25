@@ -86,7 +86,11 @@ public class TreePane extends JPanel {
      * Opens Network internal frame.
      */
     private synchronized void openWindowNetwork(AbstractNetworkElement ne, ImageIcon icon) {
-    	WindowNetwork wn = new WindowNetwork(mySystem, (AbstractNodeComplex)ne, this);
+    	JInternalFrame wn;
+    	if (mySystem.isPrediction())
+    		wn = new WindowNetworkP(mySystem, (AbstractNodeComplex)ne, this);
+    	else
+    		wn = new WindowNetwork(mySystem, (AbstractNodeComplex)ne, this);
 		wn.setFrameIcon(icon);
 		wn.setVisible(true);
 		actionPane.getDesktopPane().add(wn);
@@ -209,7 +213,11 @@ public class TreePane extends JPanel {
      * Opens Path internal frame.
      */
     private synchronized void openWindowPath(Path pth, ImageIcon icon) {
-    	WindowPath wn = new WindowPath(mySystem, (PathHWC)pth, this);
+    	JInternalFrame wn;
+    	if (mySystem.isPrediction())
+    		wn = new WindowPathP(mySystem, (PathHWC)pth, this);
+    	else
+    		wn = new WindowPath(mySystem, (PathHWC)pth, this);
 		wn.setFrameIcon(icon);
 		wn.setVisible(true);
 		actionPane.getDesktopPane().add(wn);
@@ -458,8 +466,12 @@ public class TreePane extends JPanel {
     	for (iter = frames.iterator(); iter.hasNext();) {
     		JInternalFrame frame = iter.next();
     		AbstractNetworkElement ne = win2ne.get(frame);
-    		if ((ne.getType() & TypesHWC.MASK_NETWORK) > 0)
-    			((WindowNetwork)frame).updateView();
+    		if ((ne.getType() & TypesHWC.MASK_NETWORK) > 0) {
+    			if (mySystem.isPrediction())
+    				((WindowNetworkP)frame).updateView();
+    			else
+    				((WindowNetwork)frame).updateView();
+    		}
     	}
     	return;
     }
@@ -473,8 +485,12 @@ public class TreePane extends JPanel {
     	for (iter = frames.iterator(); iter.hasNext();) {
     		JInternalFrame frame = iter.next();
     		AbstractNetworkElement ne = win2ne.get(frame);
-    		if ((ne.getType() & TypesHWC.MASK_NETWORK) > 0)
-    			((WindowNetwork)frame).updateView();
+    		if ((ne.getType() & TypesHWC.MASK_NETWORK) > 0) {
+    			if (mySystem.isPrediction())
+    				((WindowNetworkP)frame).updateView();
+    			else
+    				((WindowNetwork)frame).updateView();
+    		}
     		if ((ne.getType() & TypesHWC.MASK_NODE) > 0)
     			((WindowNode)frame).updateView();
     		if ((ne.getType() & TypesHWC.MASK_LINK) > 0) {
@@ -489,7 +505,10 @@ public class TreePane extends JPanel {
     	frames = win2pth.keySet();
     	for (iter = frames.iterator(); iter.hasNext();) {
     		JInternalFrame frame = iter.next();
-    		((WindowPath)frame).updateView();
+    		if (mySystem.isPrediction())
+    			((WindowPathP)frame).updateView();
+    		else
+    			((WindowPath)frame).updateView();
     	}
     	((EventTableModel)((TableSorter)actionPane.getEventsTable().getModel()).getTableModel()).updateData();
     	return;
@@ -504,8 +523,12 @@ public class TreePane extends JPanel {
     	for (iter = frames.iterator(); iter.hasNext();) {
     		JInternalFrame frame = iter.next();
     		AbstractNetworkElement ne = win2ne.get(frame);
-    		if ((ne.getType() & TypesHWC.MASK_NETWORK) > 0)
-    			((WindowNetwork)frame).resetView();
+    		if ((ne.getType() & TypesHWC.MASK_NETWORK) > 0) {
+    			if (mySystem.isPrediction())
+    				((WindowNetworkP)frame).resetView();
+    			else
+    				((WindowNetwork)frame).resetView();
+    		}
     		if ((ne.getType() & TypesHWC.MASK_NODE) > 0)
     			((WindowNode)frame).resetView();
     		if ((ne.getType() & TypesHWC.MASK_LINK) > 0) {
@@ -518,7 +541,10 @@ public class TreePane extends JPanel {
     	frames = win2pth.keySet();
     	for (iter = frames.iterator(); iter.hasNext();) {
     		JInternalFrame frame = iter.next();
-    		((WindowPath)frame).resetView();
+    		if (mySystem.isPrediction())
+    			((WindowPathP)frame).resetView();
+    		else
+    			((WindowPath)frame).resetView();
     	}
     	((EventTableModel)((TableSorter)actionPane.getEventsTable().getModel()).getTableModel()).updateData();
     	return;
