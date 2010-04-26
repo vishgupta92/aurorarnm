@@ -301,6 +301,7 @@ public class AuroraInterval implements Serializable {
 			return false;
 		center = x.getCenter();
 		size = x.getSize();
+		inverted = x.isInverted();
 		return true;
 	}
 	
