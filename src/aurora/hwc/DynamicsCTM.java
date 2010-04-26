@@ -270,10 +270,8 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		fmax.affineTransform(1, -x.getCapacityDrop());
 		double lbc = Math.min(1, fmax.getLowerBound()/flow.sum().getCenter());
 		double ubc = Math.min(1, fmax.getUpperBound()/flow.sum().getCenter());
-		if (Math.abs(ubc - lbc) < Util.EPSILON)
-			lbc = ubc;
 		for (int i = 0; i < flow.size(); i++)
-			flow.get(i).setBounds(lbc*flow.get(i).getCenter(), ubc * flow.get(i).getCenter());
+			flow.get(i).setBounds(lbc*flow.get(i).getCenter(), ubc*flow.get(i).getCenter());
 		return flow;
 	}
 	
@@ -301,10 +299,8 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		fmax.affineTransform(1, -x.getCapacityDrop());
 		double lbc = Math.min(1, fmax.getLowerBound()/flow.sum().getCenter());
 		double ubc = Math.min(1, fmax.getUpperBound()/flow.sum().getCenter());
-		if (Math.abs(ubc - lbc) < Util.EPSILON)
-			lbc = ubc;
 		for (int i = 0; i < flow.size(); i++)
-			flow.get(i).setBounds(lbc*flow.get(i).getCenter(), ubc * flow.get(i).getCenter());
+			flow.get(i).setBounds(lbc*flow.get(i).getCenter(), ubc*flow.get(i).getCenter());
 		return flow;
 	}
 
