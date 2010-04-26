@@ -138,7 +138,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 						double jd = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("densityJam").getNodeValue());
 						if (!setFD(flowMaxRange.getCenter(), cd, jd))
 							defaultFD();
-						if (myNetwork.getContainer().isSimulation())
+						if ((myNetwork.getContainer().isSimulation()) && !myNetwork.getContainer().getMySettings().isPrediction())
 							randomizeFD();
 						Node cdp = pp.item(i).getAttributes().getNamedItem("capacityDrop");
 						if (cdp != null)
