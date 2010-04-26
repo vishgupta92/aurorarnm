@@ -245,6 +245,68 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 		}
 		return flow;
 	}
+	
+	/**
+	 * Computes desired best case out-flow range from given Link.<br>
+	 * Looks at density. If density is below critical, then
+	 * the flow is computed from the fundamental diagram;
+	 * else - maximum flow is taken.<br>
+	 * If given Link is Origin Link (has no begin Node), then
+	 * demand and queue determine the value of desired out-flow.
+	 * @param x given Link.
+	 * @return desired out-flow (type <code>AuroraIntervalVector</code>).
+	 */
+	public Object computeFlowL(AbstractLinkHWC x) {
+		AuroraIntervalVector flow = new AuroraIntervalVector();
+		AbstractNode bnd = x.getBeginNode();
+		if (bnd == null)
+			flow.copy((AuroraIntervalVector)x.getDemandValue());
+		else {
+			flow.copy((AuroraIntervalVector)x.getDensity());
+			flow.affineTransform(x.getV(), 0);
+		}
+		flow.toLower();
+		AuroraInterval fmax = x.getMaxFlowRange();
+		fmax.affineTransform(1, -x.getCapacityDrop());
+		double lbc = Math.min(1, fmax.getLowerBound()/flow.sum().getCenter());
+		double ubc = Math.min(1, fmax.getUpperBound()/flow.sum().getCenter());
+		if (Math.abs(ubc - lbc) < Util.EPSILON)
+			lbc = ubc;
+		for (int i = 0; i < flow.size(); i++)
+			flow.get(i).setBounds(lbc*flow.get(i).getCenter(), ubc * flow.get(i).getCenter());
+		return flow;
+	}
+	
+	/**
+	 * Computes desired worst case out-flow range from given Link.<br>
+	 * Looks at density. If density is below critical, then
+	 * the flow is computed from the fundamental diagram;
+	 * else - maximum flow is taken.<br>
+	 * If given Link is Origin Link (has no begin Node), then
+	 * demand and queue determine the value of desired out-flow.
+	 * @param x given Link.
+	 * @return desired out-flow (type <code>AuroraIntervalVector</code>).
+	 */
+	public Object computeFlowU(AbstractLinkHWC x) {
+		AuroraIntervalVector flow = new AuroraIntervalVector();
+		AbstractNode bnd = x.getBeginNode();
+		if (bnd == null)
+			flow.copy((AuroraIntervalVector)x.getDemandValue());
+		else {
+			flow.copy((AuroraIntervalVector)x.getDensity());
+			flow.affineTransform(x.getV(), 0);
+		}
+		flow.toUpper();
+		AuroraInterval fmax = x.getMaxFlowRange();
+		fmax.affineTransform(1, -x.getCapacityDrop());
+		double lbc = Math.min(1, fmax.getLowerBound()/flow.sum().getCenter());
+		double ubc = Math.min(1, fmax.getUpperBound()/flow.sum().getCenter());
+		if (Math.abs(ubc - lbc) < Util.EPSILON)
+			lbc = ubc;
+		for (int i = 0; i < flow.size(); i++)
+			flow.get(i).setBounds(lbc*flow.get(i).getCenter(), ubc * flow.get(i).getCenter());
+		return flow;
+	}
 
 	/**
 	 * Computes traffic speed in given Link.<br>
