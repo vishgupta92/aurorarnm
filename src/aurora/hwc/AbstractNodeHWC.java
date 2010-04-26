@@ -652,33 +652,47 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		AuroraIntervalVector[] demandUOm = new AuroraIntervalVector[nIn];
 		AuroraIntervalVector[] demandUOt = new AuroraIntervalVector[nIn];
 		for (int i = 0; i < nIn; i++) {
-			demandLI[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlow();
-			demandLI[i].toLower();
-			demandUI[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlow();
-			demandUI[i].toUpper();
+			demandLI[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlowL();
+			demandLO[i] = new AuroraIntervalVector();
+			demandLO[i].copy(demandLI[i]);
+			demandLI[i].toUpper();
+			demandLO[i].toLower();
+			demandUI[i] = ((AbstractLinkHWC)predecessors.get(i)).getFlowU();
+			demandUO[i] = new AuroraIntervalVector();
+			demandUO[i].copy(demandUI[i]);
+			demandUI[i].toLower();
+			demandUO[i].toUpper();
 			if ((myNetwork.isControlled()) && (controllers.get(i) != null)) {
-				AuroraInterval sumDemandL = demandLI[i].sum();
-				AuroraInterval sumDemandU = demandUI[i].sum();
 				double controllerRate = (Double)controllers.get(i).computeInput(this);
-				if (controllerRate < sumDemandL.getCenter()) { // adjust lower input bounds according to controller rates
+				AuroraInterval sumDemandL = demandLI[i].sum();
+				if (controllerRate < sumDemandL.getCenter()) { // adjust lower best case input bounds according to controller rates
 					double c = controllerRate / sumDemandL.getCenter();
 					for (int ii = 0; ii < nTypes; ii++)
 						demandLI[i].get(ii).setCenter(c * demandLI[i].get(ii).getCenter(), 0);
 				}
-				if (controllerRate < sumDemandU.getCenter()) { // adjust upper input bounds according to controller rates
+				sumDemandL = demandLO[i].sum();
+				if (controllerRate < sumDemandL.getCenter()) { // adjust upper best case input bounds according to controller rates
+					double c = controllerRate / sumDemandL.getCenter();
+					for (int ii = 0; ii < nTypes; ii++)
+						demandLO[i].get(ii).setCenter(c * demandLO[i].get(ii).getCenter(), 0);
+				}
+				AuroraInterval sumDemandU = demandUI[i].sum();
+				if (controllerRate < sumDemandU.getCenter()) { // adjust lower worst case input bounds according to controller rates
 					double c = controllerRate / sumDemandU.getCenter();
 					for (int ii = 0; ii < nTypes; ii++)
 						demandUI[i].get(ii).setCenter(c * demandUI[i].get(ii).getCenter(), 0);
 				}
+				sumDemandU = demandUO[i].sum();
+				if (controllerRate < sumDemandU.getCenter()) { // adjust upper worst case input bounds according to controller rates
+					double c = controllerRate / sumDemandU.getCenter();
+					for (int ii = 0; ii < nTypes; ii++)
+						demandUO[i].get(ii).setCenter(c * demandUO[i].get(ii).getCenter(), 0);
+				}
 			}
-			demandLO[i] = new AuroraIntervalVector();
-			demandLO[i].copy(demandLI[i]);
-			demandUO[i] = new AuroraIntervalVector();
-			demandUO[i].copy(demandUI[i]);
 			demandUOm[i] = new AuroraIntervalVector();
-			demandUOm[i].copy(demandUI[i]);
+			demandUOm[i].copy(demandUO[i]);
 			demandUOt[i] = new AuroraIntervalVector();
-			demandUOt[i].copy(demandUI[i]);
+			demandUOt[i].copy(demandUO[i]);
 		}
 		//
 		// Initialize output capacities
@@ -729,9 +743,10 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 		for (int j = 0; j < nOut; j++) {
 			if (badColumns.indexOf((Integer)j) > -1)
 				continue;
-			AuroraInterval sumInsL = new AuroraInterval();
+			AuroraInterval sumInsLI = new AuroraInterval();
+			AuroraInterval sumInsLO = new AuroraInterval();
 			Vector<Integer> contributorsL = new Vector<Integer>();
-			AuroraInterval sumInsU = new AuroraInterval();
+			AuroraInterval sumInsUI = new AuroraInterval();
 			Vector<Integer> contributorsU = new Vector<Integer>();
 			// compute total input demand assigned to output 'j'
 			for (int i = 0; i < nIn; i++) {
@@ -743,12 +758,15 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					val.affineTransform(srm[i + ii*nIn][j], 0);
 					if (val.getCenter() > 0.000001)
 						isContributorL = true;
-					sumInsL.add(val);
+					sumInsLI.add(val);
+					val.copy(demandLO[i].get(ii));
+					val.affineTransform(srm[i + ii*nIn][j], 0);
+					sumInsLO.add(val);
 					val.copy(demandUI[i].get(ii));
 					val.affineTransform(srm[i + ii*nIn][j], 0);
 					if (val.getCenter() > 0.000001)
 						isContributorU = true;
-					sumInsU.add(val);
+					sumInsUI.add(val);
 					inputsSRInfo[i + ii*nIn][0] -= srm[i + ii*nIn][j];
 				} // vehicle types 'for' loop
 				if (isContributorL)
@@ -757,17 +775,17 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 					contributorsU.add((Integer)i);
 			} // row 'for' loop
 			// adjust inputs to capacity
-			double lbcI = Math.min(1, outCapacityL[j].getUpperBound()/sumInsL.getCenter());
+			double lbcI = Math.min(1, outCapacityL[j].getUpperBound()/sumInsLI.getCenter());
 			if (lbcI == Double.NaN)
 				lbcI = 1;
-			double lbcO = Math.min(1, outCapacityL[j].getLowerBound()/sumInsL.getCenter());
+			double lbcO = Math.min(1, outCapacityL[j].getLowerBound()/sumInsLO.getCenter());
 			if (lbcO == Double.NaN)
 				lbcO = 1;
 			for (int i = 0; i < contributorsL.size(); i++) {
 				demandLI[contributorsL.get(i)].affineTransform(lbcI, 0);
 				demandLO[contributorsL.get(i)].affineTransform(lbcO, 0);
 			} // contributorsL 'for' loop
-			double ubcI = Math.min(1, outCapacityU[j].getLowerBound()/sumInsU.getCenter());
+			double ubcI = Math.min(1, outCapacityU[j].getLowerBound()/sumInsUI.getCenter());
 			if (ubcI == Double.NaN)
 				ubcI = 1;
 			for (int i = 0; i < contributorsU.size(); i++)
@@ -815,6 +833,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				demandUO[i].copy(demandUO[i]);
 			}
 		}
+		//
 		// Set adjusted demandUO
 		//
 		for (int i = 0; i < nIn; i++)
