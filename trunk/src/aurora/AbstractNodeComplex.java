@@ -347,7 +347,8 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			res = false;
 		this.ts = ts;
 		PrintStream os = null;
-		if ((ts == 1) || (((ts - tsV) * getTop().getTP()) >= container.getMySettings().getDisplayTP())) {
+		int initTS = Math.max(myNetwork.getContainer().getMySettings().getTSInitial(), (int)(myNetwork.getContainer().getMySettings().getTimeInitial()/myNetwork.getTop().getTP()));
+		if ((ts - initTS == 1) || (((ts - tsV) * getTop().getTP()) >= container.getMySettings().getDisplayTP())) {
 			os = container.getMySettings().getTmpDataOutput();
 			tsV = ts;
 		}
