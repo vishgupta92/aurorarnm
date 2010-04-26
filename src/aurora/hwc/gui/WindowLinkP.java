@@ -361,8 +361,14 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 		critvht.setBounds(vht.getLowerBound()-delay.getLowerBound(), vht.getUpperBound()-delay.getUpperBound());
 		AuroraInterval ploss = myLink.getSumPLoss();
 		try {
-			perfDataSets[0].getSeries(0).add(cts, vmt.getUpperBound());
-			perfDataSets[0].getSeries(1).add(cts, vmt.getLowerBound());
+			if (vmt.isInverted()) {
+				perfDataSets[0].getSeries(0).add(cts, vmt.getLowerBound());
+				perfDataSets[0].getSeries(1).add(cts, vmt.getUpperBound());
+			}
+			else {
+				perfDataSets[0].getSeries(0).add(cts, vmt.getUpperBound());
+				perfDataSets[0].getSeries(1).add(cts, vmt.getLowerBound());
+			}
 			perfDataSets[0].getSeries(2).add(cts, maxvmt.getUpperBound());
 			perfDataSets[0].getSeries(3).add(cts, maxvmt.getLowerBound());
 			perfDataSets[1].getSeries(0).add(cts, vht.getUpperBound());

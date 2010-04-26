@@ -724,8 +724,20 @@ public final class WindowPathP extends JInternalFrame implements ActionListener 
 		AuroraInterval ploss = new AuroraInterval();
 		for (int i = 0; i < links.size(); i++) {
 			myLink = (AbstractLinkHWC)links.get(i);
-			vmt.add(myLink.getSumVMT()); //FIXME
-			AuroraInterval v = myLink.getMaxFlowRange();
+			AuroraInterval v = myLink.getSumVMT();
+			if (vmt.isInverted()) {
+				if (v.isInverted())
+					vmt.setBounds(vmt.getUpperBound()+v.getUpperBound(), vmt.getLowerBound()+v.getLowerBound());
+				else
+					vmt.setBounds(vmt.getUpperBound()+v.getLowerBound(), vmt.getLowerBound()+v.getUpperBound());
+			}
+			else {
+				if (v.isInverted())
+					vmt.setBounds(vmt.getLowerBound()+v.getUpperBound(), vmt.getUpperBound()+v.getLowerBound());
+				else
+					vmt.setBounds(vmt.getLowerBound()+v.getLowerBound(), vmt.getUpperBound()+v.getUpperBound());
+			}
+			v = myLink.getMaxFlowRange();
 			v.affineTransform(g, 0);
 			v.affineTransform(myLink.getLength(), 0);
 			v.affineTransform(tp, 0);
@@ -742,8 +754,14 @@ public final class WindowPathP extends JInternalFrame implements ActionListener 
 			perfDataSets[0].getSeries(0).add(cts, 60 * myPath.getTravelTime().getUpperBound());
 			perfDataSets[0].getSeries(1).add(cts, 60 * myPath.getTravelTime().getLowerBound());
 			perfDataSets[0].getSeries(2).add(cts, 60 * myPath.getMinTravelTime());
-			perfDataSets[1].getSeries(0).add(cts, vmt.getUpperBound()); //FIXME
-			perfDataSets[1].getSeries(1).add(cts, vmt.getLowerBound()); //FIXME
+			if (vmt.isInverted()) {
+				perfDataSets[1].getSeries(0).add(cts, vmt.getLowerBound());
+				perfDataSets[1].getSeries(1).add(cts, vmt.getUpperBound());
+			}
+			else {
+				perfDataSets[1].getSeries(0).add(cts, vmt.getUpperBound());
+				perfDataSets[1].getSeries(1).add(cts, vmt.getLowerBound());
+			}
 			perfDataSets[1].getSeries(2).add(cts, maxvmt.getUpperBound());
 			perfDataSets[1].getSeries(3).add(cts, maxvmt.getLowerBound());
 			perfDataSets[2].getSeries(0).add(cts, vht.getUpperBound());
