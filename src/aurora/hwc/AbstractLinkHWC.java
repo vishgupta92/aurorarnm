@@ -274,12 +274,33 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				vmt.affineTransform(tp, 0);
 				vmt.setCenter(0, 0);
 			}
-			else
+			else {
 				vmt.setBounds(density.sum().getLowerBound()*speed.getUpperBound()*length*tp, density.sum().getUpperBound()*speed.getLowerBound()*length*tp);
-			vmtSum.add(vmt);
+			}
+			if (vmtSum.isInverted()) {
+				if (vmt.isInverted())
+					vmtSum.setBounds(vmtSum.getUpperBound()+vmt.getUpperBound(), vmtSum.getLowerBound()+vmt.getLowerBound());
+				else
+					vmtSum.setBounds(vmtSum.getUpperBound()+vmt.getLowerBound(), vmtSum.getLowerBound()+vmt.getUpperBound());
+			}
+			else {
+				if (vmt.isInverted())
+					vmtSum.setBounds(vmtSum.getLowerBound()+vmt.getUpperBound(), vmtSum.getUpperBound()+vmt.getLowerBound());
+				else
+					vmtSum.setBounds(vmtSum.getLowerBound()+vmt.getLowerBound(), vmtSum.getUpperBound()+vmt.getUpperBound());
+			}
 			delay.copy(vmt);
 			delay.affineTransform(1/getV(), 0);
-			delay.setBounds(vht.getLowerBound()-delay.getLowerBound(), vht.getUpperBound()-delay.getUpperBound());
+			double dlb, dub;
+			if (vmt.isInverted()) {
+				dlb = delay.getUpperBound();
+				dub = delay.getLowerBound();
+			} 
+			else {
+				dlb = delay.getLowerBound();
+				dub = delay.getUpperBound();
+			}
+			delay.setBounds(vht.getLowerBound()-dlb, vht.getUpperBound()-dub);
 			delay.constraintLB(0);
 			delaySum.add(delay);
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(delay);
