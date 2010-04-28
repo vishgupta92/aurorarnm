@@ -315,18 +315,42 @@ public class DynamicsCTM implements DynamicsHWC, Serializable {
 	public Object computeSpeed(AbstractLinkHWC x) {
 		AuroraInterval density = ((AuroraIntervalVector)x.getDensity()).sum();
 		density.product(x.getWeavingFactor());
-		if (density.getUpperBound() < 1) // in lieu of (density == 0)
-			return new AuroraInterval(x.getV());
+		double vf = x.getV();
+		if (density.getUpperBound() < Util.EPSILON) // in lieu of (density == 0)
+			return new AuroraInterval(vf);
 		AuroraInterval ofl = x.getActualFlow().sum();
 		double lb, ub;
-		AbstractNodeHWC en = (AbstractNodeHWC)x.getEndNode();
-		if ((en != null) && (x.isOutputUpperBoundFirst())) {
-			lb = ofl.getLowerBound() / density.getUpperBound();
-			ub = ofl.getUpperBound() / density.getLowerBound();
+		if (x.isOutputUpperBoundFirst()) {
+			if (density.getUpperBound() < Util.EPSILON) {
+				lb = vf;
+				ub = vf;
+			}
+			else {
+				if (density.getLowerBound() < Util.EPSILON) {
+					lb = ofl.getLowerBound() / density.getUpperBound();
+					ub = vf;
+				}
+				else {
+					lb = ofl.getLowerBound() / density.getUpperBound();
+					ub = ofl.getUpperBound() / density.getLowerBound();
+				}
+			}
 		}
 		else {
-			lb = ofl.getLowerBound() / density.getLowerBound();
-			ub = ofl.getUpperBound() / density.getUpperBound();
+			if (density.getUpperBound() < Util.EPSILON) {
+				lb = vf;
+				ub = vf;
+			}
+			else {
+				if (density.getLowerBound() < Util.EPSILON) {
+					lb = vf;
+					ub = ofl.getUpperBound() / density.getUpperBound();
+				}
+				else {
+					lb = ofl.getLowerBound() / density.getLowerBound();
+					ub = ofl.getUpperBound() / density.getUpperBound();
+				}
+			}
 		}
 		AuroraInterval v = new AuroraInterval();
 		v.setBounds(lb, ub);
