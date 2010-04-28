@@ -745,34 +745,28 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 				continue;
 			AuroraInterval sumInsLI = new AuroraInterval();
 			AuroraInterval sumInsLO = new AuroraInterval();
-			Vector<Integer> contributorsL = new Vector<Integer>();
 			AuroraInterval sumInsUI = new AuroraInterval();
-			Vector<Integer> contributorsU = new Vector<Integer>();
+			Vector<Integer> contributors = new Vector<Integer>();
 			// compute total input demand assigned to output 'j'
 			for (int i = 0; i < nIn; i++) {
-				boolean isContributorL = false;
-				boolean isContributorU = false;
+				boolean isContributor = false;
 				for (int ii = 0; ii < nTypes; ii++) {
 					AuroraInterval val = new AuroraInterval();
 					val.copy(demandLI[i].get(ii));
 					val.affineTransform(srm[i + ii*nIn][j], 0);
-					if (val.getCenter() > 0.000001)
-						isContributorL = true;
 					sumInsLI.add(val);
 					val.copy(demandLO[i].get(ii));
 					val.affineTransform(srm[i + ii*nIn][j], 0);
 					sumInsLO.add(val);
 					val.copy(demandUI[i].get(ii));
 					val.affineTransform(srm[i + ii*nIn][j], 0);
-					if (val.getCenter() > 0.000001)
-						isContributorU = true;
 					sumInsUI.add(val);
+					if (srm[i + ii*nIn][j] > 0)
+						isContributor = true;
 					inputsSRInfo[i + ii*nIn][0] -= srm[i + ii*nIn][j];
 				} // vehicle types 'for' loop
-				if (isContributorL)
-					contributorsL.add((Integer)i);
-				if (isContributorU)
-					contributorsU.add((Integer)i);
+				if (isContributor)
+					contributors.add((Integer)i);
 			} // row 'for' loop
 			// adjust inputs to capacity
 			double lbcI = Math.min(1, outCapacityL[j].getUpperBound()/sumInsLI.getCenter());
@@ -781,15 +775,14 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			double lbcO = Math.min(1, outCapacityL[j].getLowerBound()/sumInsLO.getCenter());
 			if (lbcO == Double.NaN)
 				lbcO = 1;
-			for (int i = 0; i < contributorsL.size(); i++) {
-				demandLI[contributorsL.get(i)].affineTransform(lbcI, 0);
-				demandLO[contributorsL.get(i)].affineTransform(lbcO, 0);
-			} // contributorsL 'for' loop
 			double ubcI = Math.min(1, outCapacityU[j].getLowerBound()/sumInsUI.getCenter());
 			if (ubcI == Double.NaN)
 				ubcI = 1;
-			for (int i = 0; i < contributorsU.size(); i++)
-				demandUI[contributorsU.get(i)].affineTransform(ubcI, 0);
+			for (int i = 0; i < contributors.size(); i++) {
+				demandLI[contributors.get(i)].affineTransform(lbcI, 0);
+				demandLO[contributors.get(i)].affineTransform(lbcO, 0);
+				demandUI[contributors.get(i)].affineTransform(ubcI, 0);
+			} // contributors 'for' loop
 		} // column 'for' loop
 		//
 		// Special treatment for demandUO

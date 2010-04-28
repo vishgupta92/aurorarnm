@@ -221,26 +221,59 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			}
 			tsCount++;
 			if (predecessors.size() == 0) {
-				AbstractNode end = (AbstractNode)successors.firstElement(); // assumed != null
-				AuroraIntervalVector ofl = (AuroraIntervalVector)(end.getInputs().get(end.getPredecessors().indexOf(this)));
+				AuroraIntervalVector ofl = getActualFlow();
 				double tp = myNetwork.getTP();
 				qSize.affineTransform(1/tp, 0);
 				qSize.add((AuroraIntervalVector)getDemand());
-				qSize.subtract(ofl);
+				for (int i = 0; i < qSize.size(); i++) {
+					if (outUpperBoundFirst)
+						qSize.get(i).setBounds(qSize.get(i).getLowerBound()-ofl.get(i).getUpperBound(), qSize.get(i).getUpperBound()-ofl.get(i).getLowerBound());
+					else
+						qSize.get(i).setBounds(qSize.get(i).getLowerBound()-ofl.get(i).getLowerBound(), qSize.get(i).getUpperBound()-ofl.get(i).getUpperBound());
+				}
 				qSize.affineTransform(tp, 0);
 				qSize.constraintLB(0);
 				inflowSum.add(getDemand());
 			}
 			else {
 				qSize.set(new AuroraInterval());
-				inflowSum.add((AuroraIntervalVector)getBeginNode().getOutputs().get(getBeginNode().getSuccessors().indexOf(this)));
+				AuroraIntervalVector iflV = (AuroraIntervalVector)getBeginNode().getOutputs().get(getBeginNode().getSuccessors().indexOf(this));
+				for (int i = 0; i < inflowSum.size(); i++) {
+					if (inflowSum.get(i).isInverted()) {
+						if (inUpperBoundFirst)
+							inflowSum.get(i).setBounds(inflowSum.get(i).getUpperBound()+iflV.get(i).getUpperBound(), inflowSum.get(i).getLowerBound()+iflV.get(i).getLowerBound());
+						else
+							inflowSum.get(i).setBounds(inflowSum.get(i).getUpperBound()+iflV.get(i).getLowerBound(), inflowSum.get(i).getLowerBound()+iflV.get(i).getUpperBound());
+					}
+					else {
+						if (inUpperBoundFirst)
+							inflowSum.get(i).setBounds(inflowSum.get(i).getLowerBound()+iflV.get(i).getUpperBound(), inflowSum.get(i).getUpperBound()+iflV.get(i).getLowerBound());
+						else
+							inflowSum.get(i).setBounds(inflowSum.get(i).getLowerBound()+iflV.get(i).getLowerBound(), inflowSum.get(i).getUpperBound()+iflV.get(i).getUpperBound());
+					}
+				}
 			}
-			outflowSum.add(getActualFlow());
-			for (int i = 0; i < qSize.size(); i++)  // make sure queue has no negative values
+			AuroraIntervalVector oflV = getActualFlow();
+			for (int i = 0; i < outflowSum.size(); i++) {
+				if (outflowSum.get(i).isInverted()) {
+					if (outUpperBoundFirst)
+						outflowSum.get(i).setBounds(outflowSum.get(i).getUpperBound()+oflV.get(i).getUpperBound(), outflowSum.get(i).getLowerBound()+oflV.get(i).getLowerBound());
+					else
+						outflowSum.get(i).setBounds(outflowSum.get(i).getUpperBound()+oflV.get(i).getLowerBound(), outflowSum.get(i).getLowerBound()+oflV.get(i).getUpperBound());
+				}
+				else {
+					if (outUpperBoundFirst)
+						outflowSum.get(i).setBounds(outflowSum.get(i).getLowerBound()+oflV.get(i).getUpperBound(), outflowSum.get(i).getUpperBound()+oflV.get(i).getLowerBound());
+					else
+						outflowSum.get(i).setBounds(outflowSum.get(i).getLowerBound()+oflV.get(i).getLowerBound(), outflowSum.get(i).getUpperBound()+oflV.get(i).getUpperBound());
+				}
+			}
+			for (int i = 0; i < qSize.size(); i++)  { // make sure queue has no negative values
 				if (qSize.get(i).getUpperBound() < 0.0)
 					qSize.get(i).setCenter(0.0, 0.0);
 				else
 					qSize.get(i).setBounds(Math.max(qSize.get(i).getLowerBound(), 0.0), qSize.get(i).getUpperBound());
+			}
 			speed.copy((AuroraInterval)myDynamics.computeSpeed(this));
 			speedSum.add(speed);
 			density = (AuroraIntervalVector)myDynamics.computeDensity(this);
@@ -426,9 +459,87 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		if (en != null)
 			flw.copy((AuroraIntervalVector)en.getInputs().get(en.getPredecessors().indexOf(this)));
 		else {
-			flw = getFlow();
-			//TODO
-			flw.affineTransform(Math.min(getCapacityValue().getUpperBound()/flw.sum().getUpperBound(), 1), 0);
+			AuroraIntervalVector flwL, flwU;
+			if (myNetwork.getContainer().getMySettings().isPrediction()) {
+				flwL = getFlowL();
+				flwU = getFlowU();
+			}
+			else {
+				flwL = getFlow();
+				flwU = new AuroraIntervalVector();
+				flwU.copy(flwL);
+				flwL.toLower();
+				flwU.toUpper();
+			}
+			flwL.toUpper();
+			flwU.toLower();
+			AuroraInterval fsumL = flwL.sum();
+			AuroraInterval fsumU = flwU.sum();
+			double lbc = Math.min(1, getCapacityValue().getUpperBound() / fsumL.getCenter());
+			double ubc = Math.min(1, getCapacityValue().getLowerBound() / fsumU.getCenter());
+			if (lbc*fsumL.getCenter() > ubc*fsumU.getCenter()) {
+				outUpperBoundFirst = true;
+				for (int i = 0; i < flwU.size(); i++)
+					flwU.get(i).setCenter(ubc*flwU.get(i).getCenter());
+				int count = 0;
+				while ((lbc < 1) && (count < flwL.size())) {
+					double ns = 0;
+					count = 0;
+					for (int i = 0; i < flwL.size(); i++) {
+						double c = 1;
+						double v = flwL.get(i).getCenter();
+						if (v > Util.EPSILON)
+							c = flwU.get(i).getCenter()/v;
+						if (lbc <= c) {
+							v = c * v;
+							flwL.get(i).setCenter(v);
+							ns += v;
+						}
+						else {
+							flwL.get(i).setCenter(lbc * v);
+							count++;
+						}
+					}
+					if (flwL.sum().getCenter() - ns < Util.EPSILON)
+						lbc = 1;
+					else
+						lbc = (getCapacityValue().getUpperBound() - ns)/(flwL.sum().getCenter() - ns);
+				}
+			}
+			else {
+				outUpperBoundFirst = false;
+				for (int i = 0; i < flwL.size(); i++)
+					flwL.get(i).setCenter(lbc*flwL.get(i).getCenter());
+				int count = 0;
+				while ((ubc < 1) && (count < flwU.size())) {
+					double ns = 0;
+					count = 0;
+					for (int i = 0; i < flwU.size(); i++) {
+						double c = 1;
+						double v = flwU.get(i).getCenter();
+						if (v > Util.EPSILON)
+							c = flwL.get(i).getCenter()/v;
+						if (ubc <= c) {
+							v = c * v;
+							flwU.get(i).setCenter(v);
+							ns += v;
+						}
+						else {
+							flwU.get(i).setCenter(ubc * v);
+							count++;
+						}
+					}
+					if (flwU.sum().getCenter() - ns < Util.EPSILON)
+						ubc = 1;
+					else
+						ubc = (getCapacityValue().getLowerBound() - ns)/(flwU.sum().getCenter() - ns);
+				}
+			}
+			flw.copy(flwL);
+			for (int i = 0; i < flw.size(); i++) {
+				flw.get(i).setBounds(flwL.get(i).getLowerBound(), flwU.get(i).getUpperBound());
+				flw.get(i).toLower(Util.EPSILON);
+			}
 		}
 		return flw;
 	}
@@ -781,10 +892,36 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		orq.copy((AuroraIntervalVector)getQueue());
 		orq.affineTransform(1/getMyNetwork().getTP(), 0);
 		ord.add(orq);
-		//TODO
-		double dv = ord.sum().getCenter();
-		if (getMaxFlow() < dv)
-			ord.affineTransform(getMaxFlow()/dv, 0);
+		double lbc = getMaxFlowRange().getLowerBound() / ord.sum().getLowerBound();
+		double ubc = getMaxFlowRange().getUpperBound() / ord.sum().getUpperBound();
+		if (lbc < 1)
+			for (int i = 0; i < ord.size(); i++)
+				ord.get(i).affineTransformLB(lbc, 0);
+		int count = 0;
+		while ((ubc < 1) && (count < ord.size())) {
+			double ns = 0;
+			count = 0;
+			for (int i = 0; i < ord.size(); i++) {
+				double c = 1;
+				double v = ord.get(i).getUpperBound();
+				if (v > Util.EPSILON)
+					c = ord.get(i).getLowerBound()/v;
+				if (ubc <= c) {
+					v = c * v;
+					ord.get(i).setUpperBound(v);
+					ns += v;
+				}
+				else {
+					ord.get(i).setUpperBound(ubc * v);
+					count++;
+				}
+				ord.get(i).toLower(Util.EPSILON);
+			}
+			if (ord.sum().getCenter() - ns < Util.EPSILON)
+				ubc = 1;
+			else
+				ubc = (getMaxFlowRange().getUpperBound() - ns)/(ord.sum().getCenter() - ns);
+		}
 		return ord;
 	}
 	
@@ -965,9 +1102,12 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 */
 	public AuroraInterval getTravelTime() {
 		AuroraInterval tt = new AuroraInterval();
+		AuroraInterval v = new AuroraInterval();
+		v.copy(speed);
+		v.constraintLB(Util.EPSILON);
 		if (getBeginNode() != null) {
-			double lb = length/speed.getUpperBound();
-			double ub = length/speed.getLowerBound();
+			double lb = length/v.getUpperBound();
+			double ub = length/v.getLowerBound();
 			if ((lb == Double.NaN) || (lb == Double.POSITIVE_INFINITY))
 				lb = Double.MAX_VALUE;
 			if ((ub == Double.NaN) || (ub == Double.POSITIVE_INFINITY))
@@ -980,6 +1120,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			af.constraintLB(Util.EPSILON);
 			tt.quotient(af);
 		}
+		tt.constraintUB(24);
 		tt.constraintLB(getMinTravelTime());
 		return tt; 
 	}
