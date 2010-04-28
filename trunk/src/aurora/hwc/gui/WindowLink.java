@@ -195,8 +195,8 @@ public final class WindowLink extends JInternalFrame implements ActionListener {
 		else {
 			density = myLink.getDensity();
 			critden = (Double)myLink.getCriticalDensity();
-			tt = 60*(myLink.getLength()/speed.getCenter());
-			mintt = 60*(myLink.getLength()/maxspeed);
+			tt = 60*myLink.getTravelTime().getCenter();
+			mintt = 60*myLink.getMinTravelTime();
 		}
 		try {
 			simDataSets[0].getSeries(0).add(cts, flow.sum().getCenter());
