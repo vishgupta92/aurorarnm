@@ -58,8 +58,10 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 	private JLabel labelDemandK = new JLabel();
 	private JLabel labelQueue = new JLabel();
 	private MyXYSeries ffFD = new MyXYSeries("Free Flow");
-	private MyXYSeries cFD = new MyXYSeries("Congestion");
-	private MyXYSeries cdFD = new MyXYSeries("Capacity Drop");
+	private MyXYSeries cFDL = new MyXYSeries("L Congestion");
+	private MyXYSeries cFDU = new MyXYSeries("U Congestion");
+	private MyXYSeries cdFDL = new MyXYSeries("L Capacity Drop");
+	private MyXYSeries cdFDU = new MyXYSeries("U Capacity Drop");
 	private JFreeChart fdChart;
 	private JLabel labelCapacity = new JLabel();
 	private JLabel labelCriticalD = new JLabel();
@@ -213,9 +215,9 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 		else {
 			density = myLink.getDensity();
 			critden = myLink.getCriticalDensityRange();
-			tt = new AuroraInterval();
-			tt.setBounds(60*(myLink.getLength()/speed.getUpperBound()), 60*(myLink.getLength()/speed.getLowerBound()));
-			mintt = 60*(myLink.getLength()/maxspeed);
+			tt = myLink.getTravelTime();
+			tt.affineTransform(60, 0);
+			mintt = 60*myLink.getMinTravelTime();
 		}
 		try {
 			if (myLink.isOutputUpperBoundFirst()) {
@@ -476,31 +478,48 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 	 * Updates fundamental diagram data.
 	 */
 	private void updateFDSeries() {
-		double cap = (Double)myLink.getMaxFlow();
-		double drop = Math.max(0, Math.min(cap, cap - (Double)myLink.getCapacityDrop()));
-		double rhoc = (Double)myLink.getCriticalDensity();
-		double rhoj = (Double)myLink.getJamDensity();
+		AuroraInterval cap = myLink.getMaxFlowRange();
+		AuroraInterval drop = new AuroraInterval();
+		drop.copy(cap);
+		drop.affineTransform(1, -(Double)myLink.getCapacityDrop());
+		drop.constraintLB(0);
+		AuroraInterval rhoc = myLink.getCriticalDensityRange();
+		AuroraInterval rhoj = myLink.getJamDensityRange();
 		double zr = 0;
 		if (ffFD.getItemCount() == 0) {
 			ffFD.add(0.0, 0.0);
 			ffFD.add(0.0, 0.0);
 		}
-		if (cFD.getItemCount() == 0) {
-			cFD.add(0.0, 0.0);
-			cFD.add(0.0, 0.0);
+		if (cFDL.getItemCount() == 0) {
+			cFDL.add(0.0, 0.0);
+			cFDL.add(0.0, 0.0);
 		}
-		if (cdFD.getItemCount() == 0) {
-			cdFD.add(0.0, 0.0);
-			cdFD.add(0.0, 0.0);
+		if (cFDU.getItemCount() == 0) {
+			cFDU.add(0.0, 0.0);
+			cFDU.add(0.0, 0.0);
 		}
-		ffFD.setDataItem(1, new XYDataItem(rhoc, cap));
-		cFD.setDataItem(0, new XYDataItem(rhoc, cap));
-		cFD.setDataItem(1, new XYDataItem(rhoj, zr));
-		cdFD.setDataItem(0, new XYDataItem(rhoc, drop));
-		cdFD.setDataItem(1, new XYDataItem(rhoj, drop));
+		if (cdFDL.getItemCount() == 0) {
+			cdFDL.add(0.0, 0.0);
+			cdFDL.add(0.0, 0.0);
+		}
+		if (cdFDU.getItemCount() == 0) {
+			cdFDU.add(0.0, 0.0);
+			cdFDU.add(0.0, 0.0);
+		}
+		ffFD.setDataItem(1, new XYDataItem(rhoc.getUpperBound(), cap.getUpperBound()));
+		cFDL.setDataItem(0, new XYDataItem(rhoc.getLowerBound(), cap.getLowerBound()));
+		cFDL.setDataItem(1, new XYDataItem(rhoj.getLowerBound(), zr));
+		cFDU.setDataItem(0, new XYDataItem(rhoc.getUpperBound(), cap.getUpperBound()));
+		cFDU.setDataItem(1, new XYDataItem(rhoj.getUpperBound(), zr));
+		cdFDL.setDataItem(0, new XYDataItem(rhoc.getLowerBound(), drop.getLowerBound()));
+		cdFDL.setDataItem(1, new XYDataItem(rhoj.getLowerBound(), drop.getLowerBound()));
+		cdFDU.setDataItem(0, new XYDataItem(rhoc.getUpperBound(), drop.getUpperBound()));
+		cdFDU.setDataItem(1, new XYDataItem(rhoj.getUpperBound(), drop.getUpperBound()));
 		ffFD.fireSeriesChanged();
-		cFD.fireSeriesChanged();
-		cdFD.fireSeriesChanged();
+		cFDL.fireSeriesChanged();
+		cFDU.fireSeriesChanged();
+		cdFDL.fireSeriesChanged();
+		cdFDU.fireSeriesChanged();
 		return;
 	}
 	
@@ -509,6 +528,7 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 	 */
 	private void makeLabels() {
 		NumberFormat form = NumberFormat.getInstance();
+		form.setMinimumFractionDigits(0);
 		form.setMaximumFractionDigits(2);
 		labelLength.setText("<html><font color=\"black\">Length:<font color=\"blue\"> " + form.format(myLink.getLength()) + " miles</font></font></html>");
 		labelLanes.setText("<html><font color=\"black\">Width:<font color=\"blue\"> " + form.format(myLink.getLanes()) + " lanes</font></font></html>");
@@ -536,9 +556,9 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 			labelCapDrop.setText("<html><font color=\"black\">Capacity Drop:<font color=\"blue\"> " + form.format(drop) + " vph</font></font></html>");
 		else
 			labelCapDrop.setText("");
-		labelCapacity.setText("<html><font color=\"black\">Capacity:<font color=\"blue\"> " + form.format((Double)myLink.getMaxFlow()) + " vph</font></font></html>");
-		labelCriticalD.setText("<html><font color=\"black\">Critical Density:<font color=\"blue\"> " + form.format((Double)myLink.getCriticalDensity()) + " vpm</font></font></html>");
-		labelJamD.setText("<html><font color=\"black\">Jam Density:<font color=\"blue\"> " + form.format((Double)myLink.getJamDensity()) + " vpm</font></font></html>");
+		labelCapacity.setText("<html><font color=\"black\">Capacity:<font color=\"blue\"> [" + form.format(myLink.getMaxFlowRange().getLowerBound()) + "; " + form.format(myLink.getMaxFlowRange().getUpperBound()) + "] vph</font></font></html>");
+		labelCriticalD.setText("<html><font color=\"black\">Critical Density:<font color=\"blue\"> [" + form.format(myLink.getCriticalDensityRange().getLowerBound()) + "; " + form.format(myLink.getCriticalDensityRange().getUpperBound()) + "] vpm</font></font></html>");
+		labelJamD.setText("<html><font color=\"black\">Jam Density:<font color=\"blue\"> [" + form.format(myLink.getJamDensityRange().getLowerBound()) + "; " + form.format(myLink.getJamDensityRange().getUpperBound()) + "] vpm</font></font></html>");
 		labelVff.setText("<html> <font color=\"black\">V:<font color=\"blue\"> " + form.format((Double)myLink.getV()) + " mph</font></font></html>");
 		labelWc.setText("<html> <font color=\"black\">W:<font color=\"blue\"> " + form.format((Double)myLink.getW()) + " mph</font></font></html>");
 		
@@ -551,8 +571,10 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 		updateFDSeries();
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(ffFD);
-		dataset.addSeries(cFD);
-		dataset.addSeries(cdFD);
+		dataset.addSeries(cFDL);
+		dataset.addSeries(cFDU);
+		dataset.addSeries(cdFDL);
+		dataset.addSeries(cdFDU);
 		JFreeChart chart = ChartFactory.createXYLineChart(
 							null, // chart title
 							"Density (vpm)", // x axis label
@@ -566,7 +588,9 @@ public final class WindowLinkP extends JInternalFrame implements ActionListener 
 		XYPlot plot = (XYPlot)chart.getPlot();
 		plot.getRenderer().setSeriesPaint(0, Color.GREEN);
 		plot.getRenderer().setSeriesPaint(1, Color.RED);
-		plot.getRenderer().setSeriesPaint(2, Color.BLUE);
+		plot.getRenderer().setSeriesPaint(2, Color.RED);
+		plot.getRenderer().setSeriesPaint(3, Color.BLUE);
+		plot.getRenderer().setSeriesPaint(4, Color.BLUE);
 		plot.getRenderer().setStroke(new BasicStroke(2));
 		return chart;
 	}
