@@ -228,7 +228,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			flowBuf += tm;
 			for (j = 0; j < linkCount; j++)
-				flowBuf += ", " + flowData[2][linkCount*(initStep+i) + j];
+				flowBuf += ", " + flowData[2][linkCount*i + j];
 			fos.println(flowBuf);
 			flowBuf = "";
 		}
@@ -237,7 +237,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			denBuf += tm;
 			for (j = 0; j < linkCount; j++)
-				denBuf += ", " + densityData[2][linkCount*(initStep+i) + j];
+				denBuf += ", " + densityData[2][linkCount*i + j];
 			fos.println(denBuf);
 			denBuf = "";
 		}
@@ -246,7 +246,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			double tm = (double)cts.getMinute().getHour().getHour() + (((double)cts.getMinute().getMinute() + ((double)cts.getSecond() / 60.0)) / 60.0);
 			speedBuf += tm;
 			for (j = 0; j < linkCount; j++)
-				speedBuf += ", " + speedData[2][linkCount*(initStep+i) + j];
+				speedBuf += ", " + speedData[2][linkCount*i + j];
 			fos.println(speedBuf);
 			speedBuf = "";
 		}
@@ -344,7 +344,7 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 		Vector<AbstractLink> links = myPath.getLinkVector();
 		int xSize = linkCount;
 		maxTime = Math.min(mySystem.getMySettings().getTSMax()*mySystem.getMyNetwork().getTP(), mySystem.getMySettings().getTimeMax());
-		int ySize = (int)(maxTime/tp) - initStep;
+		int ySize = (int)Math.ceil(maxTime/tp) - initStep;
 		flowData = new double[3][xSize*ySize];
 		densityData = new double[3][xSize*ySize];
 		speedData = new double[3][xSize*ySize];
