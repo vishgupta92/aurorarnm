@@ -65,7 +65,13 @@ public abstract class AbstractControllerSimpleHWC extends AbstractControllerSimp
 						limits.add(Double.parseDouble(pp.item(i).getAttributes().getNamedItem("cmax").getNodeValue()));
 					}
 					if (pp.item(i).getNodeName().equals("qcontroller")) {
-						Class c = Class.forName(pp.item(i).getAttributes().getNamedItem("class").getNodeValue());
+						Node type_attr = pp.item(i).getAttributes().getNamedItem("type");
+						String class_name = null;
+						if (type_attr != null)
+							class_name = myLink.getMyNetwork().getContainer().ctrType2Classname(type_attr.getNodeValue());
+						else
+							class_name = pp.item(i).getAttributes().getNamedItem("class").getNodeValue();
+						Class c = Class.forName(class_name);
 						myQController = (AbstractQueueController)c.newInstance();
 						res &= myQController.initFromDOM(pp.item(i));
 						myQController.setMyController(this);
