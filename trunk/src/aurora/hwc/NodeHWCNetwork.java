@@ -24,7 +24,6 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	private AuroraInterval totalDelay = new AuroraInterval();
 	private AuroraInterval totalDelaySum = new AuroraInterval();
 	private boolean resetAllSums = true;
-	private int tsV = 0;
 	private boolean qControl = true;
 	
 
@@ -73,13 +72,16 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 */
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		totalDelay.setCenter(0, 0);
-		boolean res = super.dataUpdate(ts);
 		if (resetAllSums)
 			resetSums();
-		if ((ts == 1) || (((ts - tsV) * getTop().getTP()) >= getTop().getContainer().getMySettings().getDisplayTP())) {
+		int initTS = Math.max(myNetwork.getContainer().getMySettings().getTSInitial(), (int)(myNetwork.getContainer().getMySettings().getTimeInitial()/myNetwork.getTop().getTP()));
+		if ((ts - initTS == 1) || (((ts - tsV) * getTop().getTP()) >= container.getMySettings().getDisplayTP()))
+			resetAllSums = true;
+	/*	if ((ts == 1) || (((ts - tsV) * getTop().getTP()) >= getTop().getContainer().getMySettings().getDisplayTP())) {
 			tsV = ts;
 			resetAllSums = true;
-		}
+		}*/
+		boolean res = super.dataUpdate(ts);
 		totalDelaySum.add(totalDelay);
 		if (!isTop())
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(totalDelay);
