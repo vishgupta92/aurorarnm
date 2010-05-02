@@ -250,6 +250,13 @@ public final class WindowPath extends JInternalFrame implements ActionListener {
 			fos.println(speedBuf);
 			speedBuf = "";
 		}
+		String hBuf = "\r\n\"Links\"";
+		String lBuf = "\r\n\"Length (mi)\"";
+		for (j = 0; j < linkCount; j++) {
+			hBuf += ", \"" + links.get(j).getId() + "\"";
+			lBuf += ", " + links.get(j).getLength();
+		}
+		fos.println(hBuf + lBuf);
 		fos.close();
 		return;
 	}
