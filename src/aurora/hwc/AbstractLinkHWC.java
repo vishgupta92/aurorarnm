@@ -233,7 +233,12 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 				}
 				qSize.affineTransform(tp, 0);
 				qSize.constraintLB(0);
-				inflowSum.add(getDemand());
+				if (extDemandVal != null) {
+					inflowSum.add(extDemandVal);
+					qSize.affineTransform(0, 0);
+				}
+				else
+					inflowSum.add(getDemand());
 			}
 			else {
 				qSize.set(new AuroraInterval());
@@ -867,6 +872,11 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Returns demand.
 	 */
 	public final AuroraIntervalVector getDemand() {
+		AuroraIntervalVector dmnd = new AuroraIntervalVector();
+		if (extDemandVal != null) {
+			dmnd.copy(extDemandVal);
+			return dmnd;
+		}
 		double t = myNetwork.getSimTime(); // simulation time (in hours)
 		int idx = (int)Math.floor(t/demandTP);
 		int n = procDemand.size() - 1; // max index of the demand profile
@@ -874,7 +884,6 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			return new AuroraIntervalVector();
 		if ((idx < 0) || (idx > n))
 			idx = n;
-		AuroraIntervalVector dmnd = new AuroraIntervalVector();
 		dmnd.copy(procDemand.get(idx));
 		dmnd.affineTransform(demandKnobs, 0);
 		return dmnd;
@@ -884,9 +893,11 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Returns demand value taking into account possible external demand.
 	 */
 	public final AuroraIntervalVector getDemandValue() {
-		if (extDemandVal != null)
-			return extDemandVal;
 		AuroraIntervalVector ord = new AuroraIntervalVector();
+		if (extDemandVal != null) {
+			ord.copy(extDemandVal);
+			return ord;
+		}
 		AuroraIntervalVector orq = new AuroraIntervalVector();
 		ord.copy((AuroraIntervalVector)getDemand());
 		orq.copy((AuroraIntervalVector)getQueue());
@@ -930,9 +941,11 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Do not impose capacity restriction.
 	 */
 	public final AuroraIntervalVector getDemandValue2() {
-		if (extDemandVal != null)
-			return extDemandVal;
 		AuroraIntervalVector ord = new AuroraIntervalVector();
+		if (extDemandVal != null) {
+			ord.copy(extDemandVal);
+			return ord;
+		}
 		AuroraIntervalVector orq = new AuroraIntervalVector();
 		ord.copy((AuroraIntervalVector)getDemand());
 		orq.copy((AuroraIntervalVector)getQueue());
@@ -1038,7 +1051,11 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Returns the demand value set by external entity.
 	 */
 	public final AuroraIntervalVector getExternalDemandValue() {
-		return extDemandVal;
+		if (extDemandVal == null)
+			return null;
+		AuroraIntervalVector v = new AuroraIntervalVector();
+		v.copy(extDemandVal);
+		return v;
 	}
 	
 	/**
@@ -1094,7 +1111,11 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 * Returns the frequency of capacity value change.
 	 */
 	public final AuroraInterval getExternalCapacityValue() {
-		return extCapVal;
+		if (extCapVal == null)
+			return null;
+		AuroraInterval v = new AuroraInterval();
+		v.copy(extCapVal);
+		return v;
 	}
 	
 	/**
