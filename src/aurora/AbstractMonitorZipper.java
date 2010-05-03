@@ -108,6 +108,27 @@ public abstract class AbstractMonitorZipper extends AbstractMonitor {
 	}
 	
 	/**
+	 * Returns the peer of the given link.
+	 */
+	public final AbstractLink getPeer(AbstractLink lk) {
+		if (lk == null)
+			return null;
+		int idx = -1;
+		AbstractLink peer = null;
+		if (lk.getBeginNode() != null) {
+			idx = predecessors.indexOf(lk);
+			if (idx >= 0)
+				peer = (AbstractLink)successors.get(idx);
+		}
+		else {
+			idx = successors.indexOf(lk);
+			if (idx >= 0)
+				peer = (AbstractLink)predecessors.get(idx);
+		}
+		return peer;
+	}
+	
+	/**
 	 * Adds a Link pair to the list.
 	 * @param ol Out-Link.
 	 * @param il In-Link.
