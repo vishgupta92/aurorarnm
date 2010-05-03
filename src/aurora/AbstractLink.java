@@ -17,8 +17,8 @@ public abstract class AbstractLink extends AbstractNetworkElement {
 	private static final long serialVersionUID = 2434370630381957283L;
 
 	protected double length;
-	
 	protected PositionLink myPosition;
+	protected Vector<AbstractMonitor> myMonitorList = new Vector<AbstractMonitor>(); 
 	
 	
 	/**
@@ -90,6 +90,13 @@ public abstract class AbstractLink extends AbstractNetworkElement {
 	 */
 	public final double getLength() {
 		return length;
+	}
+	
+	/**
+	 * Returns monitor list.
+	 */
+	public final Vector<AbstractMonitor> getMonitorList() {
+		return myMonitorList;
 	}
 	
 	/**
@@ -280,6 +287,18 @@ public abstract class AbstractLink extends AbstractNetworkElement {
 	}
 	
 	/**
+	 * Adds monitor to the list.
+	 * @param x monitor.
+	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
+	 */
+	public synchronized boolean addMonitor(AbstractMonitor x) {
+		if (x == null)
+			return false;
+		myMonitorList.add(x);
+		return true;
+	}
+	
+	/**
 	 * Copies data from given Link to a current one.
 	 * @param x given Network Element.
 	 * @return <code>true</code> if successful, <code>false</code> - otherwise.
@@ -291,6 +310,7 @@ public abstract class AbstractLink extends AbstractNetworkElement {
 		AbstractLink lnk = (AbstractLink)x;
 		length = lnk.getLength();
 		myPosition = lnk.getPosition();
+		myMonitorList = lnk.getMonitorList();
 		return res;
 	}
 
