@@ -1063,10 +1063,8 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 	 */
 	public final AuroraInterval getCapacityValue() {
 		AuroraInterval cv = new AuroraInterval();
-		if (extCapVal != null) {
-			cv.copy(extCapVal);
-			return cv;
-		}
+		if (extCapVal != null)
+			return getMaxFlowRange();
 		double t = myNetwork.getSimTime(); // simulation time (in hours)
 		int idx = (int)Math.floor(t/capacityTP);
 		int n = capacity.size() - 1; // max index of the capacity profile
