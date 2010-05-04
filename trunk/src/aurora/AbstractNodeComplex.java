@@ -324,20 +324,15 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	}
 	
 	/**
-	 * Updates Node data.<br>
-	 * Initiates data update on all Monitors, Nodes and Links that belong to this Node.
+	 * Updates all sensors within this network.
 	 * @param ts time step.
 	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
-	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+	public synchronized boolean sensorDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		if (simNo != myNetwork.getSimNo())
 			throw new ExceptionSimulation(this, "Simulation number inconsistency (" + Integer.toString(simNo) + "," + Integer.toString(myNetwork.getSimNo())+ ").");
 		boolean res = true;
-		if (database != null)
-			res &= database.saveNodeData(this);
-		if (!res)
-			return false;
 		if (ts < 1)
 			throw new ExceptionSimulation(this, "Nonpositive time step (" + Integer.toString(ts) + ").");
 		int period = (int)Math.round((double)(myNetwork.getTP()/getTop().getTP()));
@@ -363,22 +358,81 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 			return res;
 		for (int i = 0; i < sensors.size(); i++)
 			res &= sensors.get(i).dataUpdate(ts);
+		for (int i = 0; i < nodes.size(); i++)
+			if (!nodes.get(i).isSimple())
+				res &= ((AbstractNodeComplex)nodes.get(i)).sensorDataUpdate(ts);
+		return res;
+	}
+	
+	/**
+	 * Updates all monitors within this network.
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	public synchronized boolean monitorDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		boolean res = (ts == this.ts);
 		for (int i = 0; i < monitors.size(); i++)
 			res &= monitors.get(i).dataUpdate(ts);
 		for (int i = 0; i < nodes.size(); i++)
-			res &= nodes.get(i).dataUpdate(ts);
-		for (int i = 0; i < monitors.size(); i++)
-			res &= monitors.get(i).dataUpdate(ts);
+			if (!nodes.get(i).isSimple())
+				res &= ((AbstractNodeComplex)nodes.get(i)).monitorDataUpdate(ts);
+		return res;
+	}
+	
+	/**
+	 * Updates all nodes within this network.
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	public synchronized boolean nodeDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		boolean res = (ts == this.ts);
+		for (int i = 0; i < nodes.size(); i++)
+			if (nodes.get(i).isSimple())
+				res &= nodes.get(i).dataUpdate(ts);
+			else
+				res &= ((AbstractNodeComplex)nodes.get(i)).nodeDataUpdate(ts);
+		return res;
+	}
+	
+	/**
+	 * Updates all links within this network.
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	public synchronized boolean linkDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		boolean res = (ts == this.ts);
 		for (int i = 0; i < links.size(); i++)
 			res &= links.get(i).dataUpdate(ts);
-		for (int i = 0; i < monitors.size(); i++)
-			res &= monitors.get(i).dataUpdate(ts);
-		if ((res) && (database != null)) {
-			res &= database.execute();
-			if (res)
-				res &= database.commit();
-		}
+		for (int i = 0; i < nodes.size(); i++)
+			if (!nodes.get(i).isSimple())
+				res &= ((AbstractNodeComplex)nodes.get(i)).linkDataUpdate(ts);
 		return res;
+	}
+	
+	/**
+	 * Updates Network data.<br>
+	 * Initiates data update on all Monitors, Nodes and Links that belong to this Node.
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		if (!sensorDataUpdate(ts))
+			return false;
+		if (!monitorDataUpdate(ts))
+			return false;
+		if (!nodeDataUpdate(ts))
+			return false;
+		if (!monitorDataUpdate(ts))
+			return false;
+		if (!linkDataUpdate(ts))
+			return false;
+		if (!monitorDataUpdate(ts))
+			return false;
+		return true;
 	}
 	
 	/**
