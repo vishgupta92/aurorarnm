@@ -525,7 +525,7 @@ public final class WindowMonitorZipper extends JInternalFrame implements ActionL
 		public WindowAdd() { }
 		public WindowAdd(JFrame parent) {
 			super(parent, "New");
-			setContentPane(createForm(null, null));
+			setContentPane(new JScrollPane(createForm(null, null)));
 		}
 	}
 	
@@ -542,7 +542,7 @@ public final class WindowMonitorZipper extends JInternalFrame implements ActionL
 				dst = destinations.get(idx);
 				src = sources.get(idx);
 			}
-			setContentPane(createForm(dst, src));
+			setContentPane(new JScrollPane(createForm(dst, src)));
 		}
 	}
 
