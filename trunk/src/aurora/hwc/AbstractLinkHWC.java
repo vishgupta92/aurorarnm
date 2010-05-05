@@ -91,6 +91,8 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		try  {
 			id = Integer.parseInt(p.getAttributes().getNamedItem("id").getNodeValue());
 			length = Double.parseDouble(p.getAttributes().getNamedItem("length").getNodeValue());
+			if (length > 5)
+				length = 0.000189393939 * length; // feet to miles
 			lanes = Double.parseDouble(p.getAttributes().getNamedItem("lanes").getNodeValue());
 			Node sa = p.getAttributes().getNamedItem("record");
 			if ((sa != null) && Boolean.parseBoolean(sa.getNodeValue()))
