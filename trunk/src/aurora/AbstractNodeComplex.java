@@ -56,7 +56,15 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		if (p.hasChildNodes()) {
 			NodeList pp2 = p.getChildNodes();
 			for (int j = 0; j < pp2.getLength(); j++) {
-				if ((pp2.item(j).getNodeName().equals("node")) || (pp2.item(j).getNodeName().equals("network"))) {
+				if (pp2.item(j).getNodeName().equals("network")) {
+					Class c = Class.forName(container.neType2Classname("N"));
+					AbstractNode nd = (AbstractNode)c.newInstance();
+					nd.setMyNetwork(this);
+					res &= nd.initFromDOM(pp2.item(j));
+					addNode(nd);
+					domnodes.add(pp2.item(j));
+				}
+				if (pp2.item(j).getNodeName().equals("node")) {
 					Node type_attr = pp2.item(j).getAttributes().getNamedItem("type");
 					String class_name = null;
 					if (type_attr != null)
