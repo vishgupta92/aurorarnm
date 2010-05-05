@@ -64,24 +64,29 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	}
 	
 	/**
-	 * Updates Network data.<br>
-	 * Initiates data update on all Monitors, Nodes and Links that belong to this Network.
+	 * Updates Sensor data.<br>
 	 * @param ts time step.
 	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
-	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
-		totalDelay.setCenter(0, 0);
-		if (resetAllSums)
-			resetSums();
+	public synchronized boolean sensorDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		int initTS = Math.max(myNetwork.getContainer().getMySettings().getTSInitial(), (int)(myNetwork.getContainer().getMySettings().getTimeInitial()/myNetwork.getTop().getTP()));
 		if ((ts - initTS == 1) || (((ts - tsV) * getTop().getTP()) >= container.getMySettings().getDisplayTP()))
 			resetAllSums = true;
-	/*	if ((ts == 1) || (((ts - tsV) * getTop().getTP()) >= getTop().getContainer().getMySettings().getDisplayTP())) {
-			tsV = ts;
-			resetAllSums = true;
-		}*/
-		boolean res = super.dataUpdate(ts);
+		return super.sensorDataUpdate(ts);
+	}
+	
+	/**
+	 * Updates Link data.<br>
+	 * @param ts time step.
+	 * @return <code>true</code> if all went well, <code>false</code> - otherwise.
+	 * @throws ExceptionDatabase, ExceptionSimulation
+	 */
+	public synchronized boolean linkDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		totalDelay.setCenter(0, 0);
+		if (resetAllSums)
+			resetSums();
+		boolean res = super.linkDataUpdate(ts);
 		totalDelaySum.add(totalDelay);
 		if (!isTop())
 			((NodeHWCNetwork)myNetwork).addToTotalDelay(totalDelay);
