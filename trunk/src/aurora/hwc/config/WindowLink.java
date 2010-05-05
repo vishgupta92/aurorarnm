@@ -291,7 +291,7 @@ public final class WindowLink extends JInternalFrame implements ActionListener, 
 		genPanel.add(pWdth);
 		// Queue Limit
 		pQLim.setBorder(BorderFactory.createTitledBorder("Queue Limit"));
-		qlimSpinner = new JSpinner(new SpinnerNumberModel(lnk.getQueueMax(), 0, 99999, 1.0));
+		qlimSpinner = new JSpinner(new SpinnerNumberModel(lnk.getQueueMax(), 0, 999999, 1.0));
 		qlimSpinner.setEditor(new JSpinner.NumberEditor(qlimSpinner, "###0"));
 		qlimSpinner.setName(nmQLim);
 		qlimSpinner.addChangeListener(this);
