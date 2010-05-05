@@ -371,7 +371,7 @@ public final class WindowNode extends JInternalFrame implements ActionListener, 
 			if (idModified)
 				nd.setId((Integer)idSpinner.getValue());
 			if (nameModified)
-				nd.setName(null);
+				nd.setName(nameTxt.getText());
 			if (descModified)
 				nd.setDescription(descTxt.getText());
 			if (ctrlModified) {
