@@ -344,10 +344,20 @@ public class ControllerHERO extends AbstractControllerComplexHWC {
 		return "HERO";
 	}
 
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * Class for describing an on-ramp in HERO.
 	 */
-	public class HERORampInfo {
+	public class HERORampInfo implements Serializable {
+		private static final long serialVersionUID = 7737177234086965910L;
+		
 		private AbstractLink link; // controlled on-ramp
 		private double gainAlinea = 50.0;
 		private double gainHERO = 0.9;
