@@ -363,8 +363,10 @@ public class SignalManager implements Serializable {
 			if(lnk!=null){
 				AbstractNodeSimple nd = (AbstractNodeSimple)lnk.getEndNode();
 				AbstractControllerSimple aa = nd.getSimpleController(lnk);
-				int ii = A.getDependentControllerIndexOf(aa);
-				phase.get(i).myControlIndex = ii;
+				if(aa!=null){
+					int ii = A.getDependentControllerIndexOf(aa);
+					phase.get(i).myControlIndex = ii;
+				}
 			}
 		}
 		
