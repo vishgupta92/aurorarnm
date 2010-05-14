@@ -5,14 +5,11 @@
 package aurora.hwc;
 
 import java.io.*;
-import java.util.*;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import aurora.*;
 import aurora.hwc.control.signal.*;
-import aurora.util.*;
-
 
 /**
  * Urban Junction with Signal.
@@ -184,25 +181,6 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 			}
 		}*/
 		return res;
-	}
-	
-	
-	private Vector<Integer> readIntString(Node p){
-		StringTokenizer st = new StringTokenizer(p.getTextContent(), ", \t");
-		Vector<Integer> x = new Vector<Integer>();
-		while (st.hasMoreTokens()) {
-			x.add(Integer.parseInt(st.nextToken()));
-		}
-		return x;
-	}
-	
-	private Vector<Float> readFloatString(Node p){
-		StringTokenizer st = new StringTokenizer(p.getTextContent(), ", \t");
-		Vector<Float> x = new Vector<Float>();
-		while (st.hasMoreTokens()) {
-			x.add(Float.parseFloat(st.nextToken()));
-		}
-		return x;
 	}
 	
 	private int NEMAtoIndex(int nema){

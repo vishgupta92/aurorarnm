@@ -10,7 +10,6 @@ import aurora.ErrorConfiguration;
 import aurora.ExceptionConfiguration;
 import aurora.ExceptionDatabase;
 import aurora.ExceptionSimulation;
-import aurora.util.Util;
 
 public class ControllerPretimed extends BaseSignalController {
 	private static final long serialVersionUID = -6882226238935473286L;
