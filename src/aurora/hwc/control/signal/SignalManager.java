@@ -85,6 +85,8 @@ public class SignalManager implements Serializable {
 			return null;
 	}
 //	-------------------------------------------------------------------------
+
+	/*
 	public boolean setProtected(Vector<Integer> x){ 
 		if(x.size()!=8)
 			return false;
@@ -132,6 +134,9 @@ public class SignalManager implements Serializable {
 			phase.get(i).setRedcleartime( x.get(i) ); 
 		return true;
 	}
+	*/
+
+	
 //	-------------------------------------------------------------------------
 	public boolean IssueHold(int nema)
 	{

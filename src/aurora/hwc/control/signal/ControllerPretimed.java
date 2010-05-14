@@ -110,7 +110,7 @@ public class ControllerPretimed extends BaseSignalController {
 		if(!super.dataUpdate(ts))
 			; //FIXME return false;
 		
-		float simtime = (float) (3600.0*myMonitor.getMyNetwork().getSimTime());
+		float simtime = (float) (3600.0f*myMonitor.getMyNetwork().getSimTime());
 
 		// time to switch plans .....................................
 		if( cperiod < planstarttime.size()-1 ){
@@ -158,7 +158,7 @@ public class ControllerPretimed extends BaseSignalController {
 		if (p == null)
 			return false;
 		try  {
-			int i, j;
+			int i, j,k;
 			int planid;
 			float cyclelength;
 			int planindex;
@@ -172,32 +172,27 @@ public class ControllerPretimed extends BaseSignalController {
 						if (pp.item(i).hasChildNodes()) {
 							NodeList pp2 = pp.item(i).getChildNodes();
 							for (j = 0; j < pp2.getLength(); j++){
-								
-								if (pp2.item(j).getNodeName().equals("planstarttime")) {
-									Node x = pp2.item(j).getAttributes().getNamedItem("value");
-									if(x==null)
-										return false;
-									StringTokenizer st = new StringTokenizer(x.getNodeValue(), ", \t");
-									while (st.hasMoreTokens()) {
-										planstarttime.add(Integer.parseInt(st.nextToken()));
+								if (pp2.item(j).getNodeName().equals("plansequence")) {									
+									if (pp2.item(j).hasChildNodes()) {
+										NodeList pp3 = pp2.item(j).getChildNodes();
+										for (k = 0; k < pp3.getLength(); k++){
+											if (pp3.item(k).getNodeName().equals("plan")) {												
+												Node x1 = pp3.item(k).getAttributes().getNamedItem("id");
+												Node x2 = pp3.item(k).getAttributes().getNamedItem("time");
+												if(x1!=null & x2!=null){
+													planstarttime.add(Math.round(3600f*Float.parseFloat(x2.getNodeValue())));
+													plansequence.add(Integer.parseInt(x1.getNodeValue()));
+												}
+											}
+										}					
 									}
 								}
 
-								if (pp2.item(j).getNodeName().equals("plansequence")) {
-									Node x = pp2.item(j).getAttributes().getNamedItem("value");
-									if(x==null)
-										return false;
-									StringTokenizer st = new StringTokenizer(x.getNodeValue(), ", \t");
-									while (st.hasMoreTokens()) {
-										plansequence.add(Integer.parseInt(st.nextToken()));
+								if (pp2.item(j).getNodeName().equals("transition")) {		
+									Node x1 = pp2.item(j).getAttributes().getNamedItem("delay");
+									if(x1!=null){
+										transdelay = Float.parseFloat(x1.getNodeValue());
 									}
-								}
-
-								if (pp2.item(j).getNodeName().equals("transdelay")) {
-									Node x = pp2.item(j).getAttributes().getNamedItem("value");
-									if(x==null)
-										return false;
-									transdelay = Float.parseFloat(x.getNodeValue());
 								}
 							}	// loop pp2
 						}
@@ -267,36 +262,38 @@ public class ControllerPretimed extends BaseSignalController {
 		
 		return res;
 	}
-//	-------------------------------------------------------------------------
-	public void xmlDump(PrintStream out,int indentlevel) throws IOException {
 
-		int i,j,k;
-		String x1 = Util.xmlindent(indentlevel);
-		String x2 = Util.xmlindent(indentlevel+1);
-		String x3 = Util.xmlindent(indentlevel+2);
-		String x4 = Util.xmlindent(indentlevel+3);
+	
+	//	-------------------------------------------------------------------------
+	public void xmlDump(PrintStream out) throws IOException {
+
+		super.xmlDump(out);
 		
-		out.print(x1 + "<controller class=\"" + this.getClass().getName() + "\">\n");
-		out.print(x2 + "<parameters>\n");
-		out.print(x3 + "<plansequence value=\"" + Util.csvstringint(plansequence) + "\"> </plansequence>\n");
-		out.print(x3 + "<planstarttime value=\"" + Util.csvstringint(planstarttime) + "\"> </planstarttime>\n");
-		out.print(x3 + "<transdelay value=\"" + transdelay + "\"> </transdelay>\n");
-		out.print(x2 + "</parameters>\n");
+		int i,j,k;
+		
+		out.print("<parameters>\n");
+		out.print("<plansequence>"); 
+		for(i=0;i<plansequence.size();i++){
+			out.print("<plan id =\"" + plansequence.get(i) + "\" time=\"" + (float) planstarttime.get(i)/3600f + "\" />");
+		}
+		out.print("</plansequence>");
+		out.print("<transdelay delay=\"" + transdelay + "\"> </transdelay>\n");
+		out.print("</parameters>\n");
 		
 		for(i=0;i<numplans;i++){
 			ControllerPretimedPlan p = getPlan().get(i);
-			out.print(x2 + "<plan id=\"" + p.myID + "\" cyclelength=\"" + p.cyclelength + "\">\n");
+			out.print("<plan id=\"" + p.myID + "\" cyclelength=\"" + p.cyclelength + "\">\n");
 			for(j=0;j<p.numinters;j++){
 				ControllerPretimedIntersectionPlan z = p.getIntersPlan().get(j);
-				out.print(x3 + "<intersection id=\"" + z.myIntersectionID + "\" offset=\"" + z.offset + "\">\n");
+				out.print("<intersection id=\"" + z.myIntersectionID + "\" offset=\"" + z.offset + "\">\n");
 				for(k=0;k<z.numstages;k++){
-					out.print(x4 + "<stage movA=\"" + (z.movA.get(k)+1) + "\" movB=\"" + (z.movB.get(k)+1) + "\" greentime=\"" + z.greentime.get(k) + "\"> </stage>\n");
+					out.print("<stage movA=\"" + (z.movA.get(k)+1) + "\" movB=\"" + (z.movB.get(k)+1) + "\" greentime=\"" + z.greentime.get(k) + "\"> </stage>\n");
 				}
-				out.print(x3 + "</intersection>\n");
+				out.print("</intersection>\n");
 			}
-			out.print(x2 + "</plan>\n");
+			out.print("</plan>\n");
 		}
-		out.print(x1 + "</controller>\n");
+		out.print("</controller>\n");
 		return;
 	
 	}

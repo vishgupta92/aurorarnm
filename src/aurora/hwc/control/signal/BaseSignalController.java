@@ -16,6 +16,7 @@ import aurora.hwc.NodeUJSignal;
 import aurora.hwc.TypesHWC;
 import aurora.hwc.control.AbstractControllerComplexHWC;
 import aurora.hwc.control.ControllerSlave;
+import aurora.util.Util;
 
 public abstract class BaseSignalController extends AbstractControllerComplexHWC {
 	private static final long serialVersionUID = 6659839156661203567L;
@@ -70,8 +71,8 @@ public abstract class BaseSignalController extends AbstractControllerComplexHWC 
 
 	@Override
 	public void xmlDump(PrintStream out) throws IOException {
-		// TODO Auto-generated method stub
-		
+		out.print("<controller type=\"" + getTypeLetterCode() + "\">\n");
+		out.print("<intersections> " + Util.csvstringint(interIndexToId) + " </intersections>\n");
 	}
 
 	@Override

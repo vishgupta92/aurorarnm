@@ -57,8 +57,8 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 	 */
 	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
 		boolean res = super.initFromDOM(p);
-		int nemaind, nema;
 		int i, j;
+		Node nodeattr;
 
 		if (secondpass)
 		{
@@ -73,69 +73,16 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 						if (pp.item(i).hasChildNodes()) {
 							NodeList pp2 = pp.item(i).getChildNodes();
 							for (j = 0; j < pp2.getLength(); j++){
-							
-								if (pp2.item(j).getNodeName().equals("protected")) 
-									res &= sigman.setProtected(readIntString(pp2.item(j)));
-							
-								if (pp2.item(j).getNodeName().equals("permissive")) 
-									res &= sigman.setPermissive(readIntString(pp2.item(j)));
-							
-								if (pp2.item(j).getNodeName().equals("recall")) 
-									res &= sigman.setRecall(readIntString(pp2.item(j)));
-							
-								if (pp2.item(j).getNodeName().equals("mingreen"))
-									res &= sigman.setMinGreen(readFloatString(pp2.item(j)));
-							
-								if (pp2.item(j).getNodeName().equals("yellowtime"))
-									res &= sigman.setYellowTime(readFloatString(pp2.item(j)));
-							
-								if (pp2.item(j).getNodeName().equals("redcleartime"))
-									res &= sigman.setRedClearTime(readFloatString(pp2.item(j)));
 
-								if (pp2.item(j).getNodeName().equals("phases")) {
-									if (pp2.item(j).hasChildNodes()) {
-										NodeList pp3 = pp2.item(j).getChildNodes();
-										for (int k = 0; k < pp3.getLength(); k++){
-											if (pp3.item(k).getNodeName().equals("phase")) {			
-												nema = Integer.parseInt(pp3.item(k).getAttributes().getNamedItem("nema").getNodeValue());
-												nemaind = NEMAtoIndex(nema);
-												if (nemaind<0 || nemaind>7){
-													res = false;
-													continue;
-												}
-												NodeList pp4 = pp3.item(k).getChildNodes();
-												for (int z = 0; z < pp4.getLength(); z++) {
-													if (pp4.item(z).getNodeName().equals("link")){
-														StringTokenizer st = new StringTokenizer(pp4.item(z).getTextContent(), ", \t");
-														while (st.hasMoreTokens()) {
-															AbstractLinkHWC L = (AbstractLinkHWC) myNetwork.getLinkById(Integer.parseInt(st.nextToken()));
-															sigman.Phase(nemaind).assignLink(L);	// assign link to phase
+								if (pp2.item(j).getNodeName().equals("phase")) {
 
-														}	
-													}
-												}
-											}
-										}
-									}
-									else
-										res = false;
-								}
-
-								if (pp2.item(j).getNodeName().equals("detector")) {
-									nema = Integer.parseInt(pp2.item(j).getAttributes().getNamedItem("nema").getNodeValue());
-									nemaind = NEMAtoIndex(nema);
-									if (nemaind<0 || nemaind>7){
-										res = false;
-										continue;
-									}
-									String pos = pp2.item(j).getAttributes().getNamedItem("pos").getNodeValue();
-									Vector<Integer> id = new Vector<Integer>();
-									StringTokenizer st = new StringTokenizer(pp2.item(j).getAttributes().getNamedItem("id").getNodeValue(), ", \t");
-									while (st.hasMoreTokens()) {
-										id.add(Integer.parseInt(st.nextToken()));
-									}
-									DetectorStation d = new DetectorStation(this,nemaind,pos);
-									res &= sigman.Phase(nemaind).addDetectorStation(d,id);
+									nodeattr = pp2.item(j).getAttributes().getNamedItem("nema");
+									if(nodeattr==null)
+										return false;
+									int nemaind = NEMAtoIndex(Integer.parseInt(nodeattr.getNodeValue()));
+									if (nemaind<0)
+										return false;
+									res &= sigman.Phase(nemaind).initFromDOM(pp2.item(j));
 								}
 							}
 						}
@@ -150,7 +97,6 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 		}
 		
 		return res;
-
 	}
 	
 	/**
@@ -169,23 +115,9 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 			return;
 		}
 		out.print("<signal>\n");
-		out.print("<protected>" + Util.csvstringbool(sigman.getVecProtected()) +  "</protected>\n");
-		out.print("<permissive>" + Util.csvstringbool(sigman.getVecPermissive()) +  "</permissive>\n");
-		out.print("<recall>" + Util.csvstringbool(sigman.getVecRecall()) +  "</recall>\n");
-		out.print("<mingreen>" + Util.csvstringflt(sigman.getVecMingreen()) +  "</mingreen>\n");
-		out.print("<yellowtime>" + Util.csvstringflt(sigman.getVecYellowTime() ) +  "</yellowtime>\n");
-		out.print("<redcleartime>" + Util.csvstringflt(sigman.getVecRedClearTime() ) +  "</redcleartime>\n");
-		out.print("<phases>\n");
-		for(int i = 0; i < 8; i++){
-			// GG FIX THIS
-			out.print("<phase nema=\"" + (i+1) + "\"> <link> " + sigman.Phase(i).getlink().getId() + " </link> </phase>\n");
+		for(int i=0;i<8;i++){	
+			sigman.Phase(i).xmlDump(out);
 		}
-		out.print("</phases>\n");
-		// GCG FIX THIS
-		for(int i = 0; i < 8; i++)
-			out.print("<detector nema=\"" + (i+1) + "\" pos=\"S\" id=\"" + sigman.Phase(i).StoplineStationIds.get(0) + "\"> </detector>\n");
-		for(int i = 0; i < 8; i++)
-			out.print("<detector nema=\"" + (i+1) + "\" pos=\"A\" id=\"" + sigman.Phase(i).ApproachStationIds.get(0) + "\"> </detector>\n");
 		out.print("</signal>\n");
 		out.print("</node>\n");
 		return;
