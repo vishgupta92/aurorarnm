@@ -173,5 +173,6 @@ public class MonitorControllerHWC extends AbstractMonitorController {
 	public final String getTypeString() {
 		return "Control Monitor";
 	}
+
 	
 }

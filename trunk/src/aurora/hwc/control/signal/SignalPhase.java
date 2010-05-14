@@ -1,9 +1,18 @@
 package aurora.hwc.control.signal;
 
+import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.StringTokenizer;
 import java.util.Vector;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import aurora.ExceptionConfiguration;
 import aurora.hwc.AbstractLinkHWC;
 import aurora.hwc.NodeUJSignal;
+import aurora.util.Util;
 
 public class SignalPhase implements Serializable {
 
@@ -153,12 +162,6 @@ public class SignalPhase implements Serializable {
 	public AbstractLinkHWC getlink() { return link; };
 
 	public void setValid(boolean x) {valid = x;};
-	public void setProtected(boolean x) {protectd = x;};
-	public void setRecall(boolean x) {recall = x;};
-	public void setPermissive(boolean x) {permissive = x;};
-	public void setMingreen(float x) {mingreen = x;};
-	public void setYellowtime(float x) {yellowtime = x;};
-	public void setRedcleartime(float x) {redcleartime = x;};
 	
 //	 ========================================================================
 //	 METHODS ================================================================
@@ -282,5 +285,103 @@ public class SignalPhase implements Serializable {
 		bulbcolor = BulbColor.RED;
 	}
 //	-------------------------------------------------------------------------
+	
+	public boolean initFromDOM(Node p) throws ExceptionConfiguration {
+
+		boolean res = true;
+		int i,j;
+		Node nodeattr;
+		
+		nodeattr = p.getAttributes().getNamedItem("protected");
+		if(nodeattr!=null)
+			protectd = Boolean.parseBoolean(nodeattr.getNodeValue());
+		
+		nodeattr = p.getAttributes().getNamedItem("permissive");
+		if(nodeattr!=null)
+			permissive = Boolean.parseBoolean(nodeattr.getNodeValue());
+		
+		nodeattr = p.getAttributes().getNamedItem("recall");
+		if(nodeattr!=null)
+			recall = Boolean.parseBoolean(nodeattr.getNodeValue());
+
+		nodeattr = p.getAttributes().getNamedItem("mingreen");
+		if(nodeattr!=null)
+			mingreen = Float.parseFloat(nodeattr.getNodeValue());
+
+		nodeattr = p.getAttributes().getNamedItem("yellowtime");
+		if(nodeattr!=null)
+			yellowtime = Float.parseFloat(nodeattr.getNodeValue());
+
+		nodeattr = p.getAttributes().getNamedItem("redcleartime");
+		if(nodeattr!=null)
+			redcleartime = Float.parseFloat(nodeattr.getNodeValue());
+
+		boolean haslinks = false;
+		if (p.hasChildNodes()) {
+			NodeList pp = p.getChildNodes();
+			
+			for (i= 0; i<pp.getLength(); i++){
+				
+				if (pp.item(i).getNodeName().equals("links")) {	
+					StringTokenizer st = new StringTokenizer(pp.item(i).getTextContent(), ", \t");
+					while (st.hasMoreTokens()) {
+						AbstractLinkHWC L = (AbstractLinkHWC) myNode.getMyNetwork().getLinkById(Integer.parseInt(st.nextToken()));
+						this.assignLink(L);	// assign link to phase
+						haslinks = true;
+					}	
+				}
+				
+				if (pp.item(i).getNodeName().equals("detectorlist")) {
+					NodeList pp2 = pp.item(i).getChildNodes();
+					for (j= 0; j<pp2.getLength(); j++){
+
+						if (pp2.item(j).getNodeName().equals("detector")) {	
+							
+							String type = pp2.item(j).getAttributes().getNamedItem("type").getNodeValue();
+							StringTokenizer st = new StringTokenizer(pp2.item(j).getTextContent(), ", \t");
+							Vector<Integer> id = new Vector<Integer>();
+							while (st.hasMoreTokens()) {
+								id.add(Integer.parseInt(st.nextToken()));
+							}
+							DetectorStation d = new DetectorStation(myNode,myNEMA,type);
+							res &= addDetectorStation(d,id);
+						}
+					}
+				}
+			}
+		}
+		
+		res &= haslinks;
+		
+		return res;
+		
+	}
+	
+//	-------------------------------------------------------------------------
+	public void xmlDump(PrintStream out) throws IOException {
+
+		out.print("\n<phase nema=\"" + myNEMA + "\"");
+		out.print("\nprotected=\"" + protectd + "\"");
+		out.print("\npermissive=\"" + permissive + "\"");
+		out.print("\nrecall=\"" + recall + "\"");
+		out.print("\nmingreen=\"" + mingreen + "\"");
+		out.print("\nyellowtime=\"" + yellowtime + "\"");
+		out.print("\nredcleartime=\"" + redcleartime + "\"");
+		out.print(" >");
+
+		out.print("\n<links> "  + link.getId() + " </links>");		
+		
+		out.print("\n<detectorlist>"); 
+		if(!ApproachStationIds.isEmpty())
+			out.print("<detector type=\"A\"> " + Util.csvstringint(ApproachStationIds) + " </detector>");
+		if(!StoplineStationIds.isEmpty())
+			out.print("<detector type=\"S\"> " + Util.csvstringint(StoplineStationIds) + " </detector>");
+		out.print("\n</detectorlist>"); 
+		
+		out.print("\n</phase>");
+
+		return;
+	}
+	
 	
 }

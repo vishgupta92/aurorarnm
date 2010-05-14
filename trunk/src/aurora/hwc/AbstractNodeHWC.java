@@ -940,7 +940,7 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Weaving factor matrix inputs (" + Integer.toString(weavingFactorMatrix.length) + ") does not match number of in-links (" + Integer.toString(inputs.size()) + ")."));
 			res = false;
 		}
-		if (weavingFactorMatrix[0].length != outputs.size()) {
+		if (weavingFactorMatrix.length>0 && weavingFactorMatrix[0].length != outputs.size()) {
 			myNetwork.addConfigurationError(new ErrorConfiguration(this, "Weaving factor matrix outputs (" + Integer.toString(weavingFactorMatrix[0].length) + ") does not match number of out-links (" + Integer.toString(outputs.size()) + ")."));
 			res = false;
 		}
