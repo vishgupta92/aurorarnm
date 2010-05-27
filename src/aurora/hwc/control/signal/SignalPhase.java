@@ -291,6 +291,7 @@ public class SignalPhase implements Serializable {
 		boolean res = true;
 		int i,j;
 		Node nodeattr;
+		String str;
 		
 		nodeattr = p.getAttributes().getNamedItem("protected");
 		if(nodeattr!=null)
@@ -305,17 +306,26 @@ public class SignalPhase implements Serializable {
 			recall = Boolean.parseBoolean(nodeattr.getNodeValue());
 
 		nodeattr = p.getAttributes().getNamedItem("mingreen");
-		if(nodeattr!=null)
-			mingreen = Float.parseFloat(nodeattr.getNodeValue());
+		if(nodeattr!=null){
+			str = nodeattr.getNodeValue();
+			if(!str.isEmpty())
+				mingreen = Float.parseFloat(str);
+		}
 
 		nodeattr = p.getAttributes().getNamedItem("yellowtime");
-		if(nodeattr!=null)
-			yellowtime = Float.parseFloat(nodeattr.getNodeValue());
-
+		if(nodeattr!=null){
+			str = nodeattr.getNodeValue();
+			if(!str.isEmpty())
+				yellowtime = Float.parseFloat(str);
+		}
+		
 		nodeattr = p.getAttributes().getNamedItem("redcleartime");
-		if(nodeattr!=null)
-			redcleartime = Float.parseFloat(nodeattr.getNodeValue());
-
+		if(nodeattr!=null){
+			str = nodeattr.getNodeValue();
+			if(!str.isEmpty())
+				redcleartime = Float.parseFloat(str);
+		}
+		
 		boolean haslinks = false;
 		if (p.hasChildNodes()) {
 			NodeList pp = p.getChildNodes();
