@@ -20,7 +20,7 @@ import org.w3c.dom.*;
 public abstract class AbstractNodeComplex extends AbstractNode {
 	private static final long serialVersionUID = -6880500889959625206L;
 	
-	protected double tp;  // sampling time
+	protected double tp = 1.0/3600;  // sampling time
 	//protected Vector<Double> timeH = new Vector<Double>();
 	protected int simNo = 0; // simulation number
 	protected int maxTimeStep = 100000; // maximum simulation step

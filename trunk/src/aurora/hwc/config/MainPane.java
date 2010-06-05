@@ -234,7 +234,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 		if (mySystem == null)
 			mySystem = new ContainerHWC();
 		mySystem.applicationConfiguration();
-		NodeHWCNetwork ntwk = new NodeHWCNetwork(1, true);
+		NodeHWCNetwork ntwk = new NodeHWCNetwork(-1, true);
 		ntwk.setContainer(mySystem);
 		ntwk.setName("My Network");
 		ntwk.setDescription("Created by Aurora Configurator");
