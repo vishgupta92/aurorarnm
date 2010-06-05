@@ -266,16 +266,15 @@ public abstract class AbstractNodeHWC extends AbstractNodeSimple {
 	 * @throws IOException
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
-		int i;
 		if (out == null)
 			out = System.out;
 		out.print("<node type=\"" + getTypeLetterCode() + "\" id=\"" + id + "\" name=\"" + name + "\">");
 		out.print("<description>" + description + "</description>\n");
 		out.print("<outputs>");
-		for (i = 0; i < successors.size(); i++)
+		for (int i = 0; i < successors.size(); i++)
 			out.print("<output id=\"" + successors.get(i).getId() + "\"/>");
 		out.print("</outputs>\n<inputs>");
-		for (i = 0; i < predecessors.size(); i++) {
+		for (int i = 0; i < predecessors.size(); i++) {
 			String buf = "";
 			String buf2 = "";
 			for (int j = 0; j < successors.size(); j++) {

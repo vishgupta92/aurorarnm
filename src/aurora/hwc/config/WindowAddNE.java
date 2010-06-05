@@ -74,7 +74,7 @@ public final class WindowAddNE extends JDialog implements ActionListener {
 			}
 		}
 		Vector<AbstractLink> lnks = ntwk.getLinks();
-		for (int i = 0; i < nds.size(); i++) {
+		for (int i = 0; i < lnks.size(); i++) {
 			if (neList.indexOf(lnks.get(i)) < 0) {
 				if ((controlled) && (lnks.get(i).getEndNode() == null))
 					continue;

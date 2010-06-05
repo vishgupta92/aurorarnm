@@ -105,17 +105,41 @@ public final class NodeUJSignal extends AbstractNodeHWC {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("\n<node class=\"" + this.getClass().getName() + "\" id=\"" + id + "\" name=\"" + name + "\">\n");
-		super.xmlDump(out);
-		if(!hasdata){
-			out.print("</node>\n");
-			return;
+		out.print("<node type=\"" + getTypeLetterCode() + "\" id=\"" + id + "\" name=\"" + name + "\">");
+		out.print("<description>" + description + "</description>\n");
+		out.print("<outputs>");
+		for (int i = 0; i < successors.size(); i++)
+			out.print("<output id=\"" + successors.get(i).getId() + "\"/>");
+		out.print("</outputs>\n<inputs>");
+		for (int i = 0; i < predecessors.size(); i++) {
+			String buf = "";
+			String buf2 = "";
+			for (int j = 0; j < successors.size(); j++) {
+				if (j > 0) {
+					buf += ", ";
+					buf2 += ", ";
+				}
+				buf += splitRatioMatrix[i][j].toString();
+				buf2 += Double.toString(weavingFactorMatrix[i][j]);
+			}
+			out.print("<input id=\"" + predecessors.get(i).getId() + "\">");
+			out.print("<splitratios>" + buf + "</splitratios>");
+			out.print("<weavingfactors>" + buf2 + "</weavingfactors>");
+			if (controllers.get(i) != null)
+				controllers.get(i).xmlDump(out);
+			out.print("</input>");
 		}
-		out.print("<signal>\n");
-		for(int i=0;i<8;i++){	
-			sigman.Phase(i).xmlDump(out);
+		out.print("</inputs>\n");
+		if (srmProfile != null)
+			out.print("<splitratios tp=\"" + Double.toString(srTP) + "\">\n" + getSplitRatioProfileAsXML() + "</splitratios>\n");
+		position.xmlDump(out);
+		if (hasdata) {
+			out.print("<signal>\n");
+			for (int i = 0; i < 8; i++) {	
+				sigman.Phase(i).xmlDump(out);
+			}
+			out.print("</signal>\n");
 		}
-		out.print("</signal>\n");
 		out.print("</node>\n");
 		return;
 	}
