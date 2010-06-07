@@ -1,7 +1,8 @@
 package aurora.hwc.control.signal;
 
 public class NEMA {
-	
+
+	public final static int _null 	= -1;
 	public final static int _1 	= 0;
 	public final static int _2 	= 1;
 	public final static int _3 	= 2;
