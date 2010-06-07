@@ -85,59 +85,6 @@ public class SignalManager implements Serializable {
 			return null;
 	}
 //	-------------------------------------------------------------------------
-
-	/*
-	public boolean setProtected(Vector<Integer> x){ 
-		if(x.size()!=8)
-			return false;
-		for(int i=0;i<8;i++)
-			phase.get(i).setProtected( x.get(i)>0 ); 
-		return true;
-	}
-//	-------------------------------------------------------------------------
-	public boolean setPermissive(Vector<Integer> x){ 
-		if(x.size()!=8)
-			return false;
-		for(int i=0;i<8;i++)
-			phase.get(i).setPermissive( x.get(i)>0 ); 
-		return true;
-	}
-//	-------------------------------------------------------------------------
-	public boolean setRecall(Vector<Integer> x){ 
-		if(x.size()!=8)
-			return false;
-		for(int i=0;i<8;i++)
-			phase.get(i).setRecall( x.get(i)>0 ); 
-		return true;
-	}
-//	-------------------------------------------------------------------------
-	public boolean setMinGreen(Vector<Float> x){ 
-		if(x.size()!=8)
-			return false;
-		for(int i=0;i<8;i++)
-			phase.get(i).setMingreen( x.get(i) ); 
-		return true;
-	}
-//	-------------------------------------------------------------------------
-	public boolean setYellowTime(Vector<Float> x) { 
-		if(x.size()!=8)
-			return false;
-		for(int i=0;i<8;i++)
-			phase.get(i).setYellowtime( x.get(i) ); 
-		return true;
-	}
-//	-------------------------------------------------------------------------
-	public boolean setRedClearTime(Vector<Float> x) { 
-		if(x.size()!=8)
-			return false;
-		for(int i=0;i<8;i++)
-			phase.get(i).setRedcleartime( x.get(i) ); 
-		return true;
-	}
-	*/
-
-	
-//	-------------------------------------------------------------------------
 	public boolean IssueHold(int nema)
 	{
 		if(nema>7 || nema<0)
@@ -168,25 +115,6 @@ public class SignalManager implements Serializable {
 		return true;
 	}
 //	-------------------------------------------------------------------------
-	/*
-	public boolean RemoveHold(int nema)
-	{
-		if(nema>7 || nema<0)
-			return false;
-		hold[nema]=false;
-		return true;
-	}
-//	-------------------------------------------------------------------------
-	public boolean RemoveForceOff(int nema)
-	{
-		if(nema>7 || nema<0)
-			return false;
-
-		forceoff[nema]=false;
-		return true;
-	}
-	*/
-//	-------------------------------------------------------------------------
 	public boolean HasHold(int nema){
 		if(nema>7 || nema<0)
 			return false;
@@ -211,13 +139,6 @@ public class SignalManager implements Serializable {
 
 		return display_forceoff[nema];
 	}
-//	-------------------------------------------------------------------------
-/*
-	public void FlushConflictCalls(int nema)
-	{
-		hasconflictingcall[nema] = false;
-		conflictingcalltime[nema] = -1.0f;
-	}*/
 //	-------------------------------------------------------------------------
 	public Vector<Boolean> getVecPermissive(){
 		Vector<Boolean> a = new Vector<Boolean>();
@@ -260,14 +181,6 @@ public class SignalManager implements Serializable {
 			a.add(Phase(i).Redcleartime());
 		return a;
 	}
-//	-------------------------------------------------------------------------
-	/*
-	public void ResetPhases(){		
-		for(int i=0;i<8;i++){
-			phase.get(i).Reset();
-		}
-	}
-	*/
 //	-------------------------------------------------------------------------
 	public boolean Permithold(int nema){
 		return permithold[nema];

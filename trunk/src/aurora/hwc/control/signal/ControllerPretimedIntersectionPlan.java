@@ -249,7 +249,7 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 
 		// check cycles are long enough .....................................	
 		if( cyclelength<totphaselength-0.001 || cyclelength>totphaselength+0.001 ){
-			mySigMan.myNode.getMyNetwork().addConfigurationError(new ErrorConfiguration(this, "Pretimed controller: intersection " + myIntersectionID  + ", stage " + k + ", totalstagelength does not equal cyclelength."));
+			mySigMan.myNode.getMyNetwork().addConfigurationError(new ErrorConfiguration(this, "Pretimed controller: intersection " + myIntersectionID  + ", totalstagelength (" + totphaselength + ") does not equal cyclelength (" + cyclelength + ")."));
 			return false;
 		}
 		totphaselength = -1;
@@ -309,7 +309,13 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 		}
 
 		// Correction: offset is with respect to end of first stage, instead of beginning
-		float x = Math.min( forceoffpoint[movA.get(0)],forceoffpoint[movB.get(0)] );
+		float x;
+		if(movA.get(0)==NEMA._null)
+			x = forceoffpoint[movB.get(0)];
+		else if(movB.get(0)==NEMA._null)
+			x = forceoffpoint[movA.get(0)];
+		else
+			x = Math.min( forceoffpoint[movA.get(0)],forceoffpoint[movB.get(0)] );
 		for( p=0;p<8;p++ ){
 			if(holdpoint[p]>=0){
 				holdpoint[p] -= x;
@@ -333,13 +339,22 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 		try  {
 			int i;
 			int mA,mB;
+			Node n;
 			if (p.hasChildNodes()) {
 				NodeList pp = p.getChildNodes();
 				for (i = 0; i < pp.getLength(); i++) {
 					if (pp.item(i).getNodeName().equals("stage")){
-						mA = NEMA.index(Integer.parseInt(pp.item(i).getAttributes().getNamedItem("movA").getNodeValue()));
+						n = pp.item(i).getAttributes().getNamedItem("movA");
+						if(n!=null)
+							mA = NEMA.index(Integer.parseInt(n.getNodeValue()));
+						else 
+							mA = NEMA._null;
 						movA.add(mA);
-						mB = NEMA.index(Integer.parseInt(pp.item(i).getAttributes().getNamedItem("movB").getNodeValue()));
+						n = pp.item(i).getAttributes().getNamedItem("movB");
+						if(n!=null)
+							mB = NEMA.index(Integer.parseInt(n.getNodeValue()));
+						else 
+							mB = NEMA._null;						
 						movB.add(mB);
 						greentime.add( Float.parseFloat(pp.item(i).getAttributes().getNamedItem("greentime").getNodeValue()) );
 						numstages++;

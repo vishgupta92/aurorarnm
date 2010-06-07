@@ -370,26 +370,34 @@ public class SignalPhase implements Serializable {
 //	-------------------------------------------------------------------------
 	public void xmlDump(PrintStream out) throws IOException {
 
-		out.print("\n<phase nema=\"" + myNEMA + "\"");
+		int nemaid = myNEMA+1;
+		
+		if(!protectd && !permissive){
+			out.print("\n<phase nema=\"" + nemaid + "\" ></phase>");
+			return;
+		}
+		
+		out.print("\n<phase nema=\"" + nemaid + "\"");
 		out.print("\nprotected=\"" + protectd + "\"");
 		out.print("\npermissive=\"" + permissive + "\"");
 		out.print("\nrecall=\"" + recall + "\"");
 		out.print("\nmingreen=\"" + mingreen + "\"");
 		out.print("\nyellowtime=\"" + yellowtime + "\"");
 		out.print("\nredcleartime=\"" + redcleartime + "\"");
-		out.print(" >");
+		out.print(" ></phase>");
 
-		out.print("\n<links> "  + link.getId() + " </links>");		
-		
+		/*  GCG FIX THIS
+		out.print("\n<links> "  + link.getId() + " </links>");	
+			
 		out.print("\n<detectorlist>"); 
-		if(!ApproachStationIds.isEmpty())
+		if(ApproachStationIds!=null && !ApproachStationIds.isEmpty())
 			out.print("<detector type=\"A\"> " + Util.csvstringint(ApproachStationIds) + " </detector>");
-		if(!StoplineStationIds.isEmpty())
+		if(StoplineStationIds!=null && !StoplineStationIds.isEmpty())
 			out.print("<detector type=\"S\"> " + Util.csvstringint(StoplineStationIds) + " </detector>");
 		out.print("\n</detectorlist>"); 
 		
 		out.print("\n</phase>");
-
+*/
 		return;
 	}
 	
