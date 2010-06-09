@@ -12,7 +12,6 @@ import org.w3c.dom.NodeList;
 import aurora.ExceptionConfiguration;
 import aurora.hwc.AbstractLinkHWC;
 import aurora.hwc.NodeUJSignal;
-import aurora.util.Util;
 
 public class SignalPhase implements Serializable {
 
@@ -25,13 +24,13 @@ public class SignalPhase implements Serializable {
 	//private AbstractNodeComplex myNetwork;
 	private NodeUJSignal myNode;
 	private SignalManager mySigMan;
-	public int myControlIndex;
 
 	private int myNEMA;
 	private int myNEMAopposing;
 	private int myRingGroup;
 
-	public AbstractLinkHWC link;
+	public Vector<AbstractLinkHWC> links;
+	public Vector<Integer> myControlIndex;
 
 	// Basic characteristics
 	private boolean valid;
@@ -83,7 +82,10 @@ public class SignalPhase implements Serializable {
 		mingreen = -1.0f;
 		yellowtime = -1.0f;
 		redcleartime = -1.0f;
-
+		
+		links = new Vector<AbstractLinkHWC>();
+		myControlIndex = new Vector<Integer>();
+		
 		//bulbtimer.SetTo( (float) (-redcleartime-myNetwork.getTP()) ); // GG FIX THIS: This line produces an error because myNetwork=null.
 
 		actualyellowtime = yellowtime;
@@ -143,7 +145,7 @@ public class SignalPhase implements Serializable {
 	public NodeUJSignal MyNode() { return myNode; };
 	public SignalManager MySigMan() { return mySigMan; };
 
-	public void assignLink(AbstractLinkHWC L) {link = L;};
+	public void addLink(AbstractLinkHWC L)  { links.add(L); myControlIndex.add(-1); };
 	public float Mingreen()					{ return mingreen; };
 	public float Yellowtime()				{ return yellowtime; };
 	public float Redcleartime()				{ return redcleartime; };
@@ -159,7 +161,7 @@ public class SignalPhase implements Serializable {
 	public DetectorStation ApproachStation(){ return ApproachStation;};
 	public DetectorStation StoplineStation(){ return StoplineStation;};
 	
-	public AbstractLinkHWC getlink() { return link; };
+	public Vector<AbstractLinkHWC> getlinks() { return links; };
 
 	public void setValid(boolean x) {valid = x;};
 	
@@ -264,8 +266,9 @@ public class SignalPhase implements Serializable {
 	public void SetGreen()
 	{
 		if(!valid) 
-			return;		
-		mySigMan.myController.setControlInput(myControlIndex, link.getCapacityValue().getCenter() );
+			return;
+		for(int i=0;i<links.size();i++)
+			mySigMan.myController.setControlInput(myControlIndex.get(i), links.get(i).getCapacityValue().getCenter() );
 		bulbcolor = BulbColor.GREEN;
 	}
 //	-------------------------------------------------------------------------
@@ -273,7 +276,8 @@ public class SignalPhase implements Serializable {
 	{
 		if(!valid) 
 			return;
-		mySigMan.myController.setControlInput(myControlIndex, link.getCapacityValue().getCenter() );
+		for(int i=0;i<links.size();i++)
+			mySigMan.myController.setControlInput(myControlIndex.get(i),links.get(i).getCapacityValue().getCenter() );
 		bulbcolor = BulbColor.YELLOW;
 	}
 //	-------------------------------------------------------------------------
@@ -281,7 +285,8 @@ public class SignalPhase implements Serializable {
 	{
 		if(!valid) 
 			return;
-		mySigMan.myController.setControlInput(myControlIndex,0.0);
+		for(int i=0;i<links.size();i++)
+			mySigMan.myController.setControlInput(myControlIndex.get(i),0.0);
 		bulbcolor = BulbColor.RED;
 	}
 //	-------------------------------------------------------------------------
@@ -336,7 +341,7 @@ public class SignalPhase implements Serializable {
 					StringTokenizer st = new StringTokenizer(pp.item(i).getTextContent(), ", \t");
 					while (st.hasMoreTokens()) {
 						AbstractLinkHWC L = (AbstractLinkHWC) myNode.getMyNetwork().getLinkById(Integer.parseInt(st.nextToken()));
-						this.assignLink(L);	// assign link to phase
+						this.addLink(L);	// assign link to phase
 						haslinks = true;
 					}	
 				}

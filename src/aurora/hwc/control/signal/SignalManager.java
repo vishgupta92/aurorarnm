@@ -262,7 +262,8 @@ public class SignalManager implements Serializable {
 	 * @throws ExceptionConfiguration, ExceptionDatabase
 	 */
 	public boolean initialize() {
-		for(int i = 0; i < 8; i++){
+		int i,j;
+		for(i = 0; i < 8; i++){
 			hasstoplinecall[i] = false;
 			hasapproachcall[i] = false;
 			hasconflictingcall[i] = false;
@@ -277,13 +278,13 @@ public class SignalManager implements Serializable {
 			phase.get(i).bulbtimer.SetTo(0.0f);
 				
 			AbstractControllerComplex A = (AbstractControllerComplex) this.myController;
-			AbstractLink lnk = phase.get(i).link;
-			if(lnk!=null){
-				AbstractNodeSimple nd = (AbstractNodeSimple)lnk.getEndNode();
-				AbstractControllerSimple aa = nd.getSimpleController(lnk);
+			Vector<AbstractLinkHWC> lnks = phase.get(i).getlinks();
+			for(j=0;j<lnks.size();j++){
+				AbstractNodeSimple nd = (AbstractNodeSimple)lnks.get(j).getEndNode();
+				AbstractControllerSimple aa = nd.getSimpleController(lnks.get(j));
 				if(aa!=null){
 					int ii = A.getDependentControllerIndexOf(aa);
-					phase.get(i).myControlIndex = ii;
+					phase.get(i).myControlIndex.set(j, ii);
 				}
 			}
 		}
@@ -546,13 +547,14 @@ public class SignalManager implements Serializable {
 	}*/
 //	-------------------------------------------------------------------------
 	public SignalPhase FindPhaseByLink(AbstractLink L){
-		AbstractLinkHWC Z;
-		for(int i=0;i<8;i++){
-			Z = phase.get(i).link;
-			if(Z==null)
-				continue;
-			if(Z.getId()==L.getId())
-				return phase.get(i);
+		int i,j;
+		Vector<AbstractLinkHWC> Z;
+		for(i=0;i<8;i++){
+			Z = phase.get(i).getlinks();
+			for(j=0;j<Z.size();j++){
+				if(Z.get(j).getId()==L.getId())
+					return phase.get(i);
+			}
 		}
 		return null;
 	}
