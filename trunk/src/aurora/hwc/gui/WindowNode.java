@@ -105,7 +105,7 @@ public class WindowNode extends JInternalFrame implements ActionListener {
 			// output flows
 			for (int i = 1; i <= nOut; i++) {
 				AbstractLinkHWC ol = (AbstractLinkHWC)myNode.getSuccessors().get(i-1);
-				AuroraIntervalVector oflw = ol.getAverageOutFlow();
+				AuroraIntervalVector oflw = ol.getAverageInFlow();
 				if (i == 1)
 					o.copy(oflw);
 				else
