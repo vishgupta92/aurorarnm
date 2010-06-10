@@ -123,7 +123,7 @@ public class WindowNodeP extends JInternalFrame implements ActionListener {
 			wcTotal = 0;
 			for (int i = 1; i <= nOut; i++) {
 				AbstractLinkHWC ol = (AbstractLinkHWC)myNode.getSuccessors().get(i-1);
-				AuroraInterval ofl = ol.getAverageOutFlow().sum();
+				AuroraInterval ofl = ol.getAverageInFlow().sum();
 				double lb, ub;
 				if (ol.isOutputUpperBoundFirst()) {
 					lb = ofl.getUpperBound();
