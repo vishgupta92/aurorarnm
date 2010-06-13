@@ -139,9 +139,9 @@ public class ControllerHERO extends AbstractControllerComplexHWC {
 		for (i = 0; i < numonramps; i++) {
 			coordwithupstrm.add(false);
 			AbstractLinkHWC orlink = (AbstractLinkHWC)rampinfo.get(i).link; 
-			AbstractLinkHWC mllink = (AbstractLinkHWC)getUpMLbyORLink(orlink);
+			AbstractLinkHWC mllink = (AbstractLinkHWC)getDnMLbyORLink(orlink);
 			if(mllink==null)
-				mllink = (AbstractLinkHWC) getDnMLbyORLink(orlink);
+				mllink = (AbstractLinkHWC) getUpMLbyORLink(orlink);
 			rampinfo.get(i).MLlinkindex = ((MonitorControllerHWC)myMonitor).getMonitoredLinkIndexById(mllink.getId());
 			rampinfo.get(i).MLsensorindex = ((MonitorControllerHWC)myMonitor).getSensorIndexByLinkId(mllink.getId());
 		}
