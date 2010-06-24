@@ -529,7 +529,7 @@ public class AuroraInterval implements Serializable {
 		form.setMinimumFractionDigits(0);
 		form.setMaximumFractionDigits(2);
 		String buf = form.format(center);
-		if (size > 0)
+		if (!(size < 0.01))
 			buf += "(" + form.format(size) + ")";
 		return buf;
 	}
@@ -544,7 +544,7 @@ public class AuroraInterval implements Serializable {
 		form.setMaximumFractionDigits(2);
 		form.setGroupingUsed(false);
 		String buf = form.format(center);
-		if (size > 0)
+		if (!(size < 0.01))
 			buf += "(" + form.format(size) + ")";
 		return buf;
 	}
