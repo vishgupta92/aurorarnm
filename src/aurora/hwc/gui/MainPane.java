@@ -359,7 +359,6 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 			String status = "Simulation running: step " + Integer.toString(ts) + ", time ";
 			status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
 			status += ".";
-			//status += " Press 'F6' to stop...";
 			statusBar.setText(status);
 			try {
 				res = mySystem.dataUpdate(++ts);
