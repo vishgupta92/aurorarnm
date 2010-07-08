@@ -355,6 +355,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 		mySystem.getMyStatus().setSaved(false);
 		int ts = mySystem.getMyNetwork().getTS();
 		int tsV = ts;
+		int initTS = Math.max(mySystem.getMySettings().getTSInitial(), (int)(mySystem.getMySettings().getTimeInitial()/mySystem.getMyNetwork().getTP()));
 		while ((!mySystem.getMyStatus().isStopped()) && res) {
 			String status = "Simulation running: step " + Integer.toString(ts) + ", time ";
 			status += Util.time2string(mySystem.getMyNetwork().getTS() * mySystem.getMyNetwork().getTP());
@@ -362,7 +363,7 @@ public final class MainPane extends JFrame implements ActionListener, ItemListen
 			statusBar.setText(status);
 			try {
 				res = mySystem.dataUpdate(++ts);
-				if ((ts == 1) || (((ts - tsV) * mySystem.getMyNetwork().getTP()) >= mySystem.getMySettings().getDisplayTP())) {
+				if ((ts - initTS == 1) || (((ts - tsV) * mySystem.getMyNetwork().getTP()) >= mySystem.getMySettings().getDisplayTP())) {
 					JCheckBoxMenuItem miml = (JCheckBoxMenuItem)cmd2item.get(cmdControlMainline);
 					JCheckBoxMenuItem miq = (JCheckBoxMenuItem)cmd2item.get(cmdControlQueue);
 					boolean cv = mySystem.getMyNetwork().isControlled();
