@@ -70,6 +70,8 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 * @throws ExceptionDatabase, ExceptionSimulation
 	 */
 	public synchronized boolean sensorDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
+		if (resetAllSums)
+			resetSums();
 		int initTS = Math.max(myNetwork.getContainer().getMySettings().getTSInitial(), (int)(myNetwork.getContainer().getMySettings().getTimeInitial()/myNetwork.getTop().getTP()));
 		if ((ts - initTS == 1) || (((ts - tsV) * getTop().getTP()) >= container.getMySettings().getDisplayTP()))
 			resetAllSums = true;
@@ -84,8 +86,6 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 	 */
 	public synchronized boolean linkDataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		totalDelay.setCenter(0, 0);
-		if (resetAllSums)
-			resetSums();
 		boolean res = super.linkDataUpdate(ts);
 		totalDelaySum.add(totalDelay);
 		if (!isTop())
