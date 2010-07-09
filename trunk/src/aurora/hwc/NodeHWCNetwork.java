@@ -75,6 +75,8 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 		int initTS = Math.max(myNetwork.getContainer().getMySettings().getTSInitial(), (int)(myNetwork.getContainer().getMySettings().getTimeInitial()/myNetwork.getTop().getTP()));
 		if ((ts - initTS == 1) || (((ts - tsV) * getTop().getTP()) >= container.getMySettings().getDisplayTP()))
 			resetAllSums = true;
+		if (ts - initTS == 1)
+			resetSums();
 		return super.sensorDataUpdate(ts);
 	}
 	
