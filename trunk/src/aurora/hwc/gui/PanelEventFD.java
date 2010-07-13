@@ -80,7 +80,7 @@ public final class PanelEventFD extends AbstractEventPanel implements ChangeList
 		else
 			myEvent = new EventFD();
 		mf = ((EventFD)myEvent).getMaxFlow();
-		drp = Math.max(0, Math.min(mf, ((AbstractLinkHWC)ne).getCapacityDrop()));
+		drp = ((EventFD)myEvent).getCapacityDrop();
 		cd = ((EventFD)myEvent).getCriticalDensity();
 		jd = ((EventFD)myEvent).getJamDensity();
 		initialize(ne, em);
