@@ -4,8 +4,8 @@
 
 package aurora.hwc;
 
+import java.util.*;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -202,6 +202,49 @@ public final class NodeHWCNetwork extends AbstractNodeComplex {
 		for (i = 0; i < links.size(); i++)
 			res &= ((AbstractLinkHWC)links.get(i)).adjustWeightedData(w);
 		return res;
+	}
+	
+	/**
+	 * Returns density over multiple links specified in the given vector.
+	 * @param v vector of links
+	 * @return density vector
+	 */
+	public AuroraIntervalVector computeMultiLinkDensity(Vector<AbstractLinkHWC> v) {
+		if ((v == null) || (v.size() == 0))
+			return null;
+		AuroraIntervalVector den = new AuroraIntervalVector();
+		den.copy(v.firstElement().getDensity());
+		double len = v.firstElement().getLength();
+		den.affineTransform(len, 0);
+		for (int i = 1; i < v.size(); i++) {
+			double ll = v.get(i).getLength();
+			len += ll;
+			AuroraIntervalVector dd = v.get(i).getDensity();
+			dd.affineTransform(ll, 0);
+			den.add(dd);
+		}
+		den.affineTransform(1/len, 0);
+		return den;
+	}
+	
+	/**
+	 * Returns critical density over multiple links specified in the given vector.
+	 * @param v vector of links
+	 * @return critical density
+	 */
+	public double computeMultiLinkCriticalDensity(Vector<AbstractLinkHWC> v) {
+		if ((v == null) || (v.size() == 0))
+			return 0;
+		double len = v.firstElement().getLength();
+		double den_crit = v.firstElement().getCriticalDensity() * len;
+		for (int i = 1; i < v.size(); i++) {
+			double ll = v.get(i).getLength();
+			len += ll;
+			double cd = v.get(i).getCriticalDensity() * ll;
+			den_crit += cd;
+		}
+		den_crit = den_crit / len;
+		return den_crit;
 	}
 	
 }
