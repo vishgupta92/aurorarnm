@@ -6,7 +6,7 @@ package aurora.hwc.control;
 
 import java.io.*;
 import java.text.NumberFormat;
-
+import java.util.*;
 import org.w3c.dom.*;
 import aurora.*;
 import aurora.hwc.*;
@@ -24,7 +24,7 @@ public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 	public boolean upstream = false;
 	public double gain = 50.0;
 	
-	private AbstractLinkHWC MLlink;
+	private Vector<AbstractLinkHWC> MLlinks = new Vector<AbstractLinkHWC>();
 	private SensorLoopDetector MLsensor;
 
 	// CONSTRUCTORS ========================================================================
@@ -75,6 +75,12 @@ public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 							gain = Double.parseDouble(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
 						if (pp.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("upstream"))
 							upstream = Boolean.parseBoolean(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
+						if (pp.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("link")) {
+							int lid = Integer.parseInt(pp.item(i).getAttributes().getNamedItem("value").getNodeValue());
+							AbstractLinkHWC lk = (AbstractLinkHWC)myLink.getMyNetwork().getTop().getLinkById(lid);
+							if (lk != null)
+								MLlinks.add(lk);
+						}
 					}
 				}
 			}
@@ -95,12 +101,16 @@ public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 	 */
 	public boolean initialize() throws ExceptionConfiguration {
 		AbstractNodeHWC x = (AbstractNodeHWC) myLink.getEndNode();
-		if (upstream)
-			MLlink = getUpML(x);
-		else 
-			MLlink = getDnML(x);
+		if (MLlinks.size() == 0) {
+			AbstractLinkHWC lk = null;
+			if (upstream)
+				lk = getUpML(x);
+			else 
+				lk = getDnML(x);
+			MLlinks.add(lk);
+		}
 		if(usesensors)
-			MLsensor = (SensorLoopDetector) MLlink.getMyNetwork().getSensorByLinkId(MLlink.getId());
+			MLsensor = (SensorLoopDetector) MLlinks.firstElement().getMyNetwork().getSensorByLinkId(MLlinks.firstElement().getId());
 		else
 			MLsensor = null;
 		return super.initialize();
@@ -114,9 +124,11 @@ public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 	 */
 	public void xmlDump(PrintStream out) throws IOException {
 		super.xmlDump(out);
-		out.print("<parameter name=\"upstream\" value=\"" + Boolean.toString(upstream) + "\"/>");
-		out.print("<parameter name=\"gain\" value=\"" + Double.toString(gain) + "\"/>");
-		out.print("</controller>");
+		out.println("<parameter name=\"upstream\" value=\"" + Boolean.toString(upstream) + "\"/>");
+		out.println("<parameter name=\"gain\" value=\"" + Double.toString(gain) + "\"/>");
+		for (int i = 0; i < MLlinks.size(); i++)
+			out.println("<parameter name=\"link\" value=\"" + MLlinks.get(i).getId() + "\"/>");
+		out.println("</controller>");
 		return;
 	}
 	
@@ -136,11 +148,11 @@ public final class ControllerALINEA extends AbstractControllerSimpleHWC {
 		if ((actualInput == null) || (((Double)actualInput) < 0))
 			actualInput = (Double)limits.get(1);
 		double occ_des,occ_act,AlineaRate;
-		occ_des = MLlink.getCriticalDensity();
+		occ_des = ((NodeHWCNetwork)myLink.getMyNetwork()).computeMultiLinkCriticalDensity(MLlinks);
 		if(usesensors)
 			occ_act = MLsensor.Density();
 		else
-			occ_act = MLlink.getDensity().sum().getCenter();
+			occ_act = ((NodeHWCNetwork)myLink.getMyNetwork()).computeMultiLinkDensity(MLlinks).sum().getCenter();
 		AlineaRate = ((Double)actualInput)  +  gain * (occ_des - occ_act);
 		flw = ApplyURMS(AlineaRate);
 		flw = ApplyQueueControl(flw);
