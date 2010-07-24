@@ -36,7 +36,7 @@ public abstract class AbstractController implements AuroraConfigurable, Serializ
 		if (p == null)
 			return !res;
 		tp = Double.parseDouble(p.getAttributes().getNamedItem("tp").getNodeValue());
-		if (tp > 10) // invocation period in seconds
+		if (tp > 0.4) // invocation period in seconds
 			tp = tp/3600;
 		initialized = true;
 		return res;
