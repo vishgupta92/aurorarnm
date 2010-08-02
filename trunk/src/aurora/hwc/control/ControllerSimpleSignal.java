@@ -18,7 +18,7 @@ import aurora.hwc.*;
  * @author Alex Kurzhanskiy
  * @version $Id$
  */
-public final class ControllerSimpleSignal extends AbstractControllerHWC {
+public final class ControllerSimpleSignal extends AbstractControllerSimpleHWC {
 	private static final long serialVersionUID = 4744505125393458926L;
 	
 	private boolean greenLight = false;
