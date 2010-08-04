@@ -175,7 +175,7 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 		boolean ss = false;
 		if ((saveState == 3) || (saveState == 2))
 			ss = true;
-		out.print("<link type=\"" + getTypeLetterCode() + "\" id=\"" + Integer.toString(id) + "\" length=\"" + Double.toString(length) + "\" lanes=\"" + Double.toString(lanes) + "\" record=\"" + ss + "\">");
+		out.print("<link type=\"" + getTypeLetterCode() + "\" id=\"" + Integer.toString(id) + "\" length=\"" + Math.round(5280*length) + "\" lanes=\"" + Double.toString(lanes) + "\" record=\"" + ss + "\">");
 		if (predecessors.size() > 0)
 			out.print("<begin id=\"" + Integer.toString(predecessors.firstElement().getId()) + "\"/>");
 		if (successors.size() > 0)
