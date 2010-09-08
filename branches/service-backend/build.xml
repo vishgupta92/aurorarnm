@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="auroraSVN" default="install_file" basedir=".">
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="build.classes" value="${build.dir}/classes" />
+
+	<property name="lib.db.dir" value="${basedir}/libdbDerby" />
+	<property name="lib.gis.dir" value="${basedir}/libGIS" />
+	<property name="lib.gui.dir" value="${basedir}/libGUI" />
+	<property name="build.encoding" value="ISO-8859-1" />
+
+	<property name="javac.optimize" value="on" />
+	<property name="javac.deprecation" value="off" />
+	<property name="javac.version" value="1.6" />
+	<property name="javac.args" value="" />
+	<property name="javac.args.warnings" value="-Xlint:unchecked" />
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+	</target>
+
+    <target name="clean">
+        <delete dir="${build.dir}/aurora" />
+        <delete file="${build.dir}/aurora.jar" />
+        <delete>
+            <fileset dir="${build.dir}" includes="**/*.class" />
+            <fileset dir="${build.dir}" includes="*.exe" />
+        </delete>
+    </target>
+
+	<path id="classpath">
+		<pathelement location="${build.classes}" />
+		<fileset dir="${lib.db.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${lib.gui.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${lib.gis.dir}">
+			<include name="**/*.jar" />
+			<exclude name="**/excluded/" />
+		</fileset>
+	</path>
+
+
+	<target name="compile" depends="init">
+		<javac encoding="${build.encoding}" srcdir="${src.dir}" includes="**/*.java" destdir="${build.dir}" debug="${javac.debug}" optimize="${javac.optimize}" target="${javac.version}" source="${javac.version}" deprecation="${javac.deprecation}">
+			<compilerarg line="${javac.args} ${javac.args.warnings}" />
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile" description="Create a jar for aurora">
+		<jar jarfile="${build.dir}/aurora.jar" includes="**/*.class" basedir="${build.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="aurora/hwc/gui/MainPane" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="copy.jar" depends="jar" description="Deploy">
+	</target>
+
+	<target name="exe4j" depends="copy.jar" description="Create executables">
+		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
+			<arg value="${build.dir}\exe4j\importer.exe4j" />
+		</exec>
+		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
+			<arg value="${build.dir}\exe4j\configurator.exe4j" />
+		</exec>
+		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
+			<arg value="${build.dir}\exe4j\simulator.exe4j" />
+		</exec>
+		<exec executable="C:\Program Files\exe4j\bin\exe4jc.exe">
+			<arg value="${build.dir}\exe4j\simbatch.exe4j" />
+		</exec>
+	</target>
+
+    <target name="install_file" depends="exe4j" description="Create install file">
+        <exec executable="C:\Program Files\NSIS\makensis.exe">
+            <arg value="aurora_setup.nsi" />
+        </exec>
+    </target>
+
+
+</project>

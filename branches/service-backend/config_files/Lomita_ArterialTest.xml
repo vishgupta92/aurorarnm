@@ -1,0 +1,1410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuroraRNM>
+   <network class="aurora.hwc.NodeHWCNetwork" id="1" name="Lomita Small Network" top="true" controlled="true" tp="0.001388888888888889">
+	   <description>Hwy 1 East From Airport Drive to Walnut St.
+Signaled intersections are modeled
+with simple signal controllers.</description>
+
+      <position>
+         <point x="0.0" y="0.0" z="0.0" />
+      </position>
+
+      <MonitorList>
+      </MonitorList>
+
+      <NodeList>
+         <node class="aurora.hwc.NodeUJSignal" id="101" name="Airport Drive">
+            <description>Hwy 1 East: Signal Intersection</description>
+
+            <outputs>
+               <output id="1011" />
+
+               <output id="1012" />
+
+               <output id="1013" />
+            </outputs>
+
+            <inputs>
+               <input id="-1011">
+                  <splitratios>1.0, 0.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.001388888888888889">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.010555555555555556" />
+
+                     <cycle time="0.0" green="0.008611111111111111" red="0.021944444444444444" />
+                  </controller>
+               </input>
+
+               <input id="-1012">
+                  <splitratios>0.0, 0.0, 1.0</splitratios>
+               </input>
+
+               <input id="-1013">
+                  <splitratios>0.0, 1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="41.63477325439453" y="173.5118408203125" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJStop" id="102" name="Hillworth Ave">
+            <description>Hwy 1 East: Cross Street</description>
+
+            <outputs>
+               <output id="1021" />
+
+               <output id="1022" />
+            </outputs>
+
+            <inputs>
+               <input id="1011">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+
+               <input id="-1021">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="60.3235969543457" y="188.11715698242188" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJSignal" id="103" name="Pennsylvania Ave">
+            <description>Hwy 1 East: Signal Intersection</description>
+
+            <outputs>
+               <output id="1031" />
+
+               <output id="1032" />
+
+               <output id="1033" />
+            </outputs>
+
+            <inputs>
+               <input id="1021">
+                  <splitratios>1.0, 0.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.001388888888888889">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.020833333333333332" />
+
+                     <cycle time="0.0" green="0.008611111111111111" red="0.021944444444444444" />
+                  </controller>
+               </input>
+
+               <input id="-1031">
+                  <splitratios>0.0, 0.0, 1.0</splitratios>
+               </input>
+
+               <input id="-1032">
+                  <splitratios>0.0, 1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="95.8066177368164" y="204.62359619140625" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJStop" id="104" name="Vana Ave">
+            <description>Hwy 1 East: Cross Street</description>
+
+            <outputs>
+               <output id="1041" />
+
+               <output id="1042" />
+            </outputs>
+
+            <inputs>
+               <input id="1031">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+
+               <input id="-1041">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="127.46553802490234" y="200.3075714111328" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJSignal" id="105" name="Cypress St">
+            <description>Hwy 1 East: Signal Intersection</description>
+
+            <outputs>
+               <output id="1051" />
+
+               <output id="1052" />
+
+               <output id="1053" />
+            </outputs>
+
+            <inputs>
+               <input id="1041">
+                  <splitratios>1.0, 0.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.001388888888888889">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.020833333333333332" />
+
+                     <cycle time="0.0" green="0.008611111111111111" red="0.021944444444444444" />
+                  </controller>
+               </input>
+
+               <input id="-1051">
+                  <splitratios>0.0, 0.0, 1.0</splitratios>
+               </input>
+
+               <input id="-1052">
+                  <splitratios>0.0, 1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="173.8833770751953" y="200.3075714111328" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJStop" id="106" name="Lucille Ave">
+            <description>Hwy 1 East: Cross Street</description>
+
+            <outputs>
+               <output id="1061" />
+
+               <output id="1062" />
+            </outputs>
+
+            <inputs>
+               <input id="1051">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+
+               <input id="-1061">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="199.8789825439453" y="199.7397003173828" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJSignal" id="107" name="Narbonne Ave">
+            <description>Hwy 1 East: Signal Intersection</description>
+
+            <outputs>
+               <output id="1071" />
+
+               <output id="1072" />
+
+               <output id="1073" />
+            </outputs>
+
+            <inputs>
+               <input id="1061">
+                  <splitratios>1.0, 0.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.001388888888888889">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.020833333333333332" />
+
+                     <cycle time="0.0" green="0.008611111111111111" red="0.021944444444444444" />
+                  </controller>
+               </input>
+
+               <input id="-1071">
+                  <splitratios>0.0, 0.0, 1.0</splitratios>
+               </input>
+
+               <input id="-1072">
+                  <splitratios>0.0, 1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="242.27255249023438" y="198.13795471191406" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJSignal" id="108" name="Oak St">
+            <description>Hwy 1 East: Signal Intersection</description>
+
+            <outputs>
+               <output id="1081" />
+
+               <output id="1082" />
+
+               <output id="1083" />
+            </outputs>
+
+            <inputs>
+               <input id="1071">
+                  <splitratios>1.0, 0.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.001388888888888889">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.020833333333333332" />
+
+                     <cycle time="0.0" green="0.008611111111111111" red="0.021944444444444444" />
+                  </controller>
+               </input>
+
+               <input id="-1081">
+                  <splitratios>0.0, 0.0, 1.0</splitratios>
+               </input>
+
+               <input id="-1082">
+                  <splitratios>0.0, 1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="293.1798400878906" y="198.1346893310547" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJSignal" id="109" name="Eshelman Ave">
+            <description>Hwy 1 East: Signal Intersection</description>
+
+            <outputs>
+               <output id="1091" />
+
+               <output id="1092" />
+
+               <output id="1093" />
+            </outputs>
+
+            <inputs>
+               <input id="1081">
+                  <splitratios>1.0, 0.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.001388888888888889">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.020833333333333332" />
+
+                     <cycle time="0.0" green="0.008611111111111111" red="0.021944444444444444" />
+                  </controller>
+               </input>
+
+               <input id="-1091">
+                  <splitratios>0.0, 0.0, 1.0</splitratios>
+               </input>
+
+               <input id="-1092">
+                  <splitratios>0.0, 1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="352.7381286621094" y="198.1346893310547" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJStop" id="110" name="Bland Pl">
+            <description>Hwy 1 East: Cross Street</description>
+
+            <outputs>
+               <output id="1101" />
+
+               <output id="1102" />
+            </outputs>
+
+            <inputs>
+               <input id="1091">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+
+               <input id="-1101">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="385.1090393066406" y="196.9538116455078" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJSignal" id="111" name="Walnut St">
+            <description>Hwy 1 East: Signal Intersection</description>
+
+            <outputs>
+               <output id="1111" />
+
+               <output id="1112" />
+
+               <output id="1113" />
+            </outputs>
+
+            <inputs>
+               <input id="1101">
+                  <splitratios>1.0, 0.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.001388888888888889">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.020833333333333332" />
+
+                     <cycle time="0.0" green="0.008611111111111111" red="0.021944444444444444" />
+                  </controller>
+               </input>
+
+               <input id="-1111">
+                  <splitratios>0.0, 0.0, 1.0</splitratios>
+               </input>
+
+               <input id="-1112">
+                  <splitratios>0.0, 1.0, 0.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="411.7201232910156" y="196.9538116455078" z="0.0" />
+            </position>
+         </node>
+      </NodeList>
+
+      <LinkList>
+         <link class="aurora.hwc.LinkHw" id="-1011" length="0.29" lanes="3.0">
+            <end id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="1.0" knob="1.0">0.0, 100.0, 200.0, 250.0, 500.0, 1000.0, 500.0, 500.0, 250.0, 250.0, 200.0, 200.0, 200.0, 500.0, 1000.0, 500.0, 200.0, 200.0, 100.0, 0.0, 0.0, 0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="5.0" y="134.99505615234375" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1011" length="0.05" lanes="3.0">
+            <begin id="101" />
+
+            <end id="102" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1021" length="0.16" lanes="3.0">
+            <begin id="102" />
+
+            <end id="103" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1031" length="0.08" lanes="3.0">
+            <begin id="103" />
+
+            <end id="104" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1041" length="0.08" lanes="3.0">
+            <begin id="104" />
+
+            <end id="105" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1051" length="0.05" lanes="3.0">
+            <begin id="105" />
+
+            <end id="106" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1061" length="0.11" lanes="3.0">
+            <begin id="106" />
+
+            <end id="107" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1071" length="0.15" lanes="3.0">
+            <begin id="107" />
+
+            <end id="108" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1081" length="0.16" lanes="3.0">
+            <begin id="108" />
+
+            <end id="109" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1091" length="0.1" lanes="3.0">
+            <begin id="109" />
+
+            <end id="110" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1101" length="0.05" lanes="3.0">
+            <begin id="110" />
+
+            <end id="111" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkHw" id="1111" length="0.14" lanes="3.0">
+            <begin id="111" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="75.0" densityJam="187.5" flowMax="2250.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="460.0" y="196.67349243164062" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1012" length="0.1" lanes="1.0">
+            <end id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="23.0" y="225.99603271484375" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1013" length="0.1" lanes="1.0">
+            <end id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="42.0" y="64.21652221679688" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1021" length="0.1" lanes="1.0">
+            <end id="102" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="57.0" y="228.0182647705078" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1031" length="0.1" lanes="1.0">
+            <end id="103" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="98.0" y="262.3963928222656" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1032" length="0.1" lanes="1.0">
+            <end id="103" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="87.56263732910156" y="130.9505615234375" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1041" length="0.1" lanes="1.0">
+            <end id="104" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="131.0" y="260.3741760253906" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1051" length="0.1" lanes="1.0">
+            <end id="105" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="175.0" y="259.363037109375" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1052" length="0.1" lanes="1.0">
+            <end id="105" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="169.0" y="125.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1061" length="0.1" lanes="1.0">
+            <end id="106" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="198.0" y="97.58354949951172" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1071" length="0.1" lanes="2.0">
+            <end id="107" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="50.0" densityJam="125.0" flowMax="1500.0" />
+
+            <position>
+               <point x="246.0" y="330.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1072" length="0.1" lanes="2.0">
+            <end id="107" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="50.0" densityJam="125.0" flowMax="1500.0" />
+
+            <position>
+               <point x="235.0" y="7.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1081" length="0.1" lanes="1.0">
+            <end id="108" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="298.0" y="257.376708984375" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1082" length="0.1" lanes="1.0">
+            <end id="108" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="292.0" y="103.1168212890625" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1091" length="0.1" lanes="1.0">
+            <end id="109" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="360.0" y="268.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1092" length="0.1" lanes="1.0">
+            <end id="109" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="346.0" y="100.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1101" length="0.1" lanes="1.0">
+            <end id="110" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="394.0" y="167.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1111" length="0.1" lanes="1.0">
+            <end id="111" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="413.0" y="266.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="-1112" length="0.1" lanes="1.0">
+            <end id="111" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="415.0" y="146.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1012" length="0.1" lanes="1.0">
+            <begin id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="16.0" y="221.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1013" length="0.1" lanes="1.0">
+            <begin id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="50.0" y="63.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1022" length="0.1" lanes="1.0">
+            <begin id="102" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="50.0" y="226.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1032" length="0.1" lanes="1.0">
+            <begin id="103" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="92.0" y="262.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1033" length="0.1" lanes="1.0">
+            <begin id="103" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="95.0" y="127.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1042" length="0.1" lanes="1.0">
+            <begin id="104" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="124.0" y="259.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1052" length="0.1" lanes="1.0">
+            <begin id="105" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="168.0" y="260.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1053" length="0.1" lanes="1.0">
+            <begin id="105" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="178.0" y="126.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1062" length="0.1" lanes="1.0">
+            <begin id="106" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="204.0" y="95.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1072" length="0.1" lanes="1.0">
+            <begin id="107" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="238.0" y="329.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1073" length="0.1" lanes="2.0">
+            <begin id="107" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="50.0" densityJam="125.0" flowMax="1500.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="241.0" y="5.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1082" length="0.1" lanes="1.0">
+            <begin id="108" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="289.0" y="257.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1083" length="0.1" lanes="1.0">
+            <begin id="108" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="297.0" y="100.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1092" length="0.1" lanes="1.0">
+            <begin id="109" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="351.0" y="269.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1093" length="0.1" lanes="1.0">
+            <begin id="109" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="353.0" y="97.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1102" length="0.1" lanes="1.0">
+            <begin id="110" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="398.0" y="167.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1112" length="0.1" lanes="1.0">
+            <begin id="111" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="406.0" y="263.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1113" length="0.1" lanes="1.0">
+            <begin id="111" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.08333333333333333" knob="1.0">0.0</demand>
+
+            <qmax>0.0</qmax>
+
+            <fd densityCritical="25.0" densityJam="62.5" flowMax="750.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="424.0" y="147.0" z="0.0" />
+            </position>
+         </link>
+      </LinkList>
+
+      <ODList>
+         <od class="aurora.hwc.ODHWC" begin="101" end="111">
+            <PathList>
+               <path class="aurora.hwc.PathHWC" name="East Route">-1011,1011,1021,1031,1041,1051,1061,1071,1081,1091,1101,1111</path>
+            </PathList>
+         </od>
+      </ODList>
+   </network>
+
+   <settings class="aurora.SimulationSettings">
+      <display tp="0.001388888888888889" timeout="50" tsMax="100000" timeMax="24.0" />
+   </settings>
+
+   <EventList>
+   </EventList>
+</AuroraRNM>
+

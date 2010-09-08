@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuroraRNM>
+   <network class="aurora.hwc.NodeHWCNetwork" id="1" name="Simple Arterial Network" top="true" controlled="true" tp="0.001388888888888889">
+	   <description>Trivial arterial test
+with simple signal control.</description>
+
+      <position>
+         <point x="0.0" y="0.0" z="0.0" />
+      </position>
+
+      <MonitorList>
+      </MonitorList>
+
+      <NodeList>
+         <node class="aurora.hwc.NodeUJSignal" id="101" name="Marin">
+            <description>1st Intersection</description>
+
+            <outputs>
+               <output id="1002" />
+
+               <output id="1005" />
+            </outputs>
+
+            <inputs>
+               <input id="1001">
+                  <splitratios>1.0, 0.0</splitratios>
+
+                  <controller class="aurora.hwc.control.ControllerSimpleSignal" tp="0.0013888888888888892">
+                     <limits cmin="0.0" cmax="99999.99" />
+
+                     <parameter name="offset" value="0.0" />
+
+                     <cycle time="2.777777777777778E-4" green="0.016666666666666666" red="0.008333333333333333" />
+
+                     <cycle time="0.25" green="0.025" red="0.008333333333333333" />
+                  </controller>
+               </input>
+
+               <input id="1004">
+                  <splitratios>0.0, 1.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="4.0" y="0.0" z="0.0" />
+            </position>
+         </node>
+
+         <node class="aurora.hwc.NodeUJSignal" id="102" name="Gilman">
+            <description>2nd Intersection</description>
+
+            <outputs>
+               <output id="1003" />
+
+               <output id="1007" />
+            </outputs>
+
+            <inputs>
+               <input id="1002">
+                  <splitratios>1.0, 0.0</splitratios>
+               </input>
+
+               <input id="1006">
+                  <splitratios>0.0, 1.0</splitratios>
+               </input>
+            </inputs>
+
+            <splitratios tp="0.08333333333333333">
+            </splitratios>
+
+            <position>
+               <point x="10.0" y="0.0" z="0.0" />
+            </position>
+         </node>
+      </NodeList>
+
+      <LinkList>
+         <link class="aurora.hwc.LinkStreet" id="1001" length="0.4" lanes="2.0">
+            <end id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.0833" knob="1.0">500.0</demand>
+
+            <qmax>10.0</qmax>
+
+            <fd densityCritical="60.0" densityJam="240.0" flowMax="1800.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="4.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1002" length="0.6" lanes="2.0">
+            <begin id="101" />
+
+            <end id="102" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>16.666666666732244</density>
+
+            <demand tp="0.0833" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="60.0" densityJam="240.0" flowMax="1800.0" />
+
+            <position>
+               <point x="0.0" y="0.0" z="0.0" />
+
+               <point x="0.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1003" length="0.5" lanes="2.0">
+            <begin id="102" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>16.666666667058283</density>
+
+            <demand tp="0.0833" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="60.0" densityJam="240.0" flowMax="1800.0" />
+
+            <position>
+               <point x="10.0" y="0.0" z="0.0" />
+
+               <point x="15.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1004" length="0.5" lanes="1.0">
+            <end id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.0833" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="30.0" densityJam="120.0" flowMax="900.0" />
+
+            <position>
+               <point x="4.0" y="5.0" z="0.0" />
+
+               <point x="4.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1005" length="0.5" lanes="1.0">
+            <begin id="101" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>9.476011599967903E-13</density>
+
+            <demand tp="0.0833" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="30.0" densityJam="120.0" flowMax="900.0" />
+
+            <position>
+               <point x="4.0" y="0.0" z="0.0" />
+
+               <point x="4.0" y="-5.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1006" length="0.5" lanes="1.0">
+            <end id="102" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>0.0</density>
+
+            <demand tp="0.0833" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="30.0" densityJam="120.0" flowMax="900.0" />
+
+            <position>
+               <point x="10.0" y="5.0" z="0.0" />
+
+               <point x="10.0" y="0.0" z="0.0" />
+            </position>
+         </link>
+
+         <link class="aurora.hwc.LinkStreet" id="1007" length="0.5" lanes="1.0">
+            <begin id="102" />
+
+            <dynamics class="aurora.hwc.DynamicsCTM" />
+
+            <density>9.476011599967903E-13</density>
+
+            <demand tp="0.0833" knob="1.0">0.0</demand>
+
+            <qmax>100.0</qmax>
+
+            <fd densityCritical="30.0" densityJam="120.0" flowMax="900.0" />
+
+            <position>
+               <point x="10.0" y="0.0" z="0.0" />
+
+               <point x="10.0" y="-5.0" z="0.0" />
+            </position>
+         </link>
+      </LinkList>
+
+      <ODList>
+         <od class="aurora.hwc.ODHWC" begin="101" end="102">
+            <PathList>
+               <path class="aurora.hwc.PathHWC" name="Main Route">1001,1002,1003</path>
+            </PathList>
+         </od>
+      </ODList>
+   </network>
+
+   <settings class="aurora.SimulationSettings">
+      <display tp="0.001388888888888889" timeout="50" tsMax="100000" timeMax="0.5" />
+   </settings>
+
+   <EventList>
+   </EventList>
+</AuroraRNM>
+
