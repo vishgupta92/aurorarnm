@@ -23,7 +23,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	protected double tp = 1.0/3600;  // sampling time
 	//protected Vector<Double> timeH = new Vector<Double>();
 	protected int simNo = 0; // simulation number
-	protected int maxTimeStep = 100000; // maximum simulation step
+	//protected int maxTimeStep = 100000; // maximum simulation step  FIXME: remove
 	protected boolean top = false;
 	protected boolean controlled = true;
 	protected DataStorage database = null;
@@ -558,9 +558,9 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	/**
 	 * Returns maximum simulation step.
 	 */
-	public final int getMaxTimeStep() {
+	/*public final int getMaxTimeStep0() { //FIXME: remove
 		return maxTimeStep;
-	}
+	}*/
 	
 	/**
 	 * Returns database interface.
@@ -857,9 +857,9 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		boolean res = super.initialize();
 		simNo++;
 		tsV = ts;
-		if (!top) {
+		/*if (!top) {  //FIXME: remove
 			maxTimeStep = (int)Math.floor((getTop().getTP()*getTop().getMaxTimeStep())/tp);
-		}
+		}*/
 		if (top) {
 			PrintStream os = container.getMySettings().getTmpDataOutput();
 			if (os != null) {
@@ -932,12 +932,12 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 	 * @param x maximum time step.
 	 * @return <code>true</code> if operation succeeded, <code>false</code> - otherwise.
 	 */
-	public synchronized boolean setMaxTimeStep(int x) {
+	/*public synchronized boolean setMaxTimeStep(int x) { //FIXME: remove
 		if (x < 1)
 			return false;
 		maxTimeStep = x;
 		return true;
-	}
+	}*/
 	
 	/**
 	 * Sets database interface.<br>
@@ -1383,7 +1383,7 @@ public abstract class AbstractNodeComplex extends AbstractNode {
 		database = ntwk.getDatabase();
 		simNo = ntwk.getSimNo();
 		tp = ntwk.getTP();
-		maxTimeStep = ntwk.getMaxTimeStep();
+		//maxTimeStep = ntwk.getMaxTimeStep(); //FIXME: remove
 		sensors = ntwk.getSensors();
 		monitors = ntwk.getMonitors();
 		nodes = ntwk.getNodes();
