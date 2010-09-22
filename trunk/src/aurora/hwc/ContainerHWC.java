@@ -253,9 +253,9 @@ public final class ContainerHWC extends AbstractContainer {
 		myStatus.setSaved(true);
 		// roll back events
 		myEventManager.deactivateCurrentEvents(myNetwork, 0.0);
-		// set maximum simulation step
-		double maxTime = Math.min(getMySettings().getTSMax()*myNetwork.getTP(), getMySettings().getTimeMax());
-		myNetwork.setMaxTimeStep((int)Math.floor(maxTime/myNetwork.getTP()));
+		// set maximum simulation step   FIXME: remove
+		/*double maxTime = Math.min(getMySettings().getTSMax()*myNetwork.getTP(), getMySettings().getTimeMax());
+		myNetwork.setMaxTimeStep((int)Math.floor(maxTime/myNetwork.getTP()));*/
 		// reset network
 		res &= myNetwork.initialize();
 		return res;
