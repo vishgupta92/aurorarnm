@@ -4,6 +4,7 @@
 package aurora;
 
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Base class for sensor objects.
@@ -13,9 +14,13 @@ import org.w3c.dom.Node;
 public abstract class AbstractSensor extends AbstractNetworkElement {
 	private static final long serialVersionUID = -3489585106242370041L;
 	
-	protected Point position = new Point();
-	protected double linkPosition;
+	//protected String name;
+	protected PositionNode position = new PositionNode();
+	protected float offset_in_link = Float.NaN;
 	protected AbstractLink myLink;
+	protected String description;
+	protected String display_lat;
+	protected String display_lng;
 	
 	/* (non-Javadoc)
 	 * @see aurora.AbstractNetworkElement#initFromDOM(org.w3c.dom.Node)
@@ -26,26 +31,55 @@ public abstract class AbstractSensor extends AbstractNetworkElement {
 		if ((p == null) || (myNetwork == null))
 			return !res;
 		try  {
-			id = Integer.parseInt(p.getAttributes().getNamedItem("id").getNodeValue());
-			myLink = myNetwork.getLinkById(Integer.parseInt(p.getAttributes().getNamedItem("link").getNodeValue()));
-			linkPosition = Double.parseDouble(p.getAttributes().getNamedItem("linkposition").getNodeValue());
 			
-			AbstractNode nd = myLink.getBeginNode();
-			Point bPos;
-			if( nd==null ){
-				PositionLink plk = myLink.getPosition();
-				bPos = plk.pp.get(0);
-			}
-			else{
-				bPos = nd.position.get();
-			}
-				
-			//Point ePos = myLink.getEndNode().position.get();
 			
-			position.x = bPos.x;		// GCG FIX THIS
-			position.y = bPos.y;		// GCG FIX THIS
-			position.z = bPos.z;		// GCG FIX THIS
+			Node pp;
+			pp = p.getAttributes().getNamedItem("id");
+			if(pp!=null)
+				id = Integer.parseInt(pp.getNodeValue());
 
+			//pp = p.getAttributes().getNamedItem("name");
+			//if(pp!=null)
+			//	name = pp.getNodeValue();
+			
+			pp = p.getAttributes().getNamedItem("offset_in_link");
+			if(pp!=null)
+				offset_in_link = Float.parseFloat(pp.getNodeValue());
+
+			pp = p.getAttributes().getNamedItem("description");
+			if(pp!=null)
+				description = pp.getNodeValue();
+
+			pp = p.getAttributes().getNamedItem("display_lat");
+			if(pp!=null)
+				display_lat = pp.getNodeValue();
+			
+			pp = p.getAttributes().getNamedItem("display_lng");
+			if(pp!=null)
+				display_lng = pp.getNodeValue();
+			
+			
+			if(p.hasChildNodes()){
+
+				NodeList c = p.getChildNodes();
+			
+				for(int i=0;i<c.getLength();i++){
+					pp = c.item(i);
+					if(pp.getNodeName().equals("links")){
+						myLink = myNetwork.getLinkById(Integer.parseInt(pp.getTextContent()));
+					}
+					
+					if(pp.getNodeName().equals("position")){
+						
+					}
+				
+					if (pp.getNodeName().equals("position")) {
+						position = new PositionNode();
+						res &= position.initFromDOM(pp);
+					}
+					
+				}
+			}
 		}
 		catch(Exception e) {
 			res = false;
@@ -68,7 +102,7 @@ public abstract class AbstractSensor extends AbstractNetworkElement {
 	/**
 	 * Returns position of the Sensor.
 	 */
-	public final Point getPosition() {
+	public final PositionNode getPosition() {
 		return position;
 	}
 	
@@ -76,28 +110,28 @@ public abstract class AbstractSensor extends AbstractNetworkElement {
 	 * Returns X coordinate of the Sensor.
 	 */
 	public final double getPositionX() {
-		return position.x;
+		return position.p.x ;
 	}
 
 	/**
 	 * Returns Y coordinate of the Sensor.
 	 */
 	public final double getPositionY() {
-		return position.y;
+		return position.p.y;
 	}
 
 	/**
 	 * Returns Z coordinate of the Sensor.
 	 */
 	public final double getPositionZ() {
-		return position.z;
+		return position.p.z;
 	}
 	
 	/**
 	 * Returns position of the Sensor within link.
 	 */
-	public final double getLinkPosition() {
-		return linkPosition;
+	public final double getOffsetInLink() {
+		return offset_in_link;
 	}
 
 	/**

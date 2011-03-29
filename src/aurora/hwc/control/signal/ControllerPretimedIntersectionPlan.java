@@ -194,7 +194,7 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 		float[] actualyellow = new float[8];
 		float[] actualredclear = new float[8];
 		float[] stagelength = new float[numstages];
-		
+	
 		// Set yellowtimes, redcleartimes, stagelength, totphaselength
 		totphaselength = 0;
 		for(k=0;k<numstages;k++){
@@ -202,7 +202,9 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 			mA = movA.get(k);
 			mB = movB.get(k);
 			
-			if(mA>=0){
+			
+			
+			if(mA>=0 && mySigMan.Phase(mA).Protected() ){
 				yA = mySigMan.Phase(mA).Yellowtime();
 				rA = mySigMan.Phase(mA).Redcleartime();
 			}
@@ -211,7 +213,7 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 				rA=0;
 			}
 			
-			if(mB>=0){
+			if(mB>=0 && mySigMan.Phase(mB).Protected()){
 				yB = mySigMan.Phase(mB).Yellowtime();
 				rB = mySigMan.Phase(mB).Redcleartime();
 			}
@@ -376,7 +378,7 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 		int k,p;
 		float phaselength;
 		boolean res = true;
-
+		
 		// Check that every stage has at least one movement 
 		for(k=0;k<numstages;k++)
 			if(movA.get(k)<0 && movB.get(k)<0){
@@ -388,6 +390,18 @@ public class ControllerPretimedIntersectionPlan implements Serializable {
 		if(cyclelength<0.001){
 			mySigMan.myNode.getMyNetwork().addConfigurationError(new ErrorConfiguration(this, "Pretimed controller: Cycle length must be > 0."));
 			res = false;
+		}
+		
+		// Check that all phases appearing in the plans are protected
+		for(k=0;k<numstages;k++){
+			if(movA.get(k)>=0 && !mySigMan.Phase(movA.get(k)).Protected()){
+				res=false;
+				return res;
+			}
+			if(movB.get(k)>=0 && !mySigMan.Phase(movB.get(k)).Protected()){
+				res=false;
+				return res;
+			}
 		}
 
 		res &= SetHoldForceoffPoint();

@@ -62,7 +62,7 @@ public class WindowSensor extends JInternalFrame {
 		String Y = form.format(mySensor.getPositionY());
 		String Z = form.format(mySensor.getPositionZ());
 		labelCoordinates.setText("<html><font color=\"gray\"><b>Coordinates:</b><font color=\"blue\"> [ " + X + " , " + Y + " , " + Z + " ] </font></font></html>");
-		labelLinkPosition.setText("<html><font color=\"gray\"><b>Link position [feet]:</b><font color=\"blue\"> " + form.format(mySensor.getLinkPosition()*5280.0) + " </font></font></html>");
+		labelLinkPosition.setText("<html><font color=\"gray\"><b>Link position [feet]:</b><font color=\"blue\"> " + form.format(mySensor.getOffsetInLink()*5280.0) + " </font></font></html>");
 	}
 	/**
 	 * Makes labels for Sensor window.

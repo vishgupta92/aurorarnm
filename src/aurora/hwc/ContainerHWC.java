@@ -22,7 +22,6 @@ import aurora.*;
 public final class ContainerHWC extends AbstractContainer {
 	private static final long serialVersionUID = 2277054116304494673L;
 
-
 	public ContainerHWC() { }
 	public ContainerHWC(AbstractNodeComplex ntwk) { myNetwork = ntwk; }
 	public ContainerHWC(EventManager emgr) { myEventManager = emgr; }
@@ -182,6 +181,10 @@ public final class ContainerHWC extends AbstractContainer {
 				if (p.getChildNodes().item(i).getNodeName().equals("EventList")) {
 					res &= myEventManager.initFromDOM(p.getChildNodes().item(i));
 				}
+				if (p.getChildNodes().item(i).getNodeName().equals("DirectionsCache")) {
+					dircache = new GoogleDirectionsCache();
+					res &= dircache.initFromDOM(p.getChildNodes().item(i));
+				}
 			}
 			for (int i = 0; i < p.getChildNodes().getLength(); i++) {
 				if (p.getChildNodes().item(i).getNodeName().equals("DemandProfile"))
@@ -192,6 +195,11 @@ public final class ContainerHWC extends AbstractContainer {
 					res &= initCapacityProfileFromDOM(p.getChildNodes().item(i));
 				if (p.getChildNodes().item(i).getNodeName().equals("InitialDensityProfile"))
 					res &= initInitialDensityProfileFromDOM(p.getChildNodes().item(i));
+				
+				
+
+				
+				
 			}
 		}
 		catch(Exception e) {
@@ -291,7 +299,8 @@ public final class ContainerHWC extends AbstractContainer {
 		ne_type2classname.put("ST", "aurora.hwc.LinkStreet");
 		ne_type2classname.put("D", "aurora.hwc.LinkDummy");
 		// sensors
-		ne_type2classname.put("LD", "aurora.hwc.SensorLoopDetector");
+		//ne_type2classname.put("LD", "aurora.hwc.SensorLoopDetector");
+		ne_type2classname.put("LOOP", "aurora.hwc.SensorLoopDetector");
 		// *** Events ***
 		evt_type2classname.put("FD", "aurora.hwc.EventFD");
 		evt_type2classname.put("DEMAND", "aurora.hwc.EventDemand");
