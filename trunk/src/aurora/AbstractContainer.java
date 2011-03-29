@@ -8,6 +8,8 @@ import java.io.*;
 import java.util.*;
 import org.w3c.dom.*;
 
+import aurora.hwc.GoogleDirectionsCache;
+
 
 /**
  * Base class for the top object that contains pointers
@@ -20,7 +22,8 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 	
 	protected AbstractNodeComplex myNetwork = null;
 	protected EventManager myEventManager = null;
-	protected SimulationSettings mySettings = null;
+	protected SimulationSettings mySettings = null;	
+	protected GoogleDirectionsCache dircache = null;	
 	protected SimulationStatus myStatus = new SimulationStatus();
 	protected boolean isSim = true;
 	protected boolean isBatch = false;
@@ -60,6 +63,9 @@ public abstract class AbstractContainer implements AuroraConfigurable, Serializa
 			out.print("<EventList>\n");
 			myEventManager.xmlDump(out);
 			out.print("</EventList>\n");
+		}
+		if(this.dircache!=null){
+			dircache.xmlDump(out);
 		}
 		return;
 	}

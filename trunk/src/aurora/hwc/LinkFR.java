@@ -1,5 +1,5 @@
 /**
- * @(#)LinkFR.java
+- * @(#)LinkFR.java
  */
 
 package aurora.hwc;

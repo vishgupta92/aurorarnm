@@ -8,7 +8,6 @@ import java.io.*;
 import org.w3c.dom.Node;
 import aurora.*;
 
-
 /**
  * Implementation of loop detector.
  * @author Gabriel Gomes
@@ -20,6 +19,14 @@ public final class SensorLoopDetector extends AbstractSensor {
 //	 ========================================================================
 //	 FIELDS =================================================================
 //	 ========================================================================
+	
+	private String data_id;
+	private int vds = 0;
+	private String hwy_name;
+	private String hwy_dir;
+	private String postmile;
+	private int lanes=0;
+	private String link_type;
 	
 	private double cumflow = 0.0;
 	private boolean iscounter = true;		// GCG Make this input/output
@@ -33,10 +40,21 @@ public final class SensorLoopDetector extends AbstractSensor {
 	private AbstractLinkHWC myHWCLink = null;
 	//private AbstractNode bnd;
 	//private AbstractNode end;
+	
+	// calibrated parameters
+	public float vf;
+	public float w;
+	public float q_max;
+	public float rj;
+	public float rho_crit;  
 
 //	 ========================================================================
 //	 INTERFACE ==============================================================
 //	 ========================================================================
+	
+	public int getLanes() {
+		return lanes;
+	}
 	
 	public boolean IsCounter() 	 { return iscounter; } 
 //	-------------------------------------------------------------------------
@@ -48,6 +66,16 @@ public final class SensorLoopDetector extends AbstractSensor {
 		else
 			return false;
 	}
+	
+	public void setFD(float vfin,float win,float q_maxin,float rjin,float rho_critin){
+		vf = vfin;
+		w = win;
+		q_max = q_maxin;
+		rj = rjin;
+		rho_crit = rho_critin;  
+
+	}
+	
 //	-------------------------------------------------------------------------
 	public double Flow()	 { return flow; }
 //	-------------------------------------------------------------------------
@@ -60,6 +88,8 @@ public final class SensorLoopDetector extends AbstractSensor {
 	public double Occupancy() { return dens / myHWCLink.getJamDensity(); }
 //	-------------------------------------------------------------------------
 	public int Count() { return count; }
+//	-------------------------------------------------------------------------
+	public int getVDS() { return vds; }
 //	-------------------------------------------------------------------------
 	public void ResetCount(){
 		count = 0;
@@ -77,7 +107,7 @@ public final class SensorLoopDetector extends AbstractSensor {
 	public synchronized boolean dataUpdate(int ts) throws ExceptionDatabase, ExceptionSimulation {
 		boolean res = true;
 		res &= super.dataUpdate(ts);
-
+		
 		flow = myHWCLink.getFlow().sum().getCenter();	
 		dens = myHWCLink.getDensity().sum().getCenter();
 		speed = myHWCLink.getSpeed().getCenter();
@@ -161,10 +191,41 @@ public final class SensorLoopDetector extends AbstractSensor {
 			return !res;
 		res &= super.initFromDOM(p);
 		try  {
-			looplength = Double.parseDouble(p.getAttributes().getNamedItem("length").getNodeValue()) / 5280.0;
-			myHWCLink = (AbstractLinkHWC) myLink;
-			//bnd = myHWCLink.getBeginNode();
-			//end = myHWCLink.getEndNode();
+			
+			Node pp;
+			pp = p.getAttributes().getNamedItem("length");
+			if(pp!=null)
+				looplength = Double.parseDouble(pp.getNodeValue()) / 5280.0;
+			if(myLink!=null)
+				myHWCLink = (AbstractLinkHWC) myLink;
+
+			pp = p.getAttributes().getNamedItem("data_id");
+			if(pp!=null)
+				data_id = pp.getNodeValue();
+
+			pp = p.getAttributes().getNamedItem("vds");
+			if(pp!=null)
+				vds = Integer.parseInt(pp.getNodeValue());
+			
+			pp = p.getAttributes().getNamedItem("hwy_name");
+			if(pp!=null)
+				hwy_name = pp.getNodeValue();
+
+			pp = p.getAttributes().getNamedItem("hwy_dir");
+			if(pp!=null)
+				hwy_dir = pp.getNodeValue();
+
+			pp = p.getAttributes().getNamedItem("postmile");
+			if(pp!=null)
+				postmile = pp.getNodeValue();
+
+			pp = p.getAttributes().getNamedItem("lanes");
+			if(pp!=null)
+				lanes = Integer.parseInt(pp.getNodeValue());	
+			
+			pp = p.getAttributes().getNamedItem("link_type");
+			if(pp!=null)
+				link_type = pp.getNodeValue();
 		}
 		catch(Exception e) {
 			res = false;
@@ -182,7 +243,7 @@ public final class SensorLoopDetector extends AbstractSensor {
 	 * Returns letter code of the Sensor type.
 	 */
 	public String getTypeLetterCode() {
-		return "LD";
+		return "loop";
 	}
 	
 	/**
@@ -195,9 +256,58 @@ public final class SensorLoopDetector extends AbstractSensor {
 	public void xmlDump(PrintStream out) throws IOException {
 		if (out == null)
 			out = System.out;
-		out.print("<sensor type=\"" + getTypeLetterCode() + "\" id=\"" + id + "\" link=\"" + myLink.getId() + "\" linkposition=\"" + linkPosition + "\" length = \"" + looplength*5280.0 + "\"></sensor>\n"); 
+		out.print("<sensor type=\"" + getTypeLetterCode() + "\" id=\"" + id + "\"");
+		
+		//if(name!=null)
+		//	out.print(" name=\"" + name + "\"");
+		
+		if(data_id!=null)
+			out.print(" data_id=\"" + data_id + "\"");
+					
+		if(link_type!=null)
+			out.print(" link_type=\""  + link_type + "\"");
+		
+		if( !Float.isNaN(offset_in_link) )
+			out.print(" offset_in_link=\"" + offset_in_link + "\"");
+
+		if( !Double.isNaN(looplength))
+			out.print(" length=\"" + looplength*5280 + "\"");
+
+		if(description!=null)
+			out.print(" description=\"" + description + "\"");
+		
+		if(display_lat!=null)
+			out.print(" display_lat=\"" + display_lat + "\"");
+		
+		if(display_lng!=null)
+			out.print(" display_lng=\"" + display_lng + "\"");
+
+		if(vds!=0)
+			out.print(" vds=\"" + vds + "\"");
+		
+		if(hwy_name!=null)
+			out.print(" hwy_name=\"" + hwy_name + "\"");
+		
+		if(hwy_dir!=null)
+			out.print(" hwy_dir=\"" + hwy_dir + "\"");
+		
+		if(postmile!=null)
+			out.print(" postmile=\"" + postmile + "\"");
+		
+		if(lanes!=0)
+			out.print(" lanes=\"" + lanes + "\"");
+		
+		out.print(">\n");
+
+		position.xmlDump(out);
+		
+		if(myLink!=null)
+			out.print("\t<links>" + myLink.getId()  + "</links>\n");
+		
+		out.print("</sensor>\n"); 
 		return;
 	}
+	
 	@Override
 	public void updateConfigurationSummary(AbstractConfigurationSummary cs) {
 		// TODO Auto-generated method stub
