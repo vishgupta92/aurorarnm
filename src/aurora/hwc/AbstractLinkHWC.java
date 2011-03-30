@@ -25,7 +25,7 @@ import aurora.util.*;
 public abstract class AbstractLinkHWC extends AbstractLink {
 	private static final long serialVersionUID = 7448808131935808045L;
 	
-	protected String name;
+	protected String name = "";
 	
 	protected double lanes = 1.0;
 	protected double flowMax = 1800; // in vph
@@ -95,8 +95,8 @@ public abstract class AbstractLinkHWC extends AbstractLink {
 			length = Double.parseDouble(p.getAttributes().getNamedItem("length").getNodeValue());
 			if (length > 5)
 				length = 0.000189393939 * length; // feet to miles
-			
-			name = p.getAttributes().getNamedItem("name").getNodeValue();
+			if (p.getAttributes().getNamedItem("name") != null) 
+				name = p.getAttributes().getNamedItem("name").getNodeValue();
 			lanes = Double.parseDouble(p.getAttributes().getNamedItem("lanes").getNodeValue());
 			Node sa = p.getAttributes().getNamedItem("record");
 			if ((sa != null) && Boolean.parseBoolean(sa.getNodeValue()))
